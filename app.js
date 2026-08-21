@@ -42,6 +42,7 @@ const $ = id => document.getElementById(id);
 let user;
 let profile = {
   age: 31,
+  sex: "male",
   height: 170,
   weight: 73,
   calGoal: 1950,
@@ -55,6 +56,15 @@ let signup = false;     // whether the auth form is in "create account" mode
 let stream;             // active camera stream for barcode scanning
 
 $('date').textContent = new Date().toLocaleDateString();
+
+profile.age = Number($("age").value);
+profile.height = Number($("height").value);
+profile.weight = Number($("weight").value);
+profile.sex = $("sex").value;
+
+calculateMetrics();
+await setDoc(userRef(), profile);
+await refresh();
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -142,6 +152,7 @@ onAuthStateChanged(auth, async u => {
   }
 
   fill();
+  calculateMetrics();
   await refresh();
   show('dash');
 });
@@ -556,3 +567,57 @@ window.addEventListener(
 
 resizeConstellation();
 drawConstellation();
+
+function calculateMetrics() {
+
+  const age = Number(profile.age);
+  const height = Number(profile.height);
+  const weight = Number(profile.weight);
+
+  // Mifflin-St Jeor (Male/Female)
+  const bmr = profile.sex === "female"
+    ? 10 * weight + 6.25 * height - 5 * age - 161
+    : 10 * weight + 6.25 * height - 5 * age + 5;
+
+  // Moderate activity (PPL 3x/week)
+  const calories = Math.round(bmr * 1.55);
+
+  // Macro split
+  const protein = Math.round(weight * 2);      // 2g/kg
+  const fat = Math.round(weight * 0.8);        // 0.8g/kg
+
+  const carbCalories = calories - (protein * 4 + fat * 9);
+  const carbs = Math.max(0, Math.round(carbCalories / 4));
+
+  profile.calGoal = calories;
+  profile.pGoal = protein;
+  profile.cGoal = carbs;
+  profile.fGoal = fat;
+
+  // ---------- BMI ----------
+  const bmi = weight / Math.pow(height / 100, 2);
+
+  let status = "";
+  let color = "";
+
+  if (bmi < 18.5) {
+    status = "Underweight";
+    color = "under";
+  } else if (bmi < 25) {
+    status = "Normal";
+    color = "normal";
+  } else if (bmi < 30) {
+    status = "Overweight";
+    color = "over";
+  } else {
+    status = "Obese";
+    color = "obese";
+  }
+
+  $("bmiValue").textContent = bmi.toFixed(1);
+  $("bmiStatus").textContent = status;
+  $("bmiStatus").className = `bmi ${color}`;
+
+  // Dashboard goals
+  $("calGoal").textContent = calories;
+}
