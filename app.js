@@ -35,6 +35,29 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+async function testFirestore() {
+  console.log("Testing Firestore...");
+
+  try {
+    const testRef = doc(db, "test", "connection");
+
+    await setDoc(testRef, {
+      message: "Firestore is working",
+      time: new Date().toISOString()
+    });
+
+    console.log("✅ FIRESTORE WRITE SUCCESS");
+    console.log("Check Firestore → test → connection");
+
+  } catch (error) {
+
+    console.error("❌ FIRESTORE WRITE FAILED");
+    console.error("Code:", error.code);
+    console.error("Message:", error.message);
+    console.error(error);
+  }
+}
+
 
 // ============================================================
 // HELPERS
@@ -438,13 +461,23 @@ function getFirebaseErrorMessage(error) {
 
 onAuthStateChanged(auth, async currentUser => {
 
-  console.log(
-    'Auth state changed:',
-    currentUser
-  );
-
+  console.log("Auth state changed:", currentUser);
 
   user = currentUser;
+
+  if (!currentUser) {
+    $('auth').hidden = false;
+    $('app').hidden = true;
+    $('logout').hidden = true;
+    return;
+  }
+
+  console.log("Logged in UID:", currentUser.uid);
+
+  await testFirestore();
+
+  // rest of your code...
+});
 
 
   // ----------------------------------------------------------
