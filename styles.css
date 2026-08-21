@@ -2,6 +2,7 @@
    FitTrack CSS
    ========================================================= */
 
+
 /* ================= RESET ================= */
 
 * {
@@ -21,39 +22,51 @@ body {
   color: #ffffff;
 }
 
+
 /* ================= CONSTELLATION ================= */
 
 #constellation {
   position: fixed;
   inset: 0;
+
   width: 100%;
   height: 100%;
+
   z-index: -1;
+
   pointer-events: none;
 }
+
 
 /* ================= HEADER ================= */
 
 header {
-  width: 100%;
   min-height: 70px;
+
   display: flex;
   align-items: center;
+
   padding: 15px 30px;
+
   background: rgba(8, 11, 18, 0.88);
+
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
   backdrop-filter: blur(10px);
 }
 
 header h1 {
   margin: 0;
+
   font-size: 26px;
   font-weight: 700;
 }
 
 #date {
   margin-left: 20px;
+
   color: #999;
+
   font-size: 14px;
 }
 
@@ -61,44 +74,57 @@ header h1 {
   margin-left: auto;
 }
 
+
 /* ================= MAIN ================= */
 
 main {
   width: 100%;
   max-width: 1200px;
+
   margin: auto;
+
   padding: 25px;
 }
+
 
 /* ================= NAVIGATION ================= */
 
 nav {
   display: flex;
   flex-wrap: wrap;
+
   gap: 10px;
+
   margin-bottom: 25px;
 }
 
 nav button {
   flex: 1;
+
   min-width: 120px;
 }
 
-.page {
-  min-height: 300px;
-}
 
 /* ================= BUTTONS ================= */
 
 button {
   border: 0;
+
   border-radius: 8px;
+
   padding: 11px 16px;
+
   background: #202938;
+
   color: #ffffff;
+
   font-size: 14px;
+
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
 }
 
 button:hover {
@@ -109,89 +135,128 @@ button:active {
   transform: scale(0.98);
 }
 
+
 /* ================= CARDS ================= */
 
 .card {
   background: rgba(18, 23, 34, 0.88);
+
   border: 1px solid rgba(255, 255, 255, 0.08);
+
   border-radius: 12px;
+
   padding: 22px;
-  margin-bottom: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.25);
+
   backdrop-filter: blur(8px);
 }
 
 .card h2 {
   margin-top: 0;
+
   margin-bottom: 10px;
 }
 
-.card-header {
-  margin-bottom: 15px;
-}
-
-.card-header p {
-  margin: 0;
-}
 
 /* ================= GRID ================= */
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(250px, 1fr)
+    );
+
   gap: 20px;
+
   margin-bottom: 20px;
 }
+
 
 /* ================= INPUTS ================= */
 
 input {
   width: 100%;
+
   padding: 12px 14px;
+
   border: 1px solid rgba(255, 255, 255, 0.12);
+
   border-radius: 8px;
+
   background: rgba(7, 10, 16, 0.9);
+
   color: #ffffff;
+
   outline: none;
+
   font-size: 14px;
 }
 
 input:focus {
   border-color: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.04);
+
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.04);
 }
 
 input::placeholder {
   color: #777;
 }
 
+
 /* ================= FORMS ================= */
 
 .form-layout {
   display: flex;
+
   flex-direction: column;
+
   gap: 15px;
+
   margin-top: 20px;
 }
 
+
+/* ================= FORM ROW ================= */
+
 .form-row {
   display: grid;
+
   grid-template-columns: 180px 1fr;
+
   align-items: center;
+
   gap: 20px;
+
   min-height: 46px;
 }
 
+
+/* ================= LABELS ================= */
+
 .form-row label {
   color: #ffffff;
+
   font-size: 14px;
+
   font-weight: 600;
+
   text-align: left;
 }
 
+
+/* ================= INPUT + UNIT ================= */
+
 .input-unit {
   display: flex;
+
   align-items: center;
+
   gap: 10px;
 }
 
@@ -201,13 +266,20 @@ input::placeholder {
 
 .input-unit span {
   width: 55px;
+
   color: #888;
+
   font-size: 13px;
 }
 
+
+/* ================= FORM ACTIONS ================= */
+
 .form-actions {
   display: flex;
+
   justify-content: flex-end;
+
   margin-top: 5px;
 }
 
@@ -215,32 +287,21 @@ input::placeholder {
   min-width: 120px;
 }
 
+
+/* ================= DESCRIPTION ================= */
+
 .section-description {
   margin-top: 0;
+
   margin-bottom: 20px;
+
   color: #888;
+
   font-size: 14px;
+
   line-height: 1.5;
 }
 
-/* ================= ROWS / LISTS ================= */
-
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.row:last-child {
-  border-bottom: 0;
-}
-
-.row small {
-  color: #999;
-}
 
 /* =========================================================
    AUTH
@@ -248,24 +309,30 @@ input::placeholder {
 
 #auth {
   min-height: calc(100vh - 100px);
+
   display: flex;
+
   align-items: center;
   justify-content: center;
+
   padding: 20px;
 }
 
 #auth .card {
   width: 100%;
+
   max-width: 400px;
 }
 
 #auth h2 {
   text-align: center;
+
   margin-bottom: 20px;
 }
 
 #authForm {
   display: flex;
+
   flex-direction: column;
 }
 
@@ -279,15 +346,18 @@ input::placeholder {
 
 #toggle {
   width: 100%;
+
   margin-top: 10px;
-  background: transparent;
 }
 
 #authMsg {
   min-height: 20px;
+
   text-align: center;
+
   color: #aaa;
 }
+
 
 /* =========================================================
    DASHBOARD
@@ -295,6 +365,7 @@ input::placeholder {
 
 .big {
   margin: 15px 0;
+
   font-size: 24px;
 }
 
@@ -304,7 +375,9 @@ input::placeholder {
 
 .stat {
   text-align: center;
+
   font-size: 15px;
+
   line-height: 1.8;
 }
 
@@ -312,24 +385,35 @@ input::placeholder {
   font-size: 28px;
 }
 
-/* Progress bar */
+
+/* ================= PROGRESS BAR ================= */
 
 .bar {
   width: 100%;
+
   height: 10px;
+
   overflow: hidden;
+
   border-radius: 10px;
+
   background: #202633;
 }
 
 .bar i {
   display: block;
+
   width: 0%;
+
   height: 100%;
+
   border-radius: inherit;
+
   background: #ffffff;
+
   transition: width 0.3s ease;
 }
+
 
 /* =========================================================
    FOOD
@@ -339,8 +423,12 @@ input::placeholder {
   margin-bottom: 20px;
 }
 
+
+/* Barcode */
+
 .food-scan {
   display: flex;
+
   margin-bottom: 10px;
 }
 
@@ -348,14 +436,6 @@ input::placeholder {
   width: 100%;
 }
 
-video {
-  width: 100%;
-  max-height: 350px;
-  margin: 10px 0;
-  border-radius: 10px;
-  background: #000;
-  display: block;
-}
 
 /* =========================================================
    WORKOUT
@@ -365,10 +445,17 @@ video {
   margin-bottom: 20px;
 }
 
+
+/* Push Pull Legs */
+
 .ppl {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
   gap: 10px;
+
   margin-bottom: 20px;
 }
 
@@ -376,20 +463,17 @@ video {
   width: 100%;
 }
 
-.ppl button.active {
-  background: #2563eb;
-}
+
+/* Finish Workout */
 
 .workout-finish {
   margin-top: 15px;
 }
 
-#finish,
-.finish-button {
+#finish {
   width: 100%;
-  margin-top: 15px;
-  background: #16a34a;
 }
+
 
 /* =========================================================
    PROGRESS
@@ -399,13 +483,16 @@ video {
   margin-bottom: 20px;
 }
 
+
 /* =========================================================
    SETTINGS
    ========================================================= */
 
 .settings-card {
   width: 100%;
+
   max-width: 750px;
+
   margin: 0 auto;
 }
 
@@ -417,11 +504,13 @@ video {
   margin-top: 10px;
 }
 
+
 /* =========================================================
    RESPONSIVE
    ========================================================= */
 
 @media (max-width: 700px) {
+
   header {
     padding: 15px 20px;
   }
@@ -430,11 +519,14 @@ video {
     padding: 15px;
   }
 
+
   /* Labels above inputs */
 
   .form-row {
     grid-template-columns: 1fr;
+
     gap: 7px;
+
     min-height: auto;
   }
 
@@ -442,11 +534,13 @@ video {
     font-size: 14px;
   }
 
+
   /* Navigation */
 
   nav button {
     min-width: calc(50% - 5px);
   }
+
 
   /* Settings */
 
@@ -457,13 +551,16 @@ video {
   .settings-actions button {
     width: 100%;
   }
+
 }
+
 
 /* =========================================================
    SMALL PHONES
    ========================================================= */
 
 @media (max-width: 450px) {
+
   header {
     flex-wrap: wrap;
   }
@@ -476,20 +573,26 @@ video {
     margin-left: auto;
   }
 
+
   nav {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+
+    grid-template-columns:
+      repeat(2, 1fr);
   }
 
   nav button {
     min-width: 0;
   }
 
+
   .ppl {
     grid-template-columns: 1fr;
   }
 
+
   .input-unit {
     width: 100%;
   }
+
 }
