@@ -1,152 +1,647 @@
+```html
 <!doctype html>
-<html>
+<html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>FitTrack</title>
+
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-<canvas id="constellation"></canvas>
+
+  <!-- ================= Constellation Background ================= -->
+  <canvas id="constellation"></canvas>
+
+  <!-- ================= Header ================= -->
   <header>
     <h1>FitTrack</h1>
+
     <span id="date"></span>
-    <button id="logout" hidden>Sign out</button>
+
+    <button id="logout" hidden>
+      Sign out
+    </button>
   </header>
 
-  <!-- ================= Auth ================= -->
+
+  <!-- ================= Authentication ================= -->
   <section id="auth">
+
     <div class="card">
-      <h2 id="authTitle">Sign in</h2>
+
+      <h2 id="authTitle">
+        Sign in
+      </h2>
+
       <form id="authForm">
-        <input id="email" type="email" placeholder="Email" required>
-        <input id="password" type="password" placeholder="Password" minlength="6" required>
-        <button>Continue</button>
+
+        <input
+          id="email"
+          type="email"
+          placeholder="Email"
+          autocomplete="email"
+          required
+        >
+
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          minlength="6"
+          autocomplete="current-password"
+          required
+        >
+
+        <button type="submit">
+          Continue
+        </button>
+
       </form>
-      <button id="toggle">Create account</button>
+
+      <button id="toggle" type="button">
+        Create account
+      </button>
+
       <p id="authMsg"></p>
+
     </div>
+
   </section>
 
-  <!-- ================= App ================= -->
+
+  <!-- ================= Main Application ================= -->
   <main id="app" hidden>
 
+
+    <!-- ================= Navigation ================= -->
     <nav>
-      <button data-page="dash">Dashboard</button>
-      <button data-page="food">Food</button>
-      <button data-page="workout">Workout</button>
-      <button data-page="progress">Progress</button>
-      <button data-page="settings">Settings</button>
+
+      <button data-page="dash">
+        Dashboard
+      </button>
+
+      <button data-page="food">
+        Food
+      </button>
+
+      <button data-page="workout">
+        Workout
+      </button>
+
+      <button data-page="progress">
+        Progress
+      </button>
+
+      <button data-page="settings">
+        Settings
+      </button>
+
     </nav>
 
-    <!-- ---- Dashboard ---- -->
+
+    <!-- ================= Dashboard ================= -->
     <section id="dash" class="page">
+
       <div class="grid">
+
+        <!-- Calories -->
         <div class="card">
-          <h2>Calories</h2>
-          <div class="big"><b id="cal">0</b> / <span id="calGoal">1950</span> kcal</div>
-          <div class="bar"><i id="calBar"></i></div>
+
+          <h2>
+            Calories
+          </h2>
+
+          <div class="big">
+            <b id="cal">0</b>
+            /
+            <span id="calGoal">1950</span>
+            kcal
+          </div>
+
+          <div class="bar">
+            <i id="calBar"></i>
+          </div>
+
         </div>
+
+
+        <!-- Macros -->
         <div class="card">
-          <h2>Macros</h2>
+
+          <h2>
+            Macros
+          </h2>
+
           <div id="macros"></div>
+
         </div>
+
       </div>
+
+
+      <!-- Statistics -->
       <div class="grid">
-        <div class="card stat">Weight<br><b id="weightDash">73</b> kg</div>
-        <div class="card stat">Steps<br><b id="stepsDash">0</b></div>
-        <div class="card stat">Workout<br><b id="workoutDash">Rest</b></div>
+
+        <div class="card stat">
+          Weight
+          <br>
+          <b id="weightDash">73</b> kg
+        </div>
+
+        <div class="card stat">
+          Steps
+          <br>
+          <b id="stepsDash">0</b>
+        </div>
+
+        <div class="card stat">
+          Workout
+          <br>
+          <b id="workoutDash">Rest</b>
+        </div>
+
       </div>
+
     </section>
 
-    <!-- ---- Food ---- -->
+
+    <!-- ================= Food ================= -->
     <section id="food" class="page" hidden>
+
       <div class="card">
-        <h2>Scan / Add Food</h2>
-        <button id="scan">📷 Scan barcode</button>
-        <video id="video" playsinline hidden></video>
+
+        <h2>
+          Scan / Add Food
+        </h2>
+
+        <button id="scan" type="button">
+          📷 Scan barcode
+        </button>
+
+        <video
+          id="video"
+          playsinline
+          hidden
+        ></video>
+
+
         <form id="foodForm">
-          <input id="fname" placeholder="Food name" required>
-          <input id="serving" placeholder="Serving">
-          <input id="fcal" type="number" placeholder="Calories" required>
-          <input id="fp" type="number" step=".1" placeholder="Protein g" required>
-          <input id="fc" type="number" step=".1" placeholder="Carbs g" required>
-          <input id="ff" type="number" step=".1" placeholder="Fat g" required>
-          <button>Add food</button>
+
+          <input
+            id="fname"
+            placeholder="Food name"
+            required
+          >
+
+          <input
+            id="serving"
+            placeholder="Serving"
+          >
+
+          <input
+            id="fcal"
+            type="number"
+            placeholder="Calories"
+            required
+          >
+
+          <input
+            id="fp"
+            type="number"
+            step=".1"
+            placeholder="Protein g"
+            required
+          >
+
+          <input
+            id="fc"
+            type="number"
+            step=".1"
+            placeholder="Carbs g"
+            required
+          >
+
+          <input
+            id="ff"
+            type="number"
+            step=".1"
+            placeholder="Fat g"
+            required
+          >
+
+          <button type="submit">
+            Add food
+          </button>
+
         </form>
+
       </div>
+
+
+      <!-- Today's Food -->
       <div class="card">
-        <h2>Today's food</h2>
+
+        <h2>
+          Today's food
+        </h2>
+
         <div id="foodList"></div>
+
       </div>
+
     </section>
 
-    <!-- ---- Workout ---- -->
+
+    <!-- ================= Workout ================= -->
     <section id="workout" class="page" hidden>
+
       <div class="card">
-        <h2>PPL Workout</h2>
+
+        <h2>
+          PPL Workout
+        </h2>
+
+
+        <!-- Push / Pull / Legs -->
         <div class="ppl">
-          <button data-ppl="Push">Push</button>
-          <button data-ppl="Pull">Pull</button>
-          <button data-ppl="Legs">Legs</button>
+
+          <button
+            type="button"
+            data-ppl="Push"
+          >
+            Push
+          </button>
+
+          <button
+            type="button"
+            data-ppl="Pull"
+          >
+            Pull
+          </button>
+
+          <button
+            type="button"
+            data-ppl="Legs"
+          >
+            Legs
+          </button>
+
         </div>
+
+
+        <!-- Exercise Form -->
         <form id="exForm">
-          <input id="ename" placeholder="Exercise" required>
-          <input id="sets" type="number" value="3" placeholder="Sets">
-          <input id="reps" type="number" value="10" placeholder="Reps">
-          <input id="ew" type="number" step=".5" value="0" placeholder="Weight kg">
-          <button>Add exercise</button>
+
+          <input
+            id="ename"
+            placeholder="Exercise"
+            required
+          >
+
+          <input
+            id="sets"
+            type="number"
+            value="3"
+            placeholder="Sets"
+          >
+
+          <input
+            id="reps"
+            type="number"
+            value="10"
+            placeholder="Reps"
+          >
+
+          <input
+            id="ew"
+            type="number"
+            step=".5"
+            value="0"
+            placeholder="Weight kg"
+          >
+
+          <button type="submit">
+            Add exercise
+          </button>
+
         </form>
-        <button id="finish">Finish workout</button>
+
+
+        <button
+          id="finish"
+          type="button"
+        >
+          Finish workout
+        </button>
+
       </div>
+
+
+      <!-- Exercise List -->
       <div class="card">
+
         <div id="exList"></div>
+
       </div>
+
     </section>
 
-    <!-- ---- Progress ---- -->
+
+    <!-- ================= Progress ================= -->
     <section id="progress" class="page" hidden>
+
       <div class="grid">
+
+        <!-- Weight -->
         <div class="card">
-          <h2>Weight</h2>
+
+          <h2>
+            Weight
+          </h2>
+
           <form id="weightForm">
-            <input id="weightInput" type="number" step=".1" required>
-            <button>Save weight</button>
+
+            <input
+              id="weightInput"
+              type="number"
+              step=".1"
+              placeholder="Weight kg"
+              required
+            >
+
+            <button type="submit">
+              Save weight
+            </button>
+
           </form>
+
         </div>
+
+
+        <!-- Steps -->
         <div class="card">
-          <h2>Steps</h2>
+
+          <h2>
+            Steps
+          </h2>
+
           <form id="stepsForm">
-            <input id="stepsInput" type="number" required>
-            <button>Save steps</button>
+
+            <input
+              id="stepsInput"
+              type="number"
+              placeholder="Daily steps"
+              required
+            >
+
+            <button type="submit">
+              Save steps
+            </button>
+
           </form>
+
         </div>
+
       </div>
+
+
+      <!-- History -->
       <div class="card">
-        <h2>History</h2>
+
+        <h2>
+          History
+        </h2>
+
         <div id="history"></div>
+
       </div>
+
     </section>
 
-    <!-- ---- Settings ---- -->
+
+    <!-- ================= Settings ================= -->
     <section id="settings" class="page" hidden>
-      <div class="card">
-        <h2>Goals</h2>
-        <form id="settingsForm">
-          <input id="age" type="number" placeholder="Age">
-          <input id="height" type="number" placeholder="Height cm">
-          <input id="goalCal" type="number" placeholder="Calories">
-          <input id="goalP" type="number" placeholder="Protein g">
-          <input id="goalC" type="number" placeholder="Carbs g">
-          <input id="goalF" type="number" placeholder="Fat g">
-          <input id="goalSteps" type="number" placeholder="Steps">
-          <button>Save</button>
+
+      <div class="card settings-card">
+
+        <h2>
+          Goals
+        </h2>
+
+
+        <form
+          id="settingsForm"
+          class="settings-form"
+        >
+
+
+          <!-- Age -->
+          <div class="setting-row">
+
+            <label for="age">
+              Age
+            </label>
+
+            <div class="setting-input">
+
+              <input
+                id="age"
+                type="number"
+                placeholder="Enter age"
+                min="1"
+                max="120"
+              >
+
+              <span>
+                years
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- Height -->
+          <div class="setting-row">
+
+            <label for="height">
+              Height
+            </label>
+
+            <div class="setting-input">
+
+              <input
+                id="height"
+                type="number"
+                placeholder="Enter height"
+                min="50"
+                max="250"
+              >
+
+              <span>
+                cm
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- Calories -->
+          <div class="setting-row">
+
+            <label for="goalCal">
+              Daily Calories
+            </label>
+
+            <div class="setting-input">
+
+              <input
+                id="goalCal"
+                type="number"
+                placeholder="Enter calorie goal"
+                min="1"
+              >
+
+              <span>
+                kcal
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- Protein -->
+          <div class="setting-row">
+
+            <label for="goalP">
+              Protein
+            </label>
+
+            <div class="setting-input">
+
+              <input
+                id="goalP"
+                type="number"
+                placeholder="Enter protein goal"
+                min="0"
+              >
+
+              <span>
+                g
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- Carbs -->
+          <div class="setting-row">
+
+            <label for="goalC">
+              Carbohydrates
+            </label>
+
+            <div class="setting-input">
+
+              <input
+                id="goalC"
+                type="number"
+                placeholder="Enter carb goal"
+                min="0"
+              >
+
+              <span>
+                g
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- Fat -->
+          <div class="setting-row">
+
+            <label for="goalF">
+              Fat
+            </label>
+
+            <div class="setting-input">
+
+              <input
+                id="goalF"
+                type="number"
+                placeholder="Enter fat goal"
+                min="0"
+              >
+
+              <span>
+                g
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- Steps -->
+          <div class="setting-row">
+
+            <label for="goalSteps">
+              Daily Steps
+            </label>
+
+            <div class="setting-input">
+
+              <input
+                id="goalSteps"
+                type="number"
+                placeholder="Enter step goal"
+                min="0"
+              >
+
+              <span>
+                steps
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- Save -->
+          <div class="settings-actions">
+
+            <button type="submit">
+              Save
+            </button>
+
+          </div>
+
         </form>
+
       </div>
+
     </section>
+
 
   </main>
 
-  <script type="module" src="app.js"></script>
+
+  <!-- ================= JavaScript ================= -->
+  <script
+    type="module"
+    src="app.js"
+  ></script>
+
 </body>
+
 </html>
+```
