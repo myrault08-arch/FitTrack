@@ -23,11 +23,13 @@ import {
   deleteDoc
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
-import { firebaseConfig } from './firebase-config.js';
+import {
+  firebaseConfig
+} from './firebase-config.js';
 
 
 // ============================================================
-// FIREBASE
+// Firebase
 // ============================================================
 
 const app = initializeApp(firebaseConfig);
@@ -38,57 +40,41 @@ const db = getFirestore(app);
 
 
 // ============================================================
-// HELPERS
+// Helpers
 // ============================================================
 
 const $ = id => document.getElementById(id);
 
-const day = () =>
-  new Date().toISOString().slice(0, 10);
-
-const userRef = () =>
-  doc(db, 'users', user.uid);
-
-const dayRef = () =>
-  doc(
-    db,
-    'users',
-    user.uid,
-    'days',
-    day()
-  );
-
 
 // ============================================================
-// PROFILE
+// State
 // ============================================================
+
+let user = null;
 
 let profile = {
 
   age: 31,
 
-  sex: 'male',
+  sex: "male",
 
   height: 170,
 
   weight: 73,
 
-  calGoal: 2439,
+  calGoal: 0,
 
-  pGoal: 146,
+  pGoal: 0,
 
-  cGoal: 341,
+  cGoal: 0,
 
-  fGoal: 58,
+  fGoal: 0,
 
   stepGoal: 10000
 
 };
 
-
-let user = null;
-
-let ppl = 'Push';
+let ppl = "Push";
 
 let signup = false;
 
@@ -96,19 +82,52 @@ let stream = null;
 
 
 // ============================================================
-// DATE
+// Date
 // ============================================================
 
-if ($('date')) {
-
-  $('date').textContent =
-    new Date().toLocaleDateString();
-
-}
+$("date").textContent =
+  new Date().toLocaleDateString();
 
 
 // ============================================================
-// DAILY DATA
+// Firebase References
+// ============================================================
+
+const day = () => {
+
+  return new Date()
+    .toISOString()
+    .slice(0, 10);
+
+};
+
+
+const userRef = () => {
+
+  return doc(
+    db,
+    "users",
+    user.uid
+  );
+
+};
+
+
+const dayRef = () => {
+
+  return doc(
+    db,
+    "users",
+    user.uid,
+    "days",
+    day()
+  );
+
+};
+
+
+// ============================================================
+// Get Today's Data
 // ============================================================
 
 async function getDay() {
@@ -133,8 +152,7 @@ async function getDay() {
 
     steps: Number(data.steps) || 0,
 
-    workout:
-      data.workout || 'Rest'
+    workout: data.workout || "Rest"
 
   };
 
@@ -142,7 +160,7 @@ async function getDay() {
 
 
 // ============================================================
-// BMI + CALORIE + MACRO CALCULATOR
+// BMI + Macro Calculator
 // ============================================================
 
 function calculateMetrics() {
@@ -157,26 +175,27 @@ function calculateMetrics() {
     Number(profile.weight);
 
 
+  // Prevent invalid calculations
+
   if (
     !age ||
     !height ||
     !weight ||
-    age <= 0 ||
     height <= 0 ||
     weight <= 0
   ) {
 
-    return null;
+    return;
 
   }
 
 
   // ----------------------------------------------------------
-  // BMR
+  // Mifflin-St Jeor BMR
   // ----------------------------------------------------------
 
   const bmr =
-    profile.sex === 'female'
+    profile.sex === "female"
 
       ? (
           10 * weight +
@@ -203,11 +222,12 @@ function calculateMetrics() {
 
 
   // ----------------------------------------------------------
-  // MACROS
+  // Macro targets
   // ----------------------------------------------------------
 
   const protein =
     Math.round(weight * 2);
+
 
   const fat =
     Math.round(weight * 0.8);
@@ -224,27 +244,21 @@ function calculateMetrics() {
   const carbs =
     Math.max(
       0,
-      Math.round(
-        carbCalories / 4
-      )
+      Math.round(carbCalories / 4)
     );
 
 
   // ----------------------------------------------------------
-  // SAVE CALCULATED VALUES
+  // Save calculated values into profile
   // ----------------------------------------------------------
 
-  profile.calGoal =
-    calories;
+  profile.calGoal = calories;
 
-  profile.pGoal =
-    protein;
+  profile.pGoal = protein;
 
-  profile.cGoal =
-    carbs;
+  profile.cGoal = carbs;
 
-  profile.fGoal =
-    fat;
+  profile.fGoal = fat;
 
 
   // ----------------------------------------------------------
@@ -253,181 +267,149 @@ function calculateMetrics() {
 
   const bmi =
     weight /
-    Math.pow(
-      height / 100,
-      2
-    );
+    Math.pow(height / 100, 2);
 
 
-  let status;
+  let status = "";
 
-  let color;
+  let cssClass = "";
 
 
   if (bmi < 18.5) {
 
-    status =
-      'Underweight';
+    status = "Underweight";
 
-    color =
-      'under';
+    cssClass = "under";
 
   }
 
   else if (bmi < 25) {
 
-    status =
-      'Normal';
+    status = "Normal";
 
-    color =
-      'normal';
+    cssClass = "normal";
 
   }
 
   else if (bmi < 30) {
 
-    status =
-      'Overweight';
+    status = "Overweight";
 
-    color =
-      'over';
+    cssClass = "over";
 
   }
 
   else {
 
-    status =
-      'Obese';
+    status = "Obese";
 
-    color =
-      'obese';
+    cssClass = "obese";
 
   }
 
 
-  // ==========================================================
-  // UPDATE DASHBOARD BMI
-  // ==========================================================
+  // ----------------------------------------------------------
+  // Dashboard BMI
+  // ----------------------------------------------------------
 
-  if ($('bmiValue')) {
+  if ($("bmiValue")) {
 
-    $('bmiValue').textContent =
+    $("bmiValue").textContent =
       bmi.toFixed(1);
 
   }
 
 
-  if ($('bmiStatus')) {
+  if ($("bmiStatus")) {
 
-    $('bmiStatus').textContent =
+    $("bmiStatus").textContent =
       status;
 
-    $('bmiStatus').className =
-      `bmi ${color}`;
+    $("bmiStatus").className =
+      "bmi " + cssClass;
 
   }
 
 
-  // ==========================================================
-  // UPDATE SETTINGS BMI
-  // ==========================================================
+  // ----------------------------------------------------------
+  // Settings BMI
+  // ----------------------------------------------------------
 
-  if ($('settingsBmiValue')) {
+  if ($("settingsBmiValue")) {
 
-    $('settingsBmiValue').textContent =
+    $("settingsBmiValue").textContent =
       bmi.toFixed(1);
 
   }
 
 
-  if ($('settingsBmiStatus')) {
+  if ($("settingsBmiStatus")) {
 
-    $('settingsBmiStatus').textContent =
+    $("settingsBmiStatus").textContent =
       status;
 
-    $('settingsBmiStatus').className =
-      `bmi ${color}`;
+    $("settingsBmiStatus").className =
+      "bmi " + cssClass;
 
   }
 
 
-  // ==========================================================
-  // UPDATE CALORIE GOAL
-  // ==========================================================
+  // ----------------------------------------------------------
+  // Settings calculated goals
+  // ----------------------------------------------------------
 
-  if ($('calGoal')) {
+  if ($("goalCal")) {
 
-    $('calGoal').textContent =
-      calories.toLocaleString();
-
-  }
-
-
-  // ==========================================================
-  // UPDATE SETTINGS TARGETS
-  // ==========================================================
-
-  if ($('goalCal')) {
-
-    $('goalCal').value =
+    $("goalCal").value =
       calories;
 
   }
 
 
-  if ($('goalP')) {
+  if ($("goalP")) {
 
-    $('goalP').value =
+    $("goalP").value =
       protein;
 
   }
 
 
-  if ($('goalC')) {
+  if ($("goalC")) {
 
-    $('goalC').value =
+    $("goalC").value =
       carbs;
 
   }
 
 
-  if ($('goalF')) {
+  if ($("goalF")) {
 
-    $('goalF').value =
+    $("goalF").value =
       fat;
 
   }
 
 
-  return {
+  // Dashboard calorie target
 
-    bmr,
+  if ($("calGoal")) {
 
-    calories,
+    $("calGoal").textContent =
+      calories;
 
-    protein,
-
-    carbs,
-
-    fat,
-
-    bmi,
-
-    status
-
-  };
+  }
 
 }
 
 
 // ============================================================
-// NAVIGATION
+// Navigation
 // ============================================================
 
 function show(id) {
 
   document
-    .querySelectorAll('.page')
+    .querySelectorAll(".page")
     .forEach(page => {
 
       page.hidden =
@@ -437,41 +419,50 @@ function show(id) {
 
 
   document
-    .querySelectorAll('nav button')
+    .querySelectorAll("nav button")
     .forEach(button => {
 
-      button.style.background =
-        button.dataset.page === id
-          ? '#2563eb'
-          : '#172236';
+      if (button.dataset.page === id) {
+
+        button.style.background =
+          "#2563eb";
+
+      } else {
+
+        button.style.background =
+          "#172236";
+
+      }
 
     });
 
 
-  if (id === 'dash') {
-
-    refresh();
-
-  }
-
-
-  if (id === 'food') {
+  if (id === "food") {
 
     food();
 
   }
 
 
-  if (id === 'workout') {
+  if (id === "workout") {
 
     exercises();
 
   }
 
 
-  if (id === 'progress') {
+  if (id === "progress") {
 
     history();
+
+  }
+
+
+  if (id === "settings") {
+
+    fill();
+
+    calculateMetrics();
 
   }
 
@@ -479,14 +470,12 @@ function show(id) {
 
 
 document
-  .querySelectorAll('nav button')
+  .querySelectorAll("nav button")
   .forEach(button => {
 
     button.onclick = () => {
 
-      show(
-        button.dataset.page
-      );
+      show(button.dataset.page);
 
     };
 
@@ -494,38 +483,37 @@ document
 
 
 // ============================================================
-// AUTH TOGGLE
+// Authentication
 // ============================================================
 
-$('toggle').onclick = () => {
+$("toggle").onclick = () => {
 
-  signup =
-    !signup;
+  signup = !signup;
 
 
-  $('authTitle').textContent =
+  $("authTitle").textContent =
     signup
-      ? 'Create account'
-      : 'Sign in';
+      ? "Create account"
+      : "Sign in";
 
 
-  $('toggle').textContent =
+  $("toggle").textContent =
     signup
-      ? 'Back to sign in'
-      : 'Create account';
+      ? "Back to sign in"
+      : "Create account";
+
+
+  $("authMsg").textContent = "";
 
 };
 
 
-// ============================================================
-// AUTH FORM
-// ============================================================
+$("authForm").onsubmit =
+  async event => {
 
-$('authForm').onsubmit =
-  async e => {
+    event.preventDefault();
 
-    e.preventDefault();
-
+    $("authMsg").textContent = "";
 
     try {
 
@@ -534,13 +522,12 @@ $('authForm').onsubmit =
         const credential =
           await createUserWithEmailAndPassword(
             auth,
-            $('email').value,
-            $('password').value
+            $("email").value,
+            $("password").value
           );
 
 
-        user =
-          credential.user;
+        user = credential.user;
 
 
         calculateMetrics();
@@ -557,8 +544,8 @@ $('authForm').onsubmit =
 
         await signInWithEmailAndPassword(
           auth,
-          $('email').value,
-          $('password').value
+          $("email").value,
+          $("password").value
         );
 
       }
@@ -569,7 +556,7 @@ $('authForm').onsubmit =
 
       console.error(error);
 
-      $('authMsg').textContent =
+      $("authMsg").textContent =
         error.message;
 
     }
@@ -578,48 +565,40 @@ $('authForm').onsubmit =
 
 
 // ============================================================
-// AUTH STATE
+// Auth State
 // ============================================================
 
 onAuthStateChanged(
   auth,
-  async u => {
+  async currentUser => {
 
-    user = u;
+    user = currentUser;
 
 
-    if (!u) {
+    if (!currentUser) {
 
-      $('auth').hidden =
-        false;
+      $("auth").hidden = false;
 
-      $('app').hidden =
-        true;
+      $("app").hidden = true;
 
-      $('logout').hidden =
-        true;
+      $("logout").hidden = true;
 
       return;
 
     }
 
 
-    $('auth').hidden =
-      true;
+    $("auth").hidden = true;
 
-    $('app').hidden =
-      false;
+    $("app").hidden = false;
 
-    $('logout').hidden =
-      false;
+    $("logout").hidden = false;
 
 
     try {
 
       const snapshot =
-        await getDoc(
-          userRef()
-        );
+        await getDoc(userRef());
 
 
       if (snapshot.exists()) {
@@ -636,6 +615,8 @@ onAuthStateChanged(
 
       else {
 
+        calculateMetrics();
+
         await setDoc(
           userRef(),
           profile
@@ -644,43 +625,36 @@ onAuthStateChanged(
       }
 
 
-      // Existing users
-      // may not have sex stored.
+      // Make sure old profiles
+      // get the sex field
 
       if (!profile.sex) {
 
-        profile.sex =
-          'male';
+        profile.sex = "male";
 
       }
 
 
-      fill();
-
-
+      // Calculate BMI/macros
       calculateMetrics();
 
 
-      await setDoc(
-        userRef(),
-        profile,
-        {
-          merge: true
-        }
-      );
+      // Put values into Settings
+      fill();
 
 
+      // Update dashboard
       await refresh();
 
 
-      show('dash');
+      show("dash");
 
     }
 
     catch (error) {
 
       console.error(
-        'Profile loading error:',
+        "Profile loading error:",
         error
       );
 
@@ -691,10 +665,10 @@ onAuthStateChanged(
 
 
 // ============================================================
-// LOGOUT
+// Logout
 // ============================================================
 
-$('logout').onclick = () => {
+$("logout").onclick = () => {
 
   signOut(auth);
 
@@ -702,79 +676,79 @@ $('logout').onclick = () => {
 
 
 // ============================================================
-// FILL SETTINGS
+// Fill Settings
 // ============================================================
 
 function fill() {
 
-  if ($('age')) {
+  if ($("age")) {
 
-    $('age').value =
+    $("age").value =
       profile.age;
 
   }
 
 
-  if ($('sex')) {
+  if ($("sex")) {
 
-    $('sex').value =
-      profile.sex || 'male';
+    $("sex").value =
+      profile.sex || "male";
 
   }
 
 
-  if ($('height')) {
+  if ($("height")) {
 
-    $('height').value =
+    $("height").value =
       profile.height;
 
   }
 
 
-  if ($('weight')) {
+  if ($("weight")) {
 
-    $('weight').value =
+    $("weight").value =
       profile.weight;
 
   }
 
 
-  if ($('goalCal')) {
+  if ($("goalSteps")) {
 
-    $('goalCal').value =
+    $("goalSteps").value =
+      profile.stepGoal;
+
+  }
+
+
+  if ($("goalCal")) {
+
+    $("goalCal").value =
       profile.calGoal;
 
   }
 
 
-  if ($('goalP')) {
+  if ($("goalP")) {
 
-    $('goalP').value =
+    $("goalP").value =
       profile.pGoal;
 
   }
 
 
-  if ($('goalC')) {
+  if ($("goalC")) {
 
-    $('goalC').value =
+    $("goalC").value =
       profile.cGoal;
 
   }
 
 
-  if ($('goalF')) {
+  if ($("goalF")) {
 
-    $('goalF').value =
+    $("goalF").value =
       profile.fGoal;
-
-  }
-
-
-  if ($('goalSteps')) {
-
-    $('goalSteps').value =
-      profile.stepGoal;
 
   }
 
@@ -782,134 +756,132 @@ function fill() {
 
 
 // ============================================================
-// SETTINGS
+// Live BMI calculation in Settings
 // ============================================================
 
-$('settingsForm').onsubmit =
-  async e => {
+function updateProfilePreview() {
 
-    e.preventDefault();
+  profile.age =
+    Number($("age").value);
 
+  profile.sex =
+    $("sex").value;
 
-    try {
+  profile.height =
+    Number($("height").value);
 
-      profile.age =
-        Number(
-          $('age').value
-        );
+  profile.weight =
+    Number($("weight").value);
 
+  calculateMetrics();
 
-      profile.sex =
-        $('sex').value;
-
-
-      profile.height =
-        Number(
-          $('height').value
-        );
+}
 
 
-      profile.weight =
-        Number(
-          $('weight').value
-        );
+$("age").addEventListener(
+  "input",
+  updateProfilePreview
+);
 
 
-      profile.stepGoal =
-        Number(
-          $('goalSteps').value
-        ) || 10000;
+$("sex").addEventListener(
+  "change",
+  updateProfilePreview
+);
 
 
-      // ------------------------------------------------------
-      // AUTOMATIC CALCULATION
-      // ------------------------------------------------------
-
-      calculateMetrics();
-
-
-      // ------------------------------------------------------
-      // SAVE
-      // ------------------------------------------------------
-
-      await setDoc(
-        userRef(),
-        profile,
-        {
-          merge: true
-        }
-      );
+$("height").addEventListener(
+  "input",
+  updateProfilePreview
+);
 
 
-      // ------------------------------------------------------
-      // UPDATE UI
-      // ------------------------------------------------------
-
-      fill();
-
-      calculateMetrics();
-
-      await refresh();
+$("weight").addEventListener(
+  "input",
+  updateProfilePreview
+);
 
 
-      $('settingsMsg').textContent =
-        'Settings saved successfully.';
+// ============================================================
+// Save Settings
+// ============================================================
+
+$("settingsForm").onsubmit =
+  async event => {
+
+    event.preventDefault();
 
 
-      setTimeout(() => {
-
-        $('settingsMsg').textContent =
-          '';
-
-      }, 3000);
-
-    }
-
-    catch (error) {
-
-      console.error(
-        'Settings error:',
-        error
-      );
+    profile.age =
+      Number($("age").value);
 
 
-      $('settingsMsg').textContent =
-        'Unable to save settings.';
+    profile.sex =
+      $("sex").value;
 
-    }
+
+    profile.height =
+      Number($("height").value);
+
+
+    profile.weight =
+      Number($("weight").value);
+
+
+    profile.stepGoal =
+      Number($("goalSteps").value);
+
+
+    // Recalculate everything
+
+    calculateMetrics();
+
+
+    // Save complete profile
+
+    await setDoc(
+      userRef(),
+      profile,
+      {
+        merge: true
+      }
+    );
+
+
+    await refresh();
+
+
+    alert(
+      "Profile and goals updated!"
+    );
 
   };
 
 
 // ============================================================
-// DASHBOARD
+// Dashboard Refresh
 // ============================================================
 
 async function refresh() {
 
-  if (!user) {
+  if (!user) return;
 
-    return;
 
-  }
+  // Recalculate BMI/macros
+
+  calculateMetrics();
 
 
   const d =
     await getDay();
 
 
-  // Calories
-
-  $('cal').textContent =
-    Math.round(
-      d.cal
-    ).toLocaleString();
+  $("cal").textContent =
+    Math.round(d.cal);
 
 
-  $('calGoal').textContent =
-    Math.round(
-      profile.calGoal
-    ).toLocaleString();
+  $("calGoal").textContent =
+    profile.calGoal;
 
 
   const percentage =
@@ -923,73 +895,70 @@ async function refresh() {
       : 0;
 
 
-  $('calBar').style.width =
+  $("calBar").style.width =
     Math.min(
       100,
       percentage
-    ) + '%';
+    ) + "%";
 
 
-  // Weight
-
-  $('weightDash').textContent =
+  $("weightDash").textContent =
     profile.weight;
 
 
-  // Steps
-
-  $('stepsDash').textContent =
-    (
-      d.steps || 0
-    ).toLocaleString();
+  $("stepsDash").textContent =
+    (d.steps || 0)
+      .toLocaleString();
 
 
-  // Workout
-
-  $('workoutDash').textContent =
-    d.workout || 'Rest';
+  $("workoutDash").textContent =
+    d.workout || "Rest";
 
 
-  // Macros
-
-  $('macros').innerHTML = `
+  $("macros").innerHTML = `
 
     <div class="row">
+
       Protein
+
       <b>
         ${Math.round(d.p || 0)}
         /
         ${profile.pGoal}
         g
       </b>
+
     </div>
 
+
     <div class="row">
+
       Carbs
+
       <b>
         ${Math.round(d.c || 0)}
         /
         ${profile.cGoal}
         g
       </b>
+
     </div>
 
+
     <div class="row">
+
       Fat
+
       <b>
         ${Math.round(d.f || 0)}
         /
         ${profile.fGoal}
         g
       </b>
+
     </div>
 
   `;
-
-
-  // Recalculate display
-
-  calculateMetrics();
 
 }
 
@@ -998,53 +967,48 @@ async function refresh() {
 // FOOD
 // ============================================================
 
-$('foodForm').onsubmit =
-  async e => {
+$("foodForm").onsubmit =
+  async event => {
 
-    e.preventDefault();
+    event.preventDefault();
 
 
     const f = {
 
       name:
-        $('fname').value,
+        $("fname").value,
 
       serving:
-        $('serving').value,
+        $("serving").value,
 
       cal:
-        Number(
-          $('fcal').value
-        ),
+        Number($("fcal").value),
 
       p:
-        Number(
-          $('fp').value
-        ),
+        Number($("fp").value),
 
       c:
-        Number(
-          $('fc').value
-        ),
+        Number($("fc").value),
 
       f:
-        Number(
-          $('ff').value
-        )
+        Number($("ff").value)
 
     };
 
 
     await addDoc(
+
       collection(
         db,
-        'users',
+        "users",
         user.uid,
-        'days',
+        "days",
         day(),
-        'foods'
+        "foods"
       ),
+
       f
+
     );
 
 
@@ -1052,17 +1016,13 @@ $('foodForm').onsubmit =
       await getDay();
 
 
-    d.cal +=
-      f.cal;
+    d.cal += f.cal;
 
-    d.p +=
-      f.p;
+    d.p += f.p;
 
-    d.c +=
-      f.c;
+    d.c += f.c;
 
-    d.f +=
-      f.f;
+    d.f += f.f;
 
 
     await setDoc(
@@ -1074,7 +1034,7 @@ $('foodForm').onsubmit =
     );
 
 
-    e.target.reset();
+    event.target.reset();
 
 
     await refresh();
@@ -1090,38 +1050,37 @@ $('foodForm').onsubmit =
 
 async function food() {
 
-  if (
-    !user ||
-    !$('foodList')
-  ) {
-
-    return;
-
-  }
+  if (!user) return;
 
 
   const snapshot =
     await getDocs(
+
       query(
+
         collection(
           db,
-          'users',
+          "users",
           user.uid,
-          'days',
+          "days",
           day(),
-          'foods'
+          "foods"
         ),
-        orderBy('__name__')
+
+        orderBy("__name__")
+
       )
+
     );
 
 
-  $('foodList').innerHTML =
-    snapshot.docs
-      .map(snapshot => {
+  $("foodList").innerHTML =
+
+    snapshot.docs.map(
+      item => {
 
         const f =
-          snapshot.data();
+          item.data();
 
 
         return `
@@ -1135,18 +1094,26 @@ async function food() {
               <br>
 
               <small>
-                ${f.serving || ''}
-                · ${f.cal} kcal
+
+                ${f.serving || ""}
+
+                ·
+
+                ${f.cal} kcal
+
                 · P ${f.p}
+
                 C ${f.c}
+
                 F ${f.f}
+
               </small>
 
             </span>
 
 
             <button
-              data-del="${snapshot.id}"
+              data-del="${item.id}"
             >
               Delete
             </button>
@@ -1155,80 +1122,78 @@ async function food() {
 
         `;
 
-      })
-      .join('') ||
-      '<p>No food logged.</p>';
+      }
+    ).join("")
+
+    ||
+
+    "<p>No food logged.</p>";
 
 
   document
-    .querySelectorAll('[data-del]')
+    .querySelectorAll("[data-del]")
     .forEach(button => {
 
       button.onclick =
         async () => {
 
-          const reference =
+          const ref =
             doc(
               db,
-              'users',
+              "users",
               user.uid,
-              'days',
+              "days",
               day(),
-              'foods',
+              "foods",
               button.dataset.del
             );
 
 
           const snapshot =
-            await getDoc(
-              reference
-            );
+            await getDoc(ref);
 
 
-          if (
-            snapshot.exists()
-          ) {
-
-            const f =
-              snapshot.data();
-
-
-            const d =
-              await getDay();
-
-
-            d.cal -=
-              Number(f.cal) || 0;
-
-            d.p -=
-              Number(f.p) || 0;
-
-            d.c -=
-              Number(f.c) || 0;
-
-            d.f -=
-              Number(f.f) || 0;
-
-
-            await setDoc(
-              dayRef(),
-              d,
-              {
-                merge: true
-              }
-            );
-
-
-            await deleteDoc(
-              reference
-            );
-
-
-            await refresh();
-
-            food();
-
+          if (!snapshot.exists()) {
+            return;
           }
+
+
+          const f =
+            snapshot.data();
+
+
+          const d =
+            await getDay();
+
+
+          d.cal -=
+            Number(f.cal) || 0;
+
+          d.p -=
+            Number(f.p) || 0;
+
+          d.c -=
+            Number(f.c) || 0;
+
+          d.f -=
+            Number(f.f) || 0;
+
+
+          await setDoc(
+            dayRef(),
+            d,
+            {
+              merge: true
+            }
+          );
+
+
+          await deleteDoc(ref);
+
+
+          await refresh();
+
+          food();
 
         };
 
@@ -1238,71 +1203,62 @@ async function food() {
 
 
 // ============================================================
-// WORKOUT PPL
+// WORKOUT
 // ============================================================
 
 document
-  .querySelectorAll('[data-ppl]')
+  .querySelectorAll("[data-ppl]")
   .forEach(button => {
 
-    button.onclick =
-      () => {
+    button.onclick = () => {
 
-        ppl =
-          button.dataset.ppl;
+      ppl =
+        button.dataset.ppl;
 
-      };
+    };
 
   });
 
 
-// ============================================================
-// EXERCISE
-// ============================================================
+$("exForm").onsubmit =
+  async event => {
 
-$('exForm').onsubmit =
-  async e => {
-
-    e.preventDefault();
+    event.preventDefault();
 
 
     await addDoc(
+
       collection(
         db,
-        'users',
+        "users",
         user.uid,
-        'days',
+        "days",
         day(),
-        'exercises'
+        "exercises"
       ),
+
       {
 
-        type:
-          ppl,
+        type: ppl,
 
         name:
-          $('ename').value,
+          $("ename").value,
 
         sets:
-          Number(
-            $('sets').value
-          ),
+          Number($("sets").value),
 
         reps:
-          Number(
-            $('reps').value
-          ),
+          Number($("reps").value),
 
         weight:
-          Number(
-            $('ew').value
-          )
+          Number($("ew").value)
 
       }
+
     );
 
 
-    e.target.reset();
+    event.target.reset();
 
 
     await exercises();
@@ -1310,22 +1266,21 @@ $('exForm').onsubmit =
   };
 
 
-// ============================================================
-// FINISH WORKOUT
-// ============================================================
-
-$('finish').onclick =
+$("finish").onclick =
   async () => {
 
     await setDoc(
+
       dayRef(),
+
       {
-        workout:
-          ppl
+        workout: ppl
       },
+
       {
         merge: true
       }
+
     );
 
 
@@ -1335,40 +1290,36 @@ $('finish').onclick =
 
 
 // ============================================================
-// EXERCISES
+// Exercise List
 // ============================================================
 
 async function exercises() {
 
-  if (
-    !user ||
-    !$('exList')
-  ) {
-
-    return;
-
-  }
+  if (!user) return;
 
 
   const snapshot =
     await getDocs(
+
       collection(
         db,
-        'users',
+        "users",
         user.uid,
-        'days',
+        "days",
         day(),
-        'exercises'
+        "exercises"
       )
+
     );
 
 
-  $('exList').innerHTML =
-    snapshot.docs
-      .map(snapshot => {
+  $("exList").innerHTML =
+
+    snapshot.docs.map(
+      item => {
 
         const e =
-          snapshot.data();
+          item.data();
 
 
         return `
@@ -1382,16 +1333,24 @@ async function exercises() {
               <br>
 
               <small>
+
                 ${e.type}
-                · ${e.sets}×${e.reps}
-                @ ${e.weight} kg
+
+                ·
+
+                ${e.sets}×${e.reps}
+
+                @
+
+                ${e.weight} kg
+
               </small>
 
             </span>
 
 
             <button
-              data-ex="${snapshot.id}"
+              data-ex="${item.id}"
             >
               Delete
             </button>
@@ -1400,28 +1359,33 @@ async function exercises() {
 
         `;
 
-      })
-      .join('') ||
-      '<p>No exercises logged.</p>';
+      }
+    ).join("")
+
+    ||
+
+    "<p>No exercises logged.</p>";
 
 
   document
-    .querySelectorAll('[data-ex]')
+    .querySelectorAll("[data-ex]")
     .forEach(button => {
 
       button.onclick =
         async () => {
 
           await deleteDoc(
+
             doc(
               db,
-              'users',
+              "users",
               user.uid,
-              'days',
+              "days",
               day(),
-              'exercises',
+              "exercises",
               button.dataset.ex
             )
+
           );
 
 
@@ -1435,36 +1399,22 @@ async function exercises() {
 
 
 // ============================================================
-// WEIGHT TRACKING
+// WEIGHT
 // ============================================================
 
-$('weightForm').onsubmit =
-  async e => {
+$("weightForm").onsubmit =
+  async event => {
 
-    e.preventDefault();
-
-
-    const newWeight =
-      Number(
-        $('weightInput').value
-      );
-
-
-    if (
-      !newWeight ||
-      newWeight <= 0
-    ) {
-
-      return;
-
-    }
+    event.preventDefault();
 
 
     profile.weight =
-      newWeight;
+      Number(
+        $("weightInput").value
+      );
 
 
-    // Recalculate
+    // Recalculate BMI and macros
 
     calculateMetrics();
 
@@ -1480,24 +1430,26 @@ $('weightForm').onsubmit =
     );
 
 
-    // Save history
+    // Save weight history
 
     await addDoc(
+
       collection(
         db,
-        'users',
+        "users",
         user.uid,
-        'weights'
+        "weights"
       ),
+
       {
 
-        date:
-          day(),
+        date: day(),
 
         weight:
           profile.weight
 
       }
+
     );
 
 
@@ -1512,26 +1464,29 @@ $('weightForm').onsubmit =
 // STEPS
 // ============================================================
 
-$('stepsForm').onsubmit =
-  async e => {
+$("stepsForm").onsubmit =
+  async event => {
 
-    e.preventDefault();
-
-
-    const steps =
-      Number(
-        $('stepsInput').value
-      );
+    event.preventDefault();
 
 
     await setDoc(
+
       dayRef(),
+
       {
-        steps
+
+        steps:
+          Number(
+            $("stepsInput").value
+          )
+
       },
+
       {
         merge: true
       }
+
     );
 
 
@@ -1541,44 +1496,43 @@ $('stepsForm').onsubmit =
 
 
 // ============================================================
-// HISTORY
+// WEIGHT HISTORY
 // ============================================================
 
 async function history() {
 
-  if (
-    !user ||
-    !$('history')
-  ) {
-
-    return;
-
-  }
+  if (!user) return;
 
 
   const snapshot =
     await getDocs(
+
       query(
+
         collection(
           db,
-          'users',
+          "users",
           user.uid,
-          'weights'
+          "weights"
         ),
+
         orderBy(
-          'date',
-          'desc'
+          "date",
+          "desc"
         )
+
       )
+
     );
 
 
-  $('history').innerHTML =
-    snapshot.docs
-      .map(snapshot => {
+  $("history").innerHTML =
+
+    snapshot.docs.map(
+      item => {
 
         const data =
-          snapshot.data();
+          item.data();
 
 
         return `
@@ -1595,9 +1549,12 @@ async function history() {
 
         `;
 
-      })
-      .join('') ||
-      '<p>No history.</p>';
+      }
+    ).join("")
+
+    ||
+
+    "<p>No history.</p>";
 
 }
 
@@ -1606,15 +1563,13 @@ async function history() {
 // BARCODE SCANNER
 // ============================================================
 
-$('scan').onclick =
+$("scan").onclick =
   async () => {
 
-    if (
-      !('BarcodeDetector' in window)
-    ) {
+    if (!("BarcodeDetector" in window)) {
 
       alert(
-        'Barcode scanning is not supported by this browser.'
+        "Barcode scanning is not supported by this browser."
       );
 
       return;
@@ -1625,36 +1580,32 @@ $('scan').onclick =
     try {
 
       stream =
-        await navigator.mediaDevices
-          .getUserMedia({
+        await navigator.mediaDevices.getUserMedia({
 
-            video: {
-              facingMode:
-                'environment'
-            }
+          video: {
+            facingMode: "environment"
+          }
 
-          });
+        });
 
 
-      $('video').hidden =
-        false;
+      $("video").hidden = false;
 
-
-      $('video').srcObject =
+      $("video").srcObject =
         stream;
 
 
-      await $('video').play();
+      await $("video").play();
 
 
       const detector =
         new BarcodeDetector({
 
           formats: [
-            'ean_13',
-            'ean_8',
-            'upc_a',
-            'upc_e'
+            "ean_13",
+            "ean_8",
+            "upc_a",
+            "upc_e"
           ]
 
         });
@@ -1664,116 +1615,122 @@ $('scan').onclick =
         async () => {
 
           if (!stream) {
-
             return;
-
           }
 
 
-          const codes =
-            await detector.detect(
-              $('video')
-            );
+          try {
 
-
-          if (codes.length) {
-
-            const code =
-              codes[0].rawValue;
-
-
-            stream
-              .getTracks()
-              .forEach(
-                track =>
-                  track.stop()
+            const codes =
+              await detector.detect(
+                $("video")
               );
 
 
-            stream =
-              null;
+            if (codes.length) {
+
+              const code =
+                codes[0].rawValue;
 
 
-            $('video').hidden =
-              true;
-
-
-            const response =
-              await fetch(
-                `https://world.openfoodfacts.org/api/v2/product/${code}.json`
-              );
-
-
-            const json =
-              await response.json();
-
-
-            if (
-              json.status === 1
-            ) {
-
-              const product =
-                json.product;
-
-              const nutrients =
-                product.nutriments || {};
-
-
-              $('fname').value =
-                product.product_name ||
-                'Scanned food';
-
-
-              $('serving').value =
-                product.serving_size ||
-                '100 g';
-
-
-              $('fcal').value =
-                Math.round(
-                  nutrients[
-                    'energy-kcal_serving'
-                  ] ||
-                  nutrients[
-                    'energy-kcal_100g'
-                  ] ||
-                  0
+              stream
+                .getTracks()
+                .forEach(
+                  track =>
+                    track.stop()
                 );
 
 
-              $('fp').value =
-                nutrients.proteins_serving ??
-                nutrients.proteins_100g ??
-                0;
+              stream = null;
+
+              $("video").hidden =
+                true;
 
 
-              $('fc').value =
-                nutrients.carbohydrates_serving ??
-                nutrients.carbohydrates_100g ??
-                0;
+              const response =
+                await fetch(
+
+                  `https://world.openfoodfacts.org/api/v2/product/${code}.json`
+
+                );
 
 
-              $('ff').value =
-                nutrients.fat_serving ??
-                nutrients.fat_100g ??
-                0;
+              const data =
+                await response.json();
+
+
+              if (data.status === 1) {
+
+                const product =
+                  data.product;
+
+
+                const n =
+                  product.nutriments || {};
+
+
+                $("fname").value =
+                  product.product_name ||
+                  "Scanned food";
+
+
+                $("serving").value =
+                  product.serving_size ||
+                  "100 g";
+
+
+                $("fcal").value =
+                  Math.round(
+
+                    n["energy-kcal_serving"] ??
+                    n["energy-kcal_100g"] ??
+                    0
+
+                  );
+
+
+                $("fp").value =
+                  n.proteins_serving ??
+                  n.proteins_100g ??
+                  0;
+
+
+                $("fc").value =
+                  n.carbohydrates_serving ??
+                  n.carbohydrates_100g ??
+                  0;
+
+
+                $("ff").value =
+                  n.fat_serving ??
+                  n.fat_100g ??
+                  0;
+
+              }
+
+              else {
+
+                alert(
+                  "Product not found. Enter nutrition manually."
+                );
+
+              }
 
             }
 
             else {
 
-              alert(
-                'Product not found; enter nutrition manually.'
-              );
+              requestAnimationFrame(loop);
 
             }
 
           }
 
-          else {
+          catch (error) {
 
-            requestAnimationFrame(
-              loop
+            console.error(
+              "Barcode error:",
+              error
             );
 
           }
@@ -1802,335 +1759,548 @@ $('scan').onclick =
 
 const canvas =
   document.getElementById(
-    'constellation'
+    "constellation"
   );
 
 
-if (canvas) {
-
-  const ctx =
-    canvas.getContext('2d');
+const ctx =
+  canvas.getContext("2d");
 
 
-  let stars = [];
+let stars = [];
+
+let animationFrame;
+
+let mouse = {
+
+  x: null,
+
+  y: null,
+
+  active: false
+
+};
 
 
-  const STAR_COUNT =
-    110;
+const STAR_COUNT = 110;
+
+const CONNECTION_DISTANCE = 130;
+
+const MOUSE_CONNECTION_DISTANCE = 180;
 
 
-  const CONNECTION_DISTANCE =
-    130;
+// ============================================================
+// Canvas Resize
+// ============================================================
+
+function resizeConstellation() {
+
+  const dpr =
+    window.devicePixelRatio || 1;
 
 
-  function resizeConstellation() {
-
-    const dpr =
-      window.devicePixelRatio || 1;
+  canvas.width =
+    window.innerWidth * dpr;
 
 
-    canvas.width =
-      window.innerWidth * dpr;
+  canvas.height =
+    window.innerHeight * dpr;
 
 
-    canvas.height =
-      window.innerHeight * dpr;
+  canvas.style.width =
+    window.innerWidth + "px";
 
 
-    canvas.style.width =
-      window.innerWidth + 'px';
+  canvas.style.height =
+    window.innerHeight + "px";
 
 
-    canvas.style.height =
-      window.innerHeight + 'px';
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
 
 
-    ctx.setTransform(
-      dpr,
+  createStars();
+
+}
+
+
+// ============================================================
+// Create Stars
+// ============================================================
+
+function createStars() {
+
+  stars = [];
+
+
+  for (
+    let i = 0;
+    i < STAR_COUNT;
+    i++
+  ) {
+
+    stars.push({
+
+      x:
+        Math.random() *
+        window.innerWidth,
+
+      y:
+        Math.random() *
+        window.innerHeight,
+
+      vx:
+        (Math.random() - .5) *
+        .15,
+
+      vy:
+        (Math.random() - .5) *
+        .15,
+
+      radius:
+        Math.random() * 1.4 + .4,
+
+      opacity:
+        Math.random() * .6 + .25,
+
+      twinkle:
+        Math.random() *
+        Math.PI *
+        2,
+
+      twinkleSpeed:
+        Math.random() *
+        .02 +
+        .005
+
+    });
+
+  }
+
+}
+
+
+// ============================================================
+// Mouse Tracking
+// ============================================================
+
+window.addEventListener(
+  "mousemove",
+  event => {
+
+    mouse.x =
+      event.clientX;
+
+    mouse.y =
+      event.clientY;
+
+    mouse.active =
+      true;
+
+  }
+);
+
+
+window.addEventListener(
+  "mouseleave",
+  () => {
+
+    mouse.active =
+      false;
+
+    mouse.x = null;
+
+    mouse.y = null;
+
+  }
+);
+
+
+// ============================================================
+// Touch Tracking
+// ============================================================
+
+window.addEventListener(
+  "touchmove",
+  event => {
+
+    if (!event.touches.length) {
+      return;
+    }
+
+
+    const touch =
+      event.touches[0];
+
+
+    mouse.x =
+      touch.clientX;
+
+    mouse.y =
+      touch.clientY;
+
+    mouse.active =
+      true;
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+window.addEventListener(
+  "touchend",
+  () => {
+
+    mouse.active =
+      false;
+
+  }
+);
+
+
+// ============================================================
+// Draw Constellation
+// ============================================================
+
+function drawConstellation() {
+
+  ctx.clearRect(
+    0,
+    0,
+    window.innerWidth,
+    window.innerHeight
+  );
+
+
+  // ----------------------------------------------------------
+  // Move stars
+  // ----------------------------------------------------------
+
+  for (const star of stars) {
+
+    star.x += star.vx;
+
+    star.y += star.vy;
+
+
+    if (
+      star.x < -10
+    ) {
+
+      star.x =
+        window.innerWidth + 10;
+
+    }
+
+
+    if (
+      star.x >
+      window.innerWidth + 10
+    ) {
+
+      star.x = -10;
+
+    }
+
+
+    if (
+      star.y < -10
+    ) {
+
+      star.y =
+        window.innerHeight + 10;
+
+    }
+
+
+    if (
+      star.y >
+      window.innerHeight + 10
+    ) {
+
+      star.y = -10;
+
+    }
+
+
+    star.twinkle +=
+      star.twinkleSpeed;
+
+
+    const pulse =
+      star.opacity +
+      Math.sin(
+        star.twinkle
+      ) * .15;
+
+
+    // Glow
+
+    ctx.beginPath();
+
+    ctx.arc(
+      star.x,
+      star.y,
+      star.radius * 4,
       0,
-      0,
-      dpr,
-      0,
-      0
+      Math.PI * 2
     );
 
 
-    createStars();
+    ctx.fillStyle =
+      `rgba(100,150,255,${Math.max(
+        0,
+        pulse * .08
+      )})`;
+
+
+    ctx.fill();
+
+
+    // Star
+
+    ctx.beginPath();
+
+    ctx.arc(
+      star.x,
+      star.y,
+      star.radius,
+      0,
+      Math.PI * 2
+    );
+
+
+    ctx.fillStyle =
+      `rgba(180,210,255,${Math.max(
+        0,
+        pulse
+      )})`;
+
+
+    ctx.fill();
 
   }
 
 
-  function createStars() {
+  // ----------------------------------------------------------
+  // Star-to-star connections
+  // ----------------------------------------------------------
 
-    stars = [];
-
+  for (
+    let i = 0;
+    i < stars.length;
+    i++
+  ) {
 
     for (
-      let i = 0;
-      i < STAR_COUNT;
-      i++
+      let j = i + 1;
+      j < stars.length;
+      j++
     ) {
 
-      stars.push({
+      const a =
+        stars[i];
 
-        x:
-          Math.random() *
-          window.innerWidth,
+      const b =
+        stars[j];
 
-        y:
-          Math.random() *
-          window.innerHeight,
 
-        vx:
-          (Math.random() - 0.5) *
-          0.15,
+      const dx =
+        a.x - b.x;
 
-        vy:
-          (Math.random() - 0.5) *
-          0.15,
+      const dy =
+        a.y - b.y;
 
-        radius:
-          Math.random() *
-          1.4 +
-          0.4,
 
-        opacity:
-          Math.random() *
-          0.6 +
-          0.25,
+      const distance =
+        Math.sqrt(
+          dx * dx +
+          dy * dy
+        );
 
-        twinkle:
-          Math.random() *
-          Math.PI *
-          2,
 
-        twinkleSpeed:
-          Math.random() *
-          0.02 +
-          0.005
+      if (
+        distance <
+        CONNECTION_DISTANCE
+      ) {
 
-      });
+        const opacity =
+          (
+            1 -
+            distance /
+            CONNECTION_DISTANCE
+          ) * .25;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          a.x,
+          a.y
+        );
+
+        ctx.lineTo(
+          b.x,
+          b.y
+        );
+
+
+        ctx.strokeStyle =
+          `rgba(100,150,255,${opacity})`;
+
+
+        ctx.lineWidth =
+          .6;
+
+
+        ctx.stroke();
+
+      }
 
     }
 
   }
 
 
-  function drawConstellation() {
+  // ----------------------------------------------------------
+  // Mouse-to-star connections
+  // ----------------------------------------------------------
 
-    ctx.clearRect(
+  if (
+    mouse.active &&
+    mouse.x !== null &&
+    mouse.y !== null
+  ) {
+
+    for (const star of stars) {
+
+      const dx =
+        star.x -
+        mouse.x;
+
+      const dy =
+        star.y -
+        mouse.y;
+
+
+      const distance =
+        Math.sqrt(
+          dx * dx +
+          dy * dy
+        );
+
+
+      if (
+        distance <
+        MOUSE_CONNECTION_DISTANCE
+      ) {
+
+        const opacity =
+          (
+            1 -
+            distance /
+            MOUSE_CONNECTION_DISTANCE
+          ) * .45;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          star.x,
+          star.y
+        );
+
+        ctx.lineTo(
+          mouse.x,
+          mouse.y
+        );
+
+
+        ctx.strokeStyle =
+          `rgba(100,150,255,${opacity})`;
+
+
+        ctx.lineWidth =
+          .8;
+
+
+        ctx.stroke();
+
+      }
+
+    }
+
+
+    // Small glow around mouse
+
+    const gradient =
+      ctx.createRadialGradient(
+        mouse.x,
+        mouse.y,
+        0,
+        mouse.x,
+        mouse.y,
+        100
+      );
+
+
+    gradient.addColorStop(
       0,
-      0,
-      window.innerWidth,
-      window.innerHeight
+      "rgba(80,130,255,.08)"
     );
 
 
-    for (
-      const star of stars
-    ) {
+    gradient.addColorStop(
+      1,
+      "rgba(80,130,255,0)"
+    );
 
-      star.x += star.vx;
 
-      star.y += star.vy;
+    ctx.beginPath();
 
+    ctx.arc(
+      mouse.x,
+      mouse.y,
+      100,
+      0,
+      Math.PI * 2
+    );
 
-      if (
-        star.x < -10
-      ) {
 
-        star.x =
-          window.innerWidth + 10;
+    ctx.fillStyle =
+      gradient;
 
-      }
+    ctx.fill();
 
+  }
 
-      if (
-        star.x >
-        window.innerWidth + 10
-      ) {
 
-        star.x = -10;
-
-      }
-
-
-      if (
-        star.y < -10
-      ) {
-
-        star.y =
-          window.innerHeight + 10;
-
-      }
-
-
-      if (
-        star.y >
-        window.innerHeight + 10
-      ) {
-
-        star.y = -10;
-
-      }
-
-
-      star.twinkle +=
-        star.twinkleSpeed;
-
-
-      const pulse =
-        star.opacity +
-        Math.sin(
-          star.twinkle
-        ) *
-        0.15;
-
-
-      // Glow
-
-      ctx.beginPath();
-
-      ctx.arc(
-        star.x,
-        star.y,
-        star.radius * 4,
-        0,
-        Math.PI * 2
-      );
-
-
-      ctx.fillStyle =
-        `rgba(100, 150, 255, ${Math.max(
-          0,
-          pulse * 0.08
-        )})`;
-
-
-      ctx.fill();
-
-
-      // Star
-
-      ctx.beginPath();
-
-      ctx.arc(
-        star.x,
-        star.y,
-        star.radius,
-        0,
-        Math.PI * 2
-      );
-
-
-      ctx.fillStyle =
-        `rgba(180, 210, 255, ${Math.max(
-          0,
-          pulse
-        )})`;
-
-
-      ctx.fill();
-
-    }
-
-
-    // Connections
-
-    for (
-      let i = 0;
-      i < stars.length;
-      i++
-    ) {
-
-      for (
-        let j = i + 1;
-        j < stars.length;
-        j++
-      ) {
-
-        const a =
-          stars[i];
-
-        const b =
-          stars[j];
-
-
-        const dx =
-          a.x - b.x;
-
-        const dy =
-          a.y - b.y;
-
-
-        const distance =
-          Math.sqrt(
-            dx * dx +
-            dy * dy
-          );
-
-
-        if (
-          distance <
-          CONNECTION_DISTANCE
-        ) {
-
-          const opacity =
-            (
-              1 -
-              distance /
-              CONNECTION_DISTANCE
-            ) *
-            0.25;
-
-
-          ctx.beginPath();
-
-
-          ctx.moveTo(
-            a.x,
-            a.y
-          );
-
-
-          ctx.lineTo(
-            b.x,
-            b.y
-          );
-
-
-          ctx.strokeStyle =
-            `rgba(100, 150, 255, ${opacity})`;
-
-
-          ctx.lineWidth =
-            0.6;
-
-
-          ctx.stroke();
-
-        }
-
-      }
-
-    }
-
-
+  animationFrame =
     requestAnimationFrame(
       drawConstellation
     );
 
-  }
-
-
-  window.addEventListener(
-    'resize',
-    resizeConstellation
-  );
-
-
-  resizeConstellation();
-
-  drawConstellation();
-
 }
+
+
+// ============================================================
+// Start constellation
+// ============================================================
+
+window.addEventListener(
+  "resize",
+  resizeConstellation
+);
+
+
+resizeConstellation();
+
+drawConstellation();

@@ -1,34 +1,26 @@
 <!doctype html>
-<html lang="en">
-
+<html>
 <head>
   <meta charset="utf-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
+  <meta name="viewport" content="width=device-width,initial-scale=1">
 
   <title>FitTrack</title>
 
-  <link
-    rel="stylesheet"
-    href="styles.css"
-  >
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-  <!-- =========================================================
-       CONSTELLATION BACKGROUND
-       ========================================================= -->
+  <!-- ==========================================
+       Constellation Background
+  =========================================== -->
 
   <canvas id="constellation"></canvas>
 
 
-  <!-- =========================================================
-       HEADER
-       ========================================================= -->
+  <!-- ==========================================
+       Header
+  =========================================== -->
 
   <header>
 
@@ -43,13 +35,13 @@
   </header>
 
 
-  <!-- =========================================================
-       AUTH
-       ========================================================= -->
+  <!-- ==========================================
+       Authentication
+  =========================================== -->
 
   <section id="auth">
 
-    <div class="card">
+    <div class="card auth-card">
 
       <h2 id="authTitle">
         Sign in
@@ -58,27 +50,33 @@
       <form id="authForm">
 
         <div class="form-row">
-          <label for="email">Email</label>
+
+          <label for="email">
+            Email
+          </label>
 
           <input
             id="email"
             type="email"
-            autocomplete="email"
             required
           >
+
         </div>
 
 
         <div class="form-row">
-          <label for="password">Password</label>
+
+          <label for="password">
+            Password
+          </label>
 
           <input
             id="password"
             type="password"
             minlength="6"
-            autocomplete="current-password"
             required
           >
+
         </div>
 
 
@@ -101,16 +99,17 @@
   </section>
 
 
-  <!-- =========================================================
-       APP
-       ========================================================= -->
+
+  <!-- ==========================================
+       Main Application
+  =========================================== -->
 
   <main id="app" hidden>
 
 
-    <!-- =======================================================
-         NAVIGATION
-         ======================================================= -->
+    <!-- ========================================
+         Navigation
+    ========================================= -->
 
     <nav>
 
@@ -137,32 +136,34 @@
     </nav>
 
 
-    <!-- =======================================================
-         DASHBOARD
-         ======================================================= -->
 
-    <section
-      id="dash"
-      class="page"
-    >
+    <!-- ========================================
+         DASHBOARD
+    ========================================= -->
+
+    <section id="dash" class="page">
 
       <div class="grid">
 
 
-        <!-- CALORIES -->
+        <!-- Calories -->
 
         <div class="card">
 
-          <h2>Calories</h2>
+          <h2>
+            Calories
+          </h2>
 
           <div class="big">
 
-            <b id="cal">0</b>
+            <b id="cal">
+              0
+            </b>
 
             /
 
             <span id="calGoal">
-              2439
+              0
             </span>
 
             kcal
@@ -171,19 +172,22 @@
 
 
           <div class="bar">
+
             <i id="calBar"></i>
+
           </div>
 
         </div>
+
 
 
         <!-- BMI -->
 
         <div class="card stat bmi-card">
 
-          <span class="card-label">
+          <h2>
             BMI
-          </span>
+          </h2>
 
           <h2 id="bmiValue">
             --
@@ -199,11 +203,14 @@
         </div>
 
 
-        <!-- MACROS -->
+
+        <!-- Macros -->
 
         <div class="card">
 
-          <h2>Macros</h2>
+          <h2>
+            Macros
+          </h2>
 
           <div id="macros"></div>
 
@@ -212,7 +219,8 @@
       </div>
 
 
-      <!-- SECONDARY STATS -->
+
+      <!-- Dashboard Stats -->
 
       <div class="grid">
 
@@ -223,7 +231,7 @@
           <br>
 
           <b id="weightDash">
-            73
+            0
           </b>
 
           kg
@@ -261,9 +269,10 @@
     </section>
 
 
-    <!-- =======================================================
+
+    <!-- ========================================
          FOOD
-         ======================================================= -->
+    ========================================= -->
 
     <section
       id="food"
@@ -273,13 +282,12 @@
 
       <div class="card">
 
-        <h2>Scan / Add Food</h2>
+        <h2>
+          Scan / Add Food
+        </h2>
 
 
-        <button
-          id="scan"
-          type="button"
-        >
+        <button id="scan">
           📷 Scan barcode
         </button>
 
@@ -293,7 +301,9 @@
 
         <form id="foodForm">
 
+
           <div class="form-row">
+
             <label for="fname">
               Food name
             </label>
@@ -302,19 +312,25 @@
               id="fname"
               required
             >
+
           </div>
 
 
+
           <div class="form-row">
+
             <label for="serving">
               Serving
             </label>
 
             <input id="serving">
+
           </div>
 
 
+
           <div class="form-row">
+
             <label for="fcal">
               Calories
             </label>
@@ -322,13 +338,15 @@
             <input
               id="fcal"
               type="number"
-              min="0"
               required
             >
+
           </div>
 
 
+
           <div class="form-row">
+
             <label for="fp">
               Protein (g)
             </label>
@@ -336,14 +354,16 @@
             <input
               id="fp"
               type="number"
-              min="0"
               step=".1"
               required
             >
+
           </div>
 
 
+
           <div class="form-row">
+
             <label for="fc">
               Carbs (g)
             </label>
@@ -351,14 +371,16 @@
             <input
               id="fc"
               type="number"
-              min="0"
               step=".1"
               required
             >
+
           </div>
 
 
+
           <div class="form-row">
+
             <label for="ff">
               Fat (g)
             </label>
@@ -366,11 +388,12 @@
             <input
               id="ff"
               type="number"
-              min="0"
               step=".1"
               required
             >
+
           </div>
+
 
 
           <button type="submit">
@@ -382,9 +405,12 @@
       </div>
 
 
+
       <div class="card">
 
-        <h2>Today's food</h2>
+        <h2>
+          Today's food
+        </h2>
 
         <div id="foodList"></div>
 
@@ -393,9 +419,10 @@
     </section>
 
 
-    <!-- =======================================================
+
+    <!-- ========================================
          WORKOUT
-         ======================================================= -->
+    ========================================= -->
 
     <section
       id="workout"
@@ -405,38 +432,34 @@
 
       <div class="card">
 
-        <h2>PPL Workout</h2>
+        <h2>
+          PPL Workout
+        </h2>
 
 
         <div class="ppl">
 
-          <button
-            type="button"
-            data-ppl="Push"
-          >
+          <button data-ppl="Push">
             Push
           </button>
 
-          <button
-            type="button"
-            data-ppl="Pull"
-          >
+          <button data-ppl="Pull">
             Pull
           </button>
 
-          <button
-            type="button"
-            data-ppl="Legs"
-          >
+          <button data-ppl="Legs">
             Legs
           </button>
 
         </div>
 
 
+
         <form id="exForm">
 
+
           <div class="form-row">
+
             <label for="ename">
               Exercise
             </label>
@@ -445,10 +468,13 @@
               id="ename"
               required
             >
+
           </div>
 
 
+
           <div class="form-row">
+
             <label for="sets">
               Sets
             </label>
@@ -456,13 +482,15 @@
             <input
               id="sets"
               type="number"
-              min="1"
               value="3"
             >
+
           </div>
 
 
+
           <div class="form-row">
+
             <label for="reps">
               Reps
             </label>
@@ -470,13 +498,15 @@
             <input
               id="reps"
               type="number"
-              min="1"
               value="10"
             >
+
           </div>
 
 
+
           <div class="form-row">
+
             <label for="ew">
               Weight (kg)
             </label>
@@ -484,11 +514,12 @@
             <input
               id="ew"
               type="number"
-              min="0"
               step=".5"
               value="0"
             >
+
           </div>
+
 
 
           <button type="submit">
@@ -498,14 +529,12 @@
         </form>
 
 
-        <button
-          id="finish"
-          type="button"
-        >
+        <button id="finish">
           Finish workout
         </button>
 
       </div>
+
 
 
       <div class="card">
@@ -517,9 +546,10 @@
     </section>
 
 
-    <!-- =======================================================
+
+    <!-- ========================================
          PROGRESS
-         ======================================================= -->
+    ========================================= -->
 
     <section
       id="progress"
@@ -530,11 +560,13 @@
       <div class="grid">
 
 
-        <!-- WEIGHT -->
+        <!-- Weight -->
 
         <div class="card">
 
-          <h2>Weight</h2>
+          <h2>
+            Weight
+          </h2>
 
           <form id="weightForm">
 
@@ -547,7 +579,6 @@
               <input
                 id="weightInput"
                 type="number"
-                min="20"
                 step=".1"
                 required
               >
@@ -564,11 +595,14 @@
         </div>
 
 
-        <!-- STEPS -->
+
+        <!-- Steps -->
 
         <div class="card">
 
-          <h2>Steps</h2>
+          <h2>
+            Steps
+          </h2>
 
           <form id="stepsForm">
 
@@ -581,7 +615,6 @@
               <input
                 id="stepsInput"
                 type="number"
-                min="0"
                 required
               >
 
@@ -599,11 +632,12 @@
       </div>
 
 
-      <!-- HISTORY -->
 
       <div class="card">
 
-        <h2>History</h2>
+        <h2>
+          History
+        </h2>
 
         <div id="history"></div>
 
@@ -612,9 +646,10 @@
     </section>
 
 
-    <!-- =======================================================
+
+    <!-- ========================================
          SETTINGS
-         ======================================================= -->
+    ========================================= -->
 
     <section
       id="settings"
@@ -623,22 +658,17 @@
     >
 
 
-      <!-- PERSONAL INFORMATION -->
+      <!-- Personal Information -->
 
       <div class="card">
 
-        <h2>Personal Information</h2>
-
-        <p class="form-help">
-          Enter your information below. FitTrack will
-          automatically calculate your BMI, calories, and macros.
-        </p>
+        <h2>
+          Personal Information
+        </h2>
 
 
         <form id="settingsForm">
 
-
-          <!-- AGE -->
 
           <div class="form-row">
 
@@ -657,7 +687,6 @@
           </div>
 
 
-          <!-- SEX -->
 
           <div class="form-row">
 
@@ -665,10 +694,7 @@
               Sex
             </label>
 
-            <select
-              id="sex"
-              required
-            >
+            <select id="sex">
 
               <option value="male">
                 Male
@@ -683,7 +709,6 @@
           </div>
 
 
-          <!-- HEIGHT -->
 
           <div class="form-row">
 
@@ -703,7 +728,6 @@
           </div>
 
 
-          <!-- WEIGHT -->
 
           <div class="form-row">
 
@@ -723,87 +747,6 @@
           </div>
 
 
-          <!-- CALCULATED TARGETS -->
-
-          <h3>
-            Calculated Daily Targets
-          </h3>
-
-          <p class="form-help">
-            Based on the Mifflin-St Jeor equation and moderate
-            activity (PPL approximately 3x per week).
-          </p>
-
-
-          <!-- CALORIES -->
-
-          <div class="form-row">
-
-            <label for="goalCal">
-              Calories
-            </label>
-
-            <input
-              id="goalCal"
-              type="number"
-              readonly
-            >
-
-          </div>
-
-
-          <!-- PROTEIN -->
-
-          <div class="form-row">
-
-            <label for="goalP">
-              Protein (g)
-            </label>
-
-            <input
-              id="goalP"
-              type="number"
-              readonly
-            >
-
-          </div>
-
-
-          <!-- CARBS -->
-
-          <div class="form-row">
-
-            <label for="goalC">
-              Carbs (g)
-            </label>
-
-            <input
-              id="goalC"
-              type="number"
-              readonly
-            >
-
-          </div>
-
-
-          <!-- FAT -->
-
-          <div class="form-row">
-
-            <label for="goalF">
-              Fat (g)
-            </label>
-
-            <input
-              id="goalF"
-              type="number"
-              readonly
-            >
-
-          </div>
-
-
-          <!-- STEP GOAL -->
 
           <div class="form-row">
 
@@ -815,61 +758,141 @@
               id="goalSteps"
               type="number"
               min="0"
-              value="10000"
+              required
             >
 
           </div>
 
 
+
           <button type="submit">
-            Save Settings
+            Save Profile
           </button>
-
-
-          <p id="settingsMsg"></p>
 
         </form>
 
       </div>
 
 
-      <!-- SETTINGS BMI -->
 
-      <div class="card bmi-card">
+      <!-- BMI -->
 
-        <span class="card-label">
-          Current BMI
-        </span>
+      <div class="card bmi-settings-card">
 
-
-        <h2 id="settingsBmiValue">
-          --
+        <h2>
+          BMI
         </h2>
 
 
-        <span
-          id="settingsBmiStatus"
-          class="bmi"
-        >
-          --
-        </span>
+        <div class="settings-bmi-display">
+
+          <strong id="settingsBmiValue">
+            --
+          </strong>
+
+          <span
+            id="settingsBmiStatus"
+            class="bmi"
+          >
+            --
+          </span>
+
+        </div>
 
 
-        <p class="form-help">
-          BMI is calculated automatically from your current
-          height and weight.
+        <p class="muted">
+          BMI is automatically calculated from your height and weight.
         </p>
 
       </div>
+
+
+
+      <!-- Calculated Goals -->
+
+      <div class="card">
+
+        <h2>
+          Automatically Calculated Goals
+        </h2>
+
+
+        <p class="muted">
+          These values are calculated automatically using the
+          Mifflin-St Jeor equation and moderate activity.
+        </p>
+
+
+        <div class="form-row">
+
+          <label for="goalCal">
+            Calories
+          </label>
+
+          <input
+            id="goalCal"
+            type="number"
+            readonly
+          >
+
+        </div>
+
+
+
+        <div class="form-row">
+
+          <label for="goalP">
+            Protein (g)
+          </label>
+
+          <input
+            id="goalP"
+            type="number"
+            readonly
+          >
+
+        </div>
+
+
+
+        <div class="form-row">
+
+          <label for="goalC">
+            Carbs (g)
+          </label>
+
+          <input
+            id="goalC"
+            type="number"
+            readonly
+          >
+
+        </div>
+
+
+
+        <div class="form-row">
+
+          <label for="goalF">
+            Fat (g)
+          </label>
+
+          <input
+            id="goalF"
+            type="number"
+            readonly
+          >
+
+        </div>
+
+
+      </div>
+
 
     </section>
 
   </main>
 
-
-  <!-- =========================================================
-       APP JAVASCRIPT
-       ========================================================= -->
 
   <script
     type="module"
@@ -877,5 +900,4 @@
   ></script>
 
 </body>
-
 </html>
