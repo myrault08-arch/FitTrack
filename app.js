@@ -66,7 +66,15 @@ const dayRef = () => doc(db, 'users', user.uid, 'days', day());
 
 async function getDay() {
   const s = await getDoc(dayRef());
-  return s.exists() ? s.data() : { cal: 0, p: 0, c: 0, f: 0, steps: 0, workout: 'Rest' };
+  const data = s.exists() ? s.data() : {};
+  return {
+    cal: Number(data.cal) || 0,
+    p: Number(data.p) || 0,
+    c: Number(data.c) || 0,
+    f: Number(data.f) || 0,
+    steps: Number(data.steps) || 0,
+    workout: data.workout || 'Rest'
+  };
 }
 
 // ---------------------------------------------------------------------------
