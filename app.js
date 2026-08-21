@@ -25,526 +25,2087 @@ import {
 
 import { firebaseConfig } from './firebase-config.js';
 
-// ---------------------------------------------------------------------------
-// Firebase setup
-// ---------------------------------------------------------------------------
+
+// ============================================================
+// FIREBASE SETUP
+// ============================================================
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
+
+// ============================================================
+// HELPERS
+// ============================================================
 
 const $ = id => document.getElementById(id);
 
-let user;
+const day = () => {
+  const d = new Date();
+
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const date = String(d.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${date}`;
+};
+
+
+// ============================================================
+// APPLICATION STATE
+// ============================================================
+
+let user = null;
+
 let profile = {
   age: 31,
   height: 170,
   weight: 73,
+
   calGoal: 1950,
+
   pGoal: 140,
   cGoal: 220,
   fGoal: 65,
+
   stepGoal: 10000
 };
-let ppl = 'Push';       // currently selected workout split (Push / Pull / Legs)
-let signup = false;     // whether the auth form is in "create account" mode
-let stream;             // active camera stream for barcode scanning
 
-$('date').textContent = new Date().toLocaleDateString();
+let ppl = 'Push';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+let signup = false;
 
-const day = () => new Date().toISOString().slice(0, 10);
-const userRef = () => doc(db, 'users', user.uid);
-const dayRef = () => doc(db, 'users', user.uid, 'days', day());
+let stream = null;
+
+
+// ============================================================
+// FIRESTORE REFERENCES
+// ============================================================
+
+function userRef() {
+  if (!user) {
+    throw new Error('No authenticated user.');
+  }
+
+  return doc(db, 'users', user.uid);
+}
+
+
+function dayRef() {
+  if (!user) {
+    throw new Error('No authenticated user.');
+  }
+
+  return doc(
+    db,
+    'users',
+    user.uid,
+    'days',
+    day()
+  );
+}
+
+
+function foodCollection() {
+  if (!user) {
+    throw new Error('No authenticated user.');
+  }
+
+  return collection(
+    db,
+    'users',
+    user.uid,
+    'days',
+    day(),
+    'foods'
+  );
+}
+
+
+function exerciseCollection() {
+  if (!user) {
+    throw new Error('No authenticated user.');
+  }
+
+  return collection(
+    db,
+    'users',
+    user.uid,
+    'days',
+    day(),
+    'exercises'
+  );
+}
+
+
+function weightCollection() {
+  if (!user) {
+    throw new Error('No authenticated user.');
+  }
+
+  return collection(
+    db,
+    'users',
+    user.uid,
+    'weights'
+  );
+}
+
+
+// ============================================================
+// INITIAL DATE
+// ============================================================
+
+if ($('date')) {
+  $('date').textContent = new Date().toLocaleDateString();
+}
+
+
+// ============================================================
+// GET TODAY'S DATA
+// ============================================================
 
 async function getDay() {
-  const s = await getDoc(dayRef());
-  return s.exists() ? s.data() : { cal: 0, p: 0, c: 0, f: 0, steps: 0, workout: 'Rest' };
+
+  if (!user) {
+    return {
+      cal: 0,
+      p: 0,
+      c: 0,
+      f: 0,
+      steps: 0,
+      workout: 'Rest'
+    };
+  }
+
+  const snapshot = await getDoc(dayRef());
+
+  if (snapshot.exists()) {
+
+    const data = snapshot.data();
+
+    return {
+      cal: Number(data.cal) || 0,
+      p: Number(data.p) || 0,
+      c: Number(data.c) || 0,
+      f: Number(data.f) || 0,
+      steps: Number(data.steps) || 0,
+      workout: data.workout || 'Rest'
+    };
+
+  }
+
+  return {
+    cal: 0,
+    p: 0,
+    c: 0,
+    f: 0,
+    steps: 0,
+    workout: 'Rest'
+  };
 }
 
-// ---------------------------------------------------------------------------
-// Navigation
-// ---------------------------------------------------------------------------
+
+// ============================================================
+// NAVIGATION
+// ============================================================
 
 function show(id) {
-  document.querySelectorAll('.page').forEach(x => x.hidden = x.id !== id);
-  document.querySelectorAll('nav button').forEach(x => {
-    x.style.background = x.dataset.page === id ? '#2563eb' : '#172236';
+
+  document.querySelectorAll('.page').forEach(page => {
+    page.hidden = page.id !== id;
   });
 
-  if (id === 'food') food();
-  if (id === 'workout') exercises();
-  if (id === 'progress') history();
-}
+  document.querySelectorAll('nav button').forEach(button => {
 
-document.querySelectorAll('nav button').forEach(b => {
-  b.onclick = () => show(b.dataset.page);
-});
-
-// ---------------------------------------------------------------------------
-// Auth
-// ---------------------------------------------------------------------------
-
-$('toggle').onclick = () => {
-  signup = !signup;
-  $('authTitle').textContent = signup ? 'Create account' : 'Sign in';
-  $('toggle').textContent = signup ? 'Back to sign in' : 'Create account';
-};
-
-$('authForm').onsubmit = async e => {
-  e.preventDefault();
-  try {
-    if (signup) {
-      await createUserWithEmailAndPassword(auth, $('email').value, $('password').value);
-      await setDoc(userRef(), profile);
+    if (button.dataset.page === id) {
+      button.style.background = '#2563eb';
     } else {
-      await signInWithEmailAndPassword(auth, $('email').value, $('password').value);
+      button.style.background = '#172236';
     }
-  } catch (err) {
-    $('authMsg').textContent = err.message;
-  }
-};
 
-onAuthStateChanged(auth, async u => {
-  user = u;
+  });
 
-  if (!u) {
-    $('auth').hidden = false;
-    $('app').hidden = true;
-    $('logout').hidden = true;
-    return;
+
+  if (id === 'food') {
+    food();
   }
 
-  $('auth').hidden = true;
-  $('app').hidden = false;
-  $('logout').hidden = false;
-
-  const s = await getDoc(userRef());
-  if (s.exists()) {
-    profile = { ...profile, ...s.data() };
-  } else {
-    await setDoc(userRef(), profile);
+  if (id === 'workout') {
+    exercises();
   }
 
-  fill();
-  await refresh();
-  show('dash');
+  if (id === 'progress') {
+    history();
+  }
+
+}
+
+
+document.querySelectorAll('nav button').forEach(button => {
+
+  button.onclick = () => {
+    show(button.dataset.page);
+  };
+
 });
 
-$('logout').onclick = () => signOut(auth);
 
-// ---------------------------------------------------------------------------
-// Settings / profile
-// ---------------------------------------------------------------------------
+// ============================================================
+// AUTH MODE TOGGLE
+// ============================================================
 
-function fill() {
-  $('age').value = profile.age;
-  $('height').value = profile.height;
-  $('goalCal').value = profile.calGoal;
-  $('goalP').value = profile.pGoal;
-  $('goalC').value = profile.cGoal;
-  $('goalF').value = profile.fGoal;
-  $('goalSteps').value = profile.stepGoal;
-}
+if ($('toggle')) {
 
-$('settingsForm').onsubmit = async e => {
-  e.preventDefault();
-  profile = {
-    ...profile,
-    age: +$('age').value,
-    height: +$('height').value,
-    calGoal: +$('goalCal').value,
-    pGoal: +$('goalP').value,
-    cGoal: +$('goalC').value,
-    fGoal: +$('goalF').value,
-    stepGoal: +$('goalSteps').value
-  };
-  await setDoc(userRef(), profile, { merge: true });
-  await refresh();
-};
+  $('toggle').onclick = () => {
 
-// ---------------------------------------------------------------------------
-// Dashboard
-// ---------------------------------------------------------------------------
+    signup = !signup;
 
-async function refresh() {
-  const d = await getDay();
+    if ($('authTitle')) {
+      $('authTitle').textContent =
+        signup ? 'Create account' : 'Sign in';
+    }
 
-  $('cal').textContent = Math.round(d.cal);
-  $('calGoal').textContent = profile.calGoal;
-  $('calBar').style.width = Math.min(100, (d.cal / profile.calGoal) * 100) + '%';
-  $('weightDash').textContent = profile.weight;
-  $('stepsDash').textContent = (d.steps || 0).toLocaleString();
-  $('workoutDash').textContent = d.workout || 'Rest';
+    $('toggle').textContent =
+      signup ? 'Back to sign in' : 'Create account';
 
-  $('macros').innerHTML = `
-    <div class="row">Protein <b>${Math.round(d.p || 0)} / ${profile.pGoal} g</b></div>
-    <div class="row">Carbs <b>${Math.round(d.c || 0)} / ${profile.cGoal} g</b></div>
-    <div class="row">Fat <b>${Math.round(d.f || 0)} / ${profile.fGoal} g</b></div>
-  `;
-}
+    if ($('authMsg')) {
+      $('authMsg').textContent = '';
+    }
 
-// ---------------------------------------------------------------------------
-// Food logging
-// ---------------------------------------------------------------------------
-
-$('foodForm').onsubmit = async e => {
-  e.preventDefault();
-
-  const f = {
-    name: $('fname').value,
-    serving: $('serving').value,
-    cal: +$('fcal').value,
-    p: +$('fp').value,
-    c: +$('fc').value,
-    f: +$('ff').value
   };
 
-  await addDoc(collection(db, 'users', user.uid, 'days', day(), 'foods'), f);
+}
 
-  const d = await getDay();
-  d.cal += f.cal;
-  d.p += f.p;
-  d.c += f.c;
-  d.f += f.f;
-  await setDoc(dayRef(), d, { merge: true });
 
-  e.target.reset();
-  await refresh();
-  food();
-};
+// ============================================================
+// LOGIN / REGISTER
+// ============================================================
 
-async function food() {
-  const s = await getDocs(
-    query(collection(db, 'users', user.uid, 'days', day(), 'foods'), orderBy('__name__'))
-  );
+if ($('authForm')) {
 
-  $('foodList').innerHTML = s.docs.map(x => {
-    const f = x.data();
-    return `
-      <div class="row">
-        <span>${f.name}<br><small>${f.serving || ''} · ${f.cal} kcal · P ${f.p} C ${f.c} F ${f.f}</small></span>
-        <button data-del="${x.id}">Delete</button>
-      </div>
-    `;
-  }).join('') || '<p>No food logged.</p>';
+  $('authForm').onsubmit = async e => {
 
-  document.querySelectorAll('[data-del]').forEach(b => {
-    b.onclick = async () => {
-      const r = doc(db, 'users', user.uid, 'days', day(), 'foods', b.dataset.del);
-      const s = await getDoc(r);
+    e.preventDefault();
 
-      if (s.exists()) {
-        const f = s.data();
-        const d = await getDay();
-        d.cal -= f.cal;
-        d.p -= f.p;
-        d.c -= f.c;
-        d.f -= f.f;
-        await setDoc(dayRef(), d, { merge: true });
-        await deleteDoc(r);
-        await refresh();
-        food();
+    const email = $('email').value.trim();
+    const password = $('password').value;
+
+    if (!email || !password) {
+
+      $('authMsg').textContent =
+        'Please enter your email and password.';
+
+      return;
+    }
+
+
+    $('authMsg').textContent =
+      signup
+        ? 'Creating account...'
+        : 'Signing in...';
+
+
+    try {
+
+      // --------------------------------------------------------
+      // CREATE ACCOUNT
+      // --------------------------------------------------------
+
+      if (signup) {
+
+        const credential =
+          await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+        const newUser = credential.user;
+
+        console.log(
+          'Firebase account created:',
+          newUser.uid
+        );
+
+
+        // IMPORTANT:
+        // Use newUser.uid directly.
+        // Do NOT depend on the global user variable here.
+
+        await setDoc(
+          doc(db, 'users', newUser.uid),
+          profile
+        );
+
+
+        console.log(
+          'Firestore profile created.'
+        );
+
+
+        $('authMsg').textContent =
+          'Account created successfully!';
+
       }
-    };
-  });
+
+      // --------------------------------------------------------
+      // LOGIN
+      // --------------------------------------------------------
+
+      else {
+
+        const credential =
+          await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+        console.log(
+          'Login successful:',
+          credential.user.uid
+        );
+
+        $('authMsg').textContent = '';
+
+      }
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'AUTH ERROR:',
+        error
+      );
+
+      $('authMsg').textContent =
+        getFirebaseErrorMessage(error);
+
+    }
+
+  };
+
 }
 
-// ---------------------------------------------------------------------------
-// Workout / exercise logging
-// ---------------------------------------------------------------------------
 
-document.querySelectorAll('[data-ppl]').forEach(b => {
-  b.onclick = () => { ppl = b.dataset.ppl; };
-});
+// ============================================================
+// FIREBASE ERROR MESSAGES
+// ============================================================
 
-$('exForm').onsubmit = async e => {
-  e.preventDefault();
+function getFirebaseErrorMessage(error) {
 
-  await addDoc(collection(db, 'users', user.uid, 'days', day(), 'exercises'), {
-    type: ppl,
-    name: $('ename').value,
-    sets: +$('sets').value,
-    reps: +$('reps').value,
-    weight: +$('ew').value
-  });
+  switch (error.code) {
 
-  e.target.reset();
-  await exercises();
-};
+    case 'auth/email-already-in-use':
+      return 'This email is already registered.';
 
-$('finish').onclick = async () => {
-  await setDoc(dayRef(), { workout: ppl }, { merge: true });
-  await refresh();
-};
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
 
-async function exercises() {
-  const s = await getDocs(collection(db, 'users', user.uid, 'days', day(), 'exercises'));
+    case 'auth/weak-password':
+      return 'Password must be at least 6 characters.';
 
-  $('exList').innerHTML = s.docs.map(x => {
-    const e = x.data();
-    return `
-      <div class="row">
-        <span>${e.name}<br><small>${e.type} · ${e.sets}×${e.reps} @ ${e.weight} kg</small></span>
-        <button data-ex="${x.id}">Delete</button>
-      </div>
-    `;
-  }).join('') || '<p>No exercises logged.</p>';
+    case 'auth/invalid-credential':
+      return 'Incorrect email or password.';
 
-  document.querySelectorAll('[data-ex]').forEach(b => {
-    b.onclick = async () => {
-      await deleteDoc(doc(db, 'users', user.uid, 'days', day(), 'exercises', b.dataset.ex));
-      exercises();
-    };
-  });
+    case 'auth/user-not-found':
+      return 'No account exists with this email.';
+
+    case 'auth/wrong-password':
+      return 'Incorrect password.';
+
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Please try again later.';
+
+    case 'permission-denied':
+      return 'Firestore permission denied. Check your Firestore rules.';
+
+    default:
+      return error.message || 'An unexpected error occurred.';
+
+  }
+
 }
 
-// ---------------------------------------------------------------------------
-// Weight & steps tracking
-// ---------------------------------------------------------------------------
 
-$('weightForm').onsubmit = async e => {
-  e.preventDefault();
+// ============================================================
+// AUTH STATE
+// ============================================================
 
-  profile.weight = +$('weightInput').value;
-  await setDoc(userRef(), profile, { merge: true });
-  await addDoc(collection(db, 'users', user.uid, 'weights'), {
-    date: day(),
-    weight: profile.weight
-  });
+onAuthStateChanged(auth, async currentUser => {
 
-  await refresh();
-  history();
-};
-
-$('stepsForm').onsubmit = async e => {
-  e.preventDefault();
-  await setDoc(dayRef(), { steps: +$('stepsInput').value }, { merge: true });
-  await refresh();
-};
-
-async function history() {
-  const s = await getDocs(
-    query(collection(db, 'users', user.uid, 'weights'), orderBy('date', 'desc'))
+  console.log(
+    'Auth state changed:',
+    currentUser
   );
 
-  $('history').innerHTML = s.docs.map(x => `
-    <div class="row">${x.data().date}<b>${x.data().weight} kg</b></div>
-  `).join('') || '<p>No history.</p>';
-}
 
-// ---------------------------------------------------------------------------
-// Barcode scanning (Open Food Facts lookup)
-// ---------------------------------------------------------------------------
+  user = currentUser;
 
-$('scan').onclick = async () => {
-  if (!('BarcodeDetector' in window)) {
-    alert('Barcode scanning is not supported by this browser.');
+
+  // ----------------------------------------------------------
+  // NOT LOGGED IN
+  // ----------------------------------------------------------
+
+  if (!currentUser) {
+
+    if ($('auth')) {
+      $('auth').hidden = false;
+    }
+
+    if ($('app')) {
+      $('app').hidden = true;
+    }
+
+    if ($('logout')) {
+      $('logout').hidden = true;
+    }
+
     return;
   }
+
+
+  // ----------------------------------------------------------
+  // LOGGED IN
+  // ----------------------------------------------------------
+
+  console.log(
+    'Logged in UID:',
+    currentUser.uid
+  );
+
+
+  if ($('auth')) {
+    $('auth').hidden = true;
+  }
+
+  if ($('app')) {
+    $('app').hidden = false;
+  }
+
+  if ($('logout')) {
+    $('logout').hidden = false;
+  }
+
 
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    $('video').hidden = false;
-    $('video').srcObject = stream;
-    await $('video').play();
 
-    const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
+    const snapshot =
+      await getDoc(
+        doc(db, 'users', currentUser.uid)
+      );
 
-    const loop = async () => {
-      if (!stream) return;
 
-      const codes = await detector.detect($('video'));
+    if (snapshot.exists()) {
 
-      if (codes.length) {
-        const code = codes[0].rawValue;
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-        $('video').hidden = true;
+      profile = {
+        ...profile,
+        ...snapshot.data()
+      };
 
-        const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json`);
-        const j = await r.json();
-
-        if (j.status === 1) {
-          const p = j.product;
-          const n = p.nutriments || {};
-          $('fname').value = p.product_name || 'Scanned food';
-          $('serving').value = p.serving_size || '100 g';
-          $('fcal').value = Math.round(n['energy-kcal_serving'] || n['energy-kcal_100g'] || 0);
-          $('fp').value = n.proteins_serving ?? n.proteins_100g ?? 0;
-          $('fc').value = n.carbohydrates_serving ?? n.carbohydrates_100g ?? 0;
-          $('ff').value = n.fat_serving ?? n.fat_100g ?? 0;
-        } else {
-          alert('Product not found; enter nutrition manually.');
-        }
-      } else {
-        requestAnimationFrame(loop);
-      }
-    };
-
-    loop();
-  } catch (e) {
-    alert(e.message);
-  }
-};
-// ==========================================
-// Constellation Background
-// ==========================================
-
-const canvas = document.getElementById("constellation");
-const ctx = canvas.getContext("2d");
-
-let stars = [];
-let animationFrame;
-
-const STAR_COUNT = 110;
-const CONNECTION_DISTANCE = 130;
-
-function resizeConstellation() {
-    const dpr = window.devicePixelRatio || 1;
-
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-
-    canvas.style.width = window.innerWidth + "px";
-    canvas.style.height = window.innerHeight + "px";
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    createStars();
-}
-
-function createStars() {
-    stars = [];
-
-    for (let i = 0; i < STAR_COUNT; i++) {
-        stars.push({
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-
-            vx: (Math.random() - 0.5) * 0.15,
-            vy: (Math.random() - 0.5) * 0.15,
-
-            radius: Math.random() * 1.4 + 0.4,
-
-            opacity: Math.random() * 0.6 + 0.25,
-
-            twinkle: Math.random() * Math.PI * 2,
-            twinkleSpeed: Math.random() * 0.02 + 0.005
-        });
     }
-}
 
-function drawConstellation() {
+    else {
 
-    ctx.clearRect(
-        0,
-        0,
-        window.innerWidth,
-        window.innerHeight
+      await setDoc(
+        doc(db, 'users', currentUser.uid),
+        profile
+      );
+
+    }
+
+
+    fill();
+
+    await refresh();
+
+    show('dash');
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'PROFILE/FIRESTORE ERROR:',
+      error
     );
 
-    // Move and draw stars
-    for (const star of stars) {
+    if ($('authMsg')) {
 
-        star.x += star.vx;
-        star.y += star.vy;
+      $('authMsg').textContent =
+        `Firestore error: ${error.message}`;
 
-        // Wrap around screen
-        if (star.x < -10) star.x = window.innerWidth + 10;
-        if (star.x > window.innerWidth + 10) star.x = -10;
-
-        if (star.y < -10) star.y = window.innerHeight + 10;
-        if (star.y > window.innerHeight + 10) star.y = -10;
-
-        star.twinkle += star.twinkleSpeed;
-
-        const pulse =
-            star.opacity +
-            Math.sin(star.twinkle) * 0.15;
-
-        // Glow
-        ctx.beginPath();
-
-        ctx.arc(
-            star.x,
-            star.y,
-            star.radius * 4,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fillStyle =
-            `rgba(100, 150, 255, ${Math.max(0, pulse * 0.08)})`;
-
-        ctx.fill();
-
-        // Star
-        ctx.beginPath();
-
-        ctx.arc(
-            star.x,
-            star.y,
-            star.radius,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fillStyle =
-            `rgba(180, 210, 255, ${Math.max(0, pulse)})`;
-
-        ctx.fill();
     }
 
-    // Connect nearby stars
-    for (let i = 0; i < stars.length; i++) {
+  }
 
-        for (let j = i + 1; j < stars.length; j++) {
+});
 
-            const a = stars[i];
-            const b = stars[j];
 
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
+// ============================================================
+// LOGOUT
+// ============================================================
 
-            const distance = Math.sqrt(
-                dx * dx + dy * dy
-            );
+if ($('logout')) {
 
-            if (distance < CONNECTION_DISTANCE) {
+  $('logout').onclick = async () => {
 
-                const opacity =
-                    (1 - distance / CONNECTION_DISTANCE) * 0.25;
+    try {
 
-                ctx.beginPath();
+      await signOut(auth);
 
-                ctx.moveTo(a.x, a.y);
-                ctx.lineTo(b.x, b.y);
+      console.log('Logged out.');
 
-                ctx.strokeStyle =
-                    `rgba(100, 150, 255, ${opacity})`;
-
-                ctx.lineWidth = 0.6;
-
-                ctx.stroke();
-            }
-        }
     }
 
-    animationFrame = requestAnimationFrame(drawConstellation);
+    catch (error) {
+
+      console.error(
+        'LOGOUT ERROR:',
+        error
+      );
+
+    }
+
+  };
+
 }
 
-window.addEventListener(
-    "resize",
-    resizeConstellation
-);
 
-resizeConstellation();
-drawConstellation();
+// ============================================================
+// PROFILE / SETTINGS
+// ============================================================
+
+function fill() {
+
+  if ($('age')) {
+    $('age').value = profile.age;
+  }
+
+  if ($('height')) {
+    $('height').value = profile.height;
+  }
+
+  if ($('goalCal')) {
+    $('goalCal').value = profile.calGoal;
+  }
+
+  if ($('goalP')) {
+    $('goalP').value = profile.pGoal;
+  }
+
+  if ($('goalC')) {
+    $('goalC').value = profile.cGoal;
+  }
+
+  if ($('goalF')) {
+    $('goalF').value = profile.fGoal;
+  }
+
+  if ($('goalSteps')) {
+    $('goalSteps').value = profile.stepGoal;
+  }
+
+}
+
+
+if ($('settingsForm')) {
+
+  $('settingsForm').onsubmit = async e => {
+
+    e.preventDefault();
+
+    if (!user) {
+      alert('You are not logged in.');
+      return;
+    }
+
+
+    try {
+
+      profile = {
+        ...profile,
+
+        age: Number($('age').value),
+
+        height: Number($('height').value),
+
+        calGoal: Number($('goalCal').value),
+
+        pGoal: Number($('goalP').value),
+
+        cGoal: Number($('goalC').value),
+
+        fGoal: Number($('goalF').value),
+
+        stepGoal: Number($('goalSteps').value)
+      };
+
+
+      await setDoc(
+        userRef(),
+        profile,
+        { merge: true }
+      );
+
+
+      await refresh();
+
+      alert('Settings saved.');
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'SETTINGS ERROR:',
+        error
+      );
+
+      alert(
+        `Could not save settings:\n${error.message}`
+      );
+
+    }
+
+  };
+
+}
+
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+
+async function refresh() {
+
+  if (!user) {
+    return;
+  }
+
+
+  try {
+
+    const d = await getDay();
+
+
+    if ($('cal')) {
+      $('cal').textContent =
+        Math.round(d.cal);
+    }
+
+
+    if ($('calGoal')) {
+      $('calGoal').textContent =
+        profile.calGoal;
+    }
+
+
+    if ($('calBar')) {
+
+      const percentage =
+        profile.calGoal > 0
+          ? (d.cal / profile.calGoal) * 100
+          : 0;
+
+      $('calBar').style.width =
+        Math.min(100, percentage) + '%';
+
+    }
+
+
+    if ($('weightDash')) {
+      $('weightDash').textContent =
+        profile.weight;
+    }
+
+
+    if ($('stepsDash')) {
+      $('stepsDash').textContent =
+        (d.steps || 0).toLocaleString();
+    }
+
+
+    if ($('workoutDash')) {
+      $('workoutDash').textContent =
+        d.workout || 'Rest';
+    }
+
+
+    if ($('macros')) {
+
+      $('macros').innerHTML = `
+
+        <div class="row">
+          Protein
+          <b>
+            ${Math.round(d.p)} /
+            ${profile.pGoal} g
+          </b>
+        </div>
+
+        <div class="row">
+          Carbs
+          <b>
+            ${Math.round(d.c)} /
+            ${profile.cGoal} g
+          </b>
+        </div>
+
+        <div class="row">
+          Fat
+          <b>
+            ${Math.round(d.f)} /
+            ${profile.fGoal} g
+          </b>
+        </div>
+
+      `;
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'REFRESH ERROR:',
+      error
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// FOOD LOGGING
+// ============================================================
+
+if ($('foodForm')) {
+
+  $('foodForm').onsubmit = async e => {
+
+    e.preventDefault();
+
+
+    if (!user) {
+
+      alert('You are not logged in.');
+
+      return;
+    }
+
+
+    try {
+
+      const f = {
+
+        name:
+          $('fname').value.trim(),
+
+        serving:
+          $('serving').value.trim(),
+
+        cal:
+          Number($('fcal').value) || 0,
+
+        p:
+          Number($('fp').value) || 0,
+
+        c:
+          Number($('fc').value) || 0,
+
+        f:
+          Number($('ff').value) || 0
+
+      };
+
+
+      // Save individual food
+
+      await addDoc(
+        foodCollection(),
+        f
+      );
+
+
+      // Update daily totals
+
+      const d = await getDay();
+
+
+      d.cal += f.cal;
+      d.p += f.p;
+      d.c += f.c;
+      d.f += f.f;
+
+
+      await setDoc(
+        dayRef(),
+        d,
+        { merge: true }
+      );
+
+
+      e.target.reset();
+
+
+      await refresh();
+
+      await food();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'FOOD LOG ERROR:',
+        error
+      );
+
+      alert(
+        `Could not save food:\n${error.message}`
+      );
+
+    }
+
+  };
+
+}
+
+
+// ============================================================
+// DISPLAY FOOD
+// ============================================================
+
+async function food() {
+
+  if (!user) {
+    return;
+  }
+
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          foodCollection(),
+          orderBy('__name__')
+        )
+      );
+
+
+    if (!$('foodList')) {
+      return;
+    }
+
+
+    $('foodList').innerHTML =
+      snapshot.docs.map(item => {
+
+        const f = item.data();
+
+        return `
+
+          <div class="row">
+
+            <span>
+
+              ${escapeHTML(f.name)}
+
+              <br>
+
+              <small>
+                ${escapeHTML(f.serving || '')}
+                · ${f.cal} kcal
+                · P ${f.p}
+                · C ${f.c}
+                · F ${f.f}
+              </small>
+
+            </span>
+
+            <button
+              type="button"
+              data-del="${item.id}">
+              Delete
+            </button>
+
+          </div>
+
+        `;
+
+      }).join('') ||
+      '<p>No food logged.</p>';
+
+
+    document
+      .querySelectorAll('[data-del]')
+      .forEach(button => {
+
+        button.onclick = async () => {
+
+          try {
+
+            const foodRef =
+              doc(
+                db,
+                'users',
+                user.uid,
+                'days',
+                day(),
+                'foods',
+                button.dataset.del
+              );
+
+
+            const snapshot =
+              await getDoc(foodRef);
+
+
+            if (!snapshot.exists()) {
+              return;
+            }
+
+
+            const f = snapshot.data();
+
+            const d = await getDay();
+
+
+            d.cal =
+              Math.max(0, d.cal - (Number(f.cal) || 0));
+
+            d.p =
+              Math.max(0, d.p - (Number(f.p) || 0));
+
+            d.c =
+              Math.max(0, d.c - (Number(f.c) || 0));
+
+            d.f =
+              Math.max(0, d.f - (Number(f.f) || 0));
+
+
+            await setDoc(
+              dayRef(),
+              d,
+              { merge: true }
+            );
+
+
+            await deleteDoc(foodRef);
+
+
+            await refresh();
+
+            await food();
+
+          }
+
+          catch (error) {
+
+            console.error(
+              'DELETE FOOD ERROR:',
+              error
+            );
+
+            alert(
+              `Could not delete food:\n${error.message}`
+            );
+
+          }
+
+        };
+
+      });
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'FOOD LOAD ERROR:',
+      error
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// WORKOUT SPLIT
+// ============================================================
+
+document
+  .querySelectorAll('[data-ppl]')
+  .forEach(button => {
+
+    button.onclick = () => {
+
+      ppl =
+        button.dataset.ppl;
+
+      document
+        .querySelectorAll('[data-ppl]')
+        .forEach(x => {
+
+          x.classList.toggle(
+            'active',
+            x === button
+          );
+
+        });
+
+    };
+
+  });
+
+
+// ============================================================
+// EXERCISE LOGGING
+// ============================================================
+
+if ($('exForm')) {
+
+  $('exForm').onsubmit = async e => {
+
+    e.preventDefault();
+
+
+    if (!user) {
+
+      alert('You are not logged in.');
+
+      return;
+    }
+
+
+    try {
+
+      const exercise = {
+
+        type: ppl,
+
+        name:
+          $('ename').value.trim(),
+
+        sets:
+          Number($('sets').value) || 0,
+
+        reps:
+          Number($('reps').value) || 0,
+
+        weight:
+          Number($('ew').value) || 0
+
+      };
+
+
+      await addDoc(
+        exerciseCollection(),
+        exercise
+      );
+
+
+      e.target.reset();
+
+
+      await exercises();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'EXERCISE ERROR:',
+        error
+      );
+
+      alert(
+        `Could not save exercise:\n${error.message}`
+      );
+
+    }
+
+  };
+
+}
+
+
+// ============================================================
+// FINISH WORKOUT
+// ============================================================
+
+if ($('finish')) {
+
+  $('finish').onclick = async () => {
+
+    if (!user) {
+
+      alert('You are not logged in.');
+
+      return;
+    }
+
+
+    try {
+
+      await setDoc(
+        dayRef(),
+        {
+          workout: ppl
+        },
+        {
+          merge: true
+        }
+      );
+
+
+      await refresh();
+
+
+      alert(
+        `${ppl} workout completed!`
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'FINISH WORKOUT ERROR:',
+        error
+      );
+
+      alert(
+        `Could not save workout:\n${error.message}`
+      );
+
+    }
+
+  };
+
+}
+
+
+// ============================================================
+// DISPLAY EXERCISES
+// ============================================================
+
+async function exercises() {
+
+  if (!user) {
+    return;
+  }
+
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        exerciseCollection()
+      );
+
+
+    if (!$('exList')) {
+      return;
+    }
+
+
+    $('exList').innerHTML =
+      snapshot.docs.map(item => {
+
+        const e = item.data();
+
+        return `
+
+          <div class="row">
+
+            <span>
+
+              ${escapeHTML(e.name)}
+
+              <br>
+
+              <small>
+                ${escapeHTML(e.type)}
+                · ${e.sets}×${e.reps}
+                @ ${e.weight} kg
+              </small>
+
+            </span>
+
+            <button
+              type="button"
+              data-ex="${item.id}">
+              Delete
+            </button>
+
+          </div>
+
+        `;
+
+      }).join('') ||
+      '<p>No exercises logged.</p>';
+
+
+    document
+      .querySelectorAll('[data-ex]')
+      .forEach(button => {
+
+        button.onclick = async () => {
+
+          try {
+
+            await deleteDoc(
+
+              doc(
+                db,
+                'users',
+                user.uid,
+                'days',
+                day(),
+                'exercises',
+                button.dataset.ex
+              )
+
+            );
+
+
+            await exercises();
+
+          }
+
+          catch (error) {
+
+            console.error(
+              'DELETE EXERCISE ERROR:',
+              error
+            );
+
+            alert(
+              `Could not delete exercise:\n${error.message}`
+            );
+
+          }
+
+        };
+
+      });
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'EXERCISE LOAD ERROR:',
+      error
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// WEIGHT TRACKING
+// ============================================================
+
+if ($('weightForm')) {
+
+  $('weightForm').onsubmit = async e => {
+
+    e.preventDefault();
+
+
+    if (!user) {
+
+      alert('You are not logged in.');
+
+      return;
+    }
+
+
+    try {
+
+      const newWeight =
+        Number($('weightInput').value);
+
+
+      if (!newWeight || newWeight <= 0) {
+
+        alert('Enter a valid weight.');
+
+        return;
+      }
+
+
+      profile.weight =
+        newWeight;
+
+
+      // Update profile
+
+      await setDoc(
+        userRef(),
+        {
+          weight: newWeight
+        },
+        {
+          merge: true
+        }
+      );
+
+
+      // Save weight history
+
+      await addDoc(
+        weightCollection(),
+        {
+          date: day(),
+          weight: newWeight
+        }
+      );
+
+
+      await refresh();
+
+      await history();
+
+
+      e.target.reset();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'WEIGHT ERROR:',
+        error
+      );
+
+      alert(
+        `Could not save weight:\n${error.message}`
+      );
+
+    }
+
+  };
+
+}
+
+
+// ============================================================
+// STEP TRACKING
+// ============================================================
+
+if ($('stepsForm')) {
+
+  $('stepsForm').onsubmit = async e => {
+
+    e.preventDefault();
+
+
+    if (!user) {
+
+      alert('You are not logged in.');
+
+      return;
+    }
+
+
+    try {
+
+      const steps =
+        Number($('stepsInput').value);
+
+
+      if (steps < 0) {
+
+        alert('Steps cannot be negative.');
+
+        return;
+      }
+
+
+      await setDoc(
+        dayRef(),
+        {
+          steps: steps
+        },
+        {
+          merge: true
+        }
+      );
+
+
+      await refresh();
+
+
+      e.target.reset();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'STEPS ERROR:',
+        error
+      );
+
+      alert(
+        `Could not save steps:\n${error.message}`
+      );
+
+    }
+
+  };
+
+}
+
+
+// ============================================================
+// WEIGHT HISTORY
+// ============================================================
+
+async function history() {
+
+  if (!user) {
+    return;
+  }
+
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          weightCollection(),
+          orderBy('date', 'desc')
+        )
+      );
+
+
+    if (!$('history')) {
+      return;
+    }
+
+
+    $('history').innerHTML =
+      snapshot.docs.map(item => {
+
+        const data = item.data();
+
+        return `
+
+          <div class="row">
+
+            <span>
+              ${escapeHTML(data.date)}
+            </span>
+
+            <b>
+              ${data.weight} kg
+            </b>
+
+          </div>
+
+        `;
+
+      }).join('') ||
+      '<p>No history.</p>';
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'HISTORY ERROR:',
+      error
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// BARCODE SCANNER
+// ============================================================
+
+if ($('scan')) {
+
+  $('scan').onclick = async () => {
+
+    if (!('BarcodeDetector' in window)) {
+
+      alert(
+        'Barcode scanning is not supported by this browser.'
+      );
+
+      return;
+    }
+
+
+    try {
+
+      stream =
+        await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment'
+          }
+        });
+
+
+      $('video').hidden = false;
+
+      $('video').srcObject =
+        stream;
+
+      await $('video').play();
+
+
+      const detector =
+        new BarcodeDetector({
+          formats: [
+            'ean_13',
+            'ean_8',
+            'upc_a',
+            'upc_e'
+          ]
+        });
+
+
+      const scanLoop = async () => {
+
+        if (!stream) {
+          return;
+        }
+
+
+        try {
+
+          const codes =
+            await detector.detect(
+              $('video')
+            );
+
+
+          if (codes.length > 0) {
+
+            const code =
+              codes[0].rawValue;
+
+
+            stopScanner();
+
+
+            console.log(
+              'Barcode:',
+              code
+            );
+
+
+            const response =
+              await fetch(
+                `https://world.openfoodfacts.org/api/v2/product/${code}.json`
+              );
+
+
+            if (!response.ok) {
+
+              throw new Error(
+                `Open Food Facts returned ${response.status}`
+              );
+
+            }
+
+
+            const data =
+              await response.json();
+
+
+            if (data.status === 1) {
+
+              const product =
+                data.product;
+
+              const nutrients =
+                product.nutriments || {};
+
+
+              $('fname').value =
+                product.product_name ||
+                'Scanned food';
+
+
+              $('serving').value =
+                product.serving_size ||
+                '100 g';
+
+
+              $('fcal').value =
+                Math.round(
+                  nutrients['energy-kcal_serving'] ??
+                  nutrients['energy-kcal_100g'] ??
+                  0
+                );
+
+
+              $('fp').value =
+                nutrients.proteins_serving ??
+                nutrients.proteins_100g ??
+                0;
+
+
+              $('fc').value =
+                nutrients.carbohydrates_serving ??
+                nutrients.carbohydrates_100g ??
+                0;
+
+
+              $('ff').value =
+                nutrients.fat_serving ??
+                nutrients.fat_100g ??
+                0;
+
+            }
+
+            else {
+
+              alert(
+                'Product not found. Please enter nutrition manually.'
+              );
+
+            }
+
+          }
+
+          else {
+
+            requestAnimationFrame(
+              scanLoop
+            );
+
+          }
+
+        }
+
+        catch (error) {
+
+          console.error(
+            'BARCODE ERROR:',
+            error
+          );
+
+          stopScanner();
+
+          alert(
+            `Barcode scanning failed:\n${error.message}`
+          );
+
+        }
+
+      };
+
+
+      scanLoop();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'CAMERA ERROR:',
+        error
+      );
+
+      alert(
+        `Could not access camera:\n${error.message}`
+      );
+
+    }
+
+  };
+
+}
+
+
+// ============================================================
+// STOP BARCODE SCANNER
+// ============================================================
+
+function stopScanner() {
+
+  if (stream) {
+
+    stream
+      .getTracks()
+      .forEach(track => {
+        track.stop();
+      });
+
+    stream = null;
+
+  }
+
+
+  if ($('video')) {
+
+    $('video').pause();
+
+    $('video').srcObject = null;
+
+    $('video').hidden = true;
+
+  }
+
+}
+
+
+// ============================================================
+// HTML ESCAPE
+// ============================================================
+
+function escapeHTML(value) {
+
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+}
+
+
+// ============================================================
+// CONSTELLATION BACKGROUND
+// ============================================================
+
+const canvas =
+  document.getElementById('constellation');
+
+if (canvas) {
+
+  const ctx =
+    canvas.getContext('2d');
+
+
+  let stars = [];
+
+  let animationFrame;
+
+
+  const STAR_COUNT = 110;
+
+  const CONNECTION_DISTANCE = 130;
+
+
+  function resizeConstellation() {
+
+    const dpr =
+      window.devicePixelRatio || 1;
+
+
+    canvas.width =
+      window.innerWidth * dpr;
+
+    canvas.height =
+      window.innerHeight * dpr;
+
+
+    canvas.style.width =
+      window.innerWidth + 'px';
+
+    canvas.style.height =
+      window.innerHeight + 'px';
+
+
+    ctx.setTransform(
+      dpr,
+      0,
+      0,
+      dpr,
+      0,
+      0
+    );
+
+
+    createStars();
+
+  }
+
+
+  function createStars() {
+
+    stars = [];
+
+
+    for (
+      let i = 0;
+      i < STAR_COUNT;
+      i++
+    ) {
+
+      stars.push({
+
+        x:
+          Math.random() *
+          window.innerWidth,
+
+        y:
+          Math.random() *
+          window.innerHeight,
+
+        vx:
+          (Math.random() - 0.5) *
+          0.15,
+
+        vy:
+          (Math.random() - 0.5) *
+          0.15,
+
+        radius:
+          Math.random() * 1.4 +
+          0.4,
+
+        opacity:
+          Math.random() * 0.6 +
+          0.25,
+
+        twinkle:
+          Math.random() *
+          Math.PI *
+          2,
+
+        twinkleSpeed:
+          Math.random() *
+          0.02 +
+          0.005
+
+      });
+
+    }
+
+  }
+
+
+  function drawConstellation() {
+
+    ctx.clearRect(
+      0,
+      0,
+      window.innerWidth,
+      window.innerHeight
+    );
+
+
+    // --------------------------------------------------------
+    // STARS
+    // --------------------------------------------------------
+
+    for (const star of stars) {
+
+      star.x += star.vx;
+
+      star.y += star.vy;
+
+
+      // Wrap horizontally
+
+      if (star.x < -10) {
+
+        star.x =
+          window.innerWidth + 10;
+
+      }
+
+      if (
+        star.x >
+        window.innerWidth + 10
+      ) {
+
+        star.x = -10;
+
+      }
+
+
+      // Wrap vertically
+
+      if (star.y < -10) {
+
+        star.y =
+          window.innerHeight + 10;
+
+      }
+
+      if (
+        star.y >
+        window.innerHeight + 10
+      ) {
+
+        star.y = -10;
+
+      }
+
+
+      star.twinkle +=
+        star.twinkleSpeed;
+
+
+      const pulse =
+        star.opacity +
+        Math.sin(star.twinkle) *
+        0.15;
+
+
+      // Glow
+
+      ctx.beginPath();
+
+      ctx.arc(
+        star.x,
+        star.y,
+        star.radius * 4,
+        0,
+        Math.PI * 2
+      );
+
+
+      ctx.fillStyle =
+        `rgba(100, 150, 255, ${Math.max(
+          0,
+          pulse * 0.08
+        )})`;
+
+
+      ctx.fill();
+
+
+      // Main star
+
+      ctx.beginPath();
+
+      ctx.arc(
+        star.x,
+        star.y,
+        star.radius,
+        0,
+        Math.PI * 2
+      );
+
+
+      ctx.fillStyle =
+        `rgba(180, 210, 255, ${Math.max(
+          0,
+          pulse
+        )})`;
+
+
+      ctx.fill();
+
+    }
+
+
+    // --------------------------------------------------------
+    // CONNECTIONS
+    // --------------------------------------------------------
+
+    for (
+      let i = 0;
+      i < stars.length;
+      i++
+    ) {
+
+      for (
+        let j = i + 1;
+        j < stars.length;
+        j++
+      ) {
+
+        const a = stars[i];
+
+        const b = stars[j];
+
+
+        const dx =
+          a.x - b.x;
+
+        const dy =
+          a.y - b.y;
+
+
+        const distance =
+          Math.sqrt(
+            dx * dx +
+            dy * dy
+          );
+
+
+        if (
+          distance <
+          CONNECTION_DISTANCE
+        ) {
+
+          const opacity =
+            (1 -
+              distance /
+              CONNECTION_DISTANCE) *
+            0.25;
+
+
+          ctx.beginPath();
+
+          ctx.moveTo(
+            a.x,
+            a.y
+          );
+
+          ctx.lineTo(
+            b.x,
+            b.y
+          );
+
+
+          ctx.strokeStyle =
+            `rgba(100, 150, 255, ${opacity})`;
+
+
+          ctx.lineWidth = 0.6;
+
+          ctx.stroke();
+
+        }
+
+      }
+
+    }
+
+
+    animationFrame =
+      requestAnimationFrame(
+        drawConstellation
+      );
+
+  }
+
+
+  window.addEventListener(
+    'resize',
+    resizeConstellation
+  );
+
+
+  resizeConstellation();
+
+  drawConstellation();
+
+}
