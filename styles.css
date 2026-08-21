@@ -29,39 +29,47 @@ body {
     #050812;
 
   color: #e5e7eb;
-  font: 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+
+  font:
+    15px system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
 
   position: relative;
+
   overflow-x: hidden;
 }
 
 
 /* ============================================================
-   CONSTELLATION BACKGROUND
+   CONSTELLATION
    ============================================================ */
 
 #constellation {
   position: fixed;
+
   inset: 0;
 
   width: 100%;
   height: 100%;
 
   z-index: -2;
+
   pointer-events: none;
 }
 
-
-/* Dark readability overlay */
 
 body::before {
   content: "";
 
   position: fixed;
+
   inset: 0;
 
   z-index: -1;
+
   pointer-events: none;
 
   background:
@@ -82,15 +90,19 @@ header {
   max-width: 1050px;
 
   margin: auto;
+
   padding: 20px 0;
 
   display: flex;
+
   gap: 15px;
 
   align-items: center;
+
   flex-wrap: wrap;
 
   position: relative;
+
   z-index: 1;
 }
 
@@ -98,6 +110,7 @@ header h1 {
   margin: 0;
 
   font-size: 28px;
+
   font-weight: 700;
 }
 
@@ -109,13 +122,14 @@ header button {
   margin-left: auto;
 }
 
-
 main,
 #auth {
   max-width: 1050px;
+
   margin: auto;
 
   position: relative;
+
   z-index: 1;
 }
 
@@ -126,6 +140,7 @@ main,
 
 nav {
   display: flex;
+
   gap: 8px;
 
   overflow-x: auto;
@@ -157,9 +172,11 @@ button {
   padding: 10px 14px;
 
   background: #172236;
+
   color: #e5e7eb;
 
   border: 1px solid #334155;
+
   border-radius: 9px;
 
   cursor: pointer;
@@ -174,24 +191,12 @@ button {
 
 button:hover {
   background: #243451;
+
   border-color: #475569;
 }
 
 button:active {
   transform: scale(0.98);
-}
-
-
-/* Primary buttons */
-
-.card form button {
-  background: #2563eb;
-  border: 0;
-  color: #fff;
-}
-
-.card form button:hover {
-  background: #1d4ed8;
 }
 
 
@@ -201,14 +206,17 @@ button:active {
 
 .card {
   margin-bottom: 14px;
+
   padding: 18px;
 
   background: rgba(17, 24, 39, 0.92);
 
   border: 1px solid #26344a;
+
   border-radius: 15px;
 
   backdrop-filter: blur(8px);
+
   -webkit-backdrop-filter: blur(8px);
 
   box-shadow:
@@ -220,7 +228,7 @@ button:active {
 }
 
 .card h3 {
-  margin-top: 0;
+  margin-top: 20px;
 }
 
 
@@ -239,40 +247,24 @@ button:active {
 
 
 /* ============================================================
-   STAT CARDS
+   STAT
    ============================================================ */
 
 .stat {
   text-align: center;
 }
 
-.stat h2,
-.stat h3 {
-  margin-top: 0;
-}
-
-.stat .big {
-  margin: 10px 0;
-
-  font-size: 32px;
-  font-weight: 700;
-}
-
-
-/* ============================================================
-   DASHBOARD BIG NUMBERS
-   ============================================================ */
-
 .big {
   margin: 15px 0;
 
   font-size: 32px;
+
   font-weight: 700;
 }
 
 
 /* ============================================================
-   CALORIE PROGRESS BAR
+   PROGRESS BAR
    ============================================================ */
 
 .bar {
@@ -289,6 +281,7 @@ button:active {
   display: block;
 
   height: 100%;
+
   width: 0;
 
   background: #3b82f6;
@@ -315,7 +308,7 @@ button:active {
 
 
 /* ============================================================
-   INPUTS
+   INPUTS + SELECT
    ============================================================ */
 
 .card input,
@@ -335,10 +328,6 @@ button:active {
   font: inherit;
 
   outline: none;
-
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
 }
 
 .card input:focus,
@@ -350,24 +339,8 @@ button:active {
 }
 
 
-/* Select dropdown */
-
-.card select {
-  appearance: auto;
-
-  cursor: pointer;
-}
-
-
-/* Placeholder */
-
-.card input::placeholder {
-  color: #64748b;
-}
-
-
 /* ============================================================
-   READONLY CALCULATED FIELDS
+   READONLY CALCULATED VALUES
    ============================================================ */
 
 .card input[readonly] {
@@ -382,7 +355,7 @@ button:active {
 
 
 /* ============================================================
-   LABEL + INPUT ROW
+   FORM ROW
    ============================================================ */
 
 .form-row {
@@ -410,7 +383,9 @@ button:active {
 }
 
 
-/* Small description beneath a field */
+/* ============================================================
+   HELP TEXT
+   ============================================================ */
 
 .form-help {
   margin-top: -4px;
@@ -418,35 +393,14 @@ button:active {
   color: #64748b;
 
   font-size: 12px;
+
+  line-height: 1.5;
 }
 
 
 /* ============================================================
-   SETTINGS SECTIONS
+   BMI
    ============================================================ */
-
-.settings-section {
-  margin-bottom: 20px;
-}
-
-.settings-section h3 {
-  margin-bottom: 12px;
-
-  font-size: 16px;
-
-  color: #f8fafc;
-}
-
-
-/* ============================================================
-   BMI CARD
-   ============================================================ */
-
-.bmi-card {
-  position: relative;
-
-  overflow: hidden;
-}
 
 .bmi-card h2 {
   font-size: 42px;
@@ -458,16 +412,9 @@ button:active {
   font-weight: 700;
 }
 
-.bmi-card p {
-  margin: 0;
-
-  color: #94a3b8;
+.card-label {
+  color: #cbd5e1;
 }
-
-
-/* ============================================================
-   BMI STATUS BADGE
-   ============================================================ */
 
 .bmi {
   display: inline-block;
@@ -484,7 +431,9 @@ button:active {
 }
 
 
-/* Normal BMI */
+/* ============================================================
+   BMI STATUS COLORS
+   ============================================================ */
 
 .normal {
   background: #14532d;
@@ -492,26 +441,17 @@ button:active {
   color: #86efac;
 }
 
-
-/* Overweight */
-
 .over {
   background: #78350f;
 
   color: #fcd34d;
 }
 
-
-/* Obese */
-
 .obese {
   background: #7f1d1d;
 
   color: #fca5a5;
 }
-
-
-/* Underweight */
 
 .under {
   background: #1e3a8a;
@@ -538,7 +478,7 @@ button:active {
 
 
 /* ============================================================
-   WORKOUT / PPL
+   WORKOUT
    ============================================================ */
 
 .ppl {
@@ -559,7 +499,7 @@ button:active {
 
 
 /* ============================================================
-   ROWS / LISTS
+   ROWS
    ============================================================ */
 
 .row {
@@ -594,51 +534,7 @@ button:active {
 
 
 /* ============================================================
-   AUTH
-   ============================================================ */
-
-#auth {
-  max-width: 450px;
-
-  margin: 50px auto;
-}
-
-#auth .card {
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.35);
-}
-
-#authTitle {
-  margin-top: 0;
-
-  text-align: center;
-}
-
-
-/* Auth message */
-
-#authMsg {
-  color: #fca5a5;
-
-  font-size: 13px;
-}
-
-
-/* ============================================================
-   SETTINGS SUCCESS MESSAGE
-   ============================================================ */
-
-#settingsMsg {
-  min-height: 18px;
-
-  color: #86efac;
-
-  font-size: 13px;
-}
-
-
-/* ============================================================
-   BARCODE SCANNER
+   BARCODE
    ============================================================ */
 
 video {
@@ -657,29 +553,38 @@ video {
 
 
 /* ============================================================
-   FOOD LIST
+   AUTH
    ============================================================ */
 
-#foodList {
-  margin-top: 10px;
+#auth {
+  max-width: 450px;
+
+  margin: 50px auto;
+}
+
+#authTitle {
+  margin-top: 0;
+
+  text-align: center;
+}
+
+#authMsg {
+  color: #fca5a5;
+
+  font-size: 13px;
 }
 
 
 /* ============================================================
-   EXERCISE LIST
+   SETTINGS MESSAGE
    ============================================================ */
 
-#exList {
-  margin-top: 10px;
-}
+#settingsMsg {
+  min-height: 18px;
 
+  color: #86efac;
 
-/* ============================================================
-   WEIGHT HISTORY
-   ============================================================ */
-
-#history {
-  margin-top: 10px;
+  font-size: 13px;
 }
 
 
@@ -708,13 +613,8 @@ video {
   .card {
     padding: 15px;
   }
-
 }
 
-
-/* ============================================================
-   SMALL MOBILE
-   ============================================================ */
 
 @media (max-width: 500px) {
 
@@ -743,13 +643,8 @@ video {
   .row button {
     padding: 8px 10px;
   }
-
 }
 
-
-/* ============================================================
-   VERY SMALL SCREENS
-   ============================================================ */
 
 @media (max-width: 360px) {
 
@@ -768,5 +663,4 @@ video {
   nav button {
     padding: 8px 10px;
   }
-
 }

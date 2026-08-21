@@ -27,99 +27,136 @@ import { firebaseConfig } from './firebase-config.js';
 
 
 // ============================================================
-// Firebase setup
+// FIREBASE
 // ============================================================
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
+
 const db = getFirestore(app);
 
 
 // ============================================================
-// Helpers
+// HELPERS
 // ============================================================
 
 const $ = id => document.getElementById(id);
 
-const day = () => new Date().toISOString().slice(0, 10);
+const day = () =>
+  new Date().toISOString().slice(0, 10);
 
-const userRef = () => {
-  return doc(db, 'users', user.uid);
-};
+const userRef = () =>
+  doc(db, 'users', user.uid);
 
-const dayRef = () => {
-  return doc(db, 'users', user.uid, 'days', day());
-};
+const dayRef = () =>
+  doc(
+    db,
+    'users',
+    user.uid,
+    'days',
+    day()
+  );
 
 
 // ============================================================
-// State
+// PROFILE
 // ============================================================
-
-let user = null;
 
 let profile = {
+
   age: 31,
+
   sex: 'male',
+
   height: 170,
+
   weight: 73,
 
   calGoal: 2439,
+
   pGoal: 146,
+
   cGoal: 341,
+
   fGoal: 58,
 
   stepGoal: 10000
+
 };
 
+
+let user = null;
+
 let ppl = 'Push';
+
 let signup = false;
+
 let stream = null;
 
 
 // ============================================================
-// Date
+// DATE
 // ============================================================
 
 if ($('date')) {
-  $('date').textContent = new Date().toLocaleDateString();
+
+  $('date').textContent =
+    new Date().toLocaleDateString();
+
 }
 
 
 // ============================================================
-// Daily data
+// DAILY DATA
 // ============================================================
 
 async function getDay() {
 
-  const snapshot = await getDoc(dayRef());
+  const snapshot =
+    await getDoc(dayRef());
 
-  const data = snapshot.exists()
-    ? snapshot.data()
-    : {};
+  const data =
+    snapshot.exists()
+      ? snapshot.data()
+      : {};
 
   return {
+
     cal: Number(data.cal) || 0,
+
     p: Number(data.p) || 0,
+
     c: Number(data.c) || 0,
+
     f: Number(data.f) || 0,
+
     steps: Number(data.steps) || 0,
-    workout: data.workout || 'Rest'
+
+    workout:
+      data.workout || 'Rest'
+
   };
+
 }
 
 
 // ============================================================
-// BMI + BMR + MACRO CALCULATOR
+// BMI + CALORIE + MACRO CALCULATOR
 // ============================================================
 
 function calculateMetrics() {
 
-  const age = Number(profile.age);
-  const height = Number(profile.height);
-  const weight = Number(profile.weight);
+  const age =
+    Number(profile.age);
 
-  // Prevent invalid calculations
+  const height =
+    Number(profile.height);
+
+  const weight =
+    Number(profile.weight);
+
+
   if (
     !age ||
     !height ||
@@ -128,66 +165,86 @@ function calculateMetrics() {
     height <= 0 ||
     weight <= 0
   ) {
-    return;
+
+    return null;
+
   }
 
 
   // ----------------------------------------------------------
-  // Mifflin-St Jeor BMR
+  // BMR
   // ----------------------------------------------------------
 
-  const bmr = profile.sex === 'female'
-    ? (10 * weight) +
-      (6.25 * height) -
-      (5 * age) -
-      161
+  const bmr =
+    profile.sex === 'female'
 
-    : (10 * weight) +
-      (6.25 * height) -
-      (5 * age) +
-      5;
+      ? (
+          10 * weight +
+          6.25 * height -
+          5 * age -
+          161
+        )
+
+      : (
+          10 * weight +
+          6.25 * height -
+          5 * age +
+          5
+        );
 
 
   // ----------------------------------------------------------
   // Moderate activity
-  // PPL 3x/week
+  // PPL approximately 3x/week
   // ----------------------------------------------------------
 
-  const calories = Math.round(bmr * 1.55);
+  const calories =
+    Math.round(bmr * 1.55);
 
 
   // ----------------------------------------------------------
-  // Macro targets
+  // MACROS
   // ----------------------------------------------------------
 
-  // Protein = 2 g/kg
-  const protein = Math.round(weight * 2);
+  const protein =
+    Math.round(weight * 2);
 
-  // Fat = 0.8 g/kg
-  const fat = Math.round(weight * 0.8);
+  const fat =
+    Math.round(weight * 0.8);
 
-  // Remaining calories go to carbohydrates
+
   const carbCalories =
     calories -
     (
-      (protein * 4) +
-      (fat * 9)
+      protein * 4 +
+      fat * 9
     );
 
-  const carbs = Math.max(
-    0,
-    Math.round(carbCalories / 4)
-  );
+
+  const carbs =
+    Math.max(
+      0,
+      Math.round(
+        carbCalories / 4
+      )
+    );
 
 
   // ----------------------------------------------------------
-  // Save calculated goals to profile
+  // SAVE CALCULATED VALUES
   // ----------------------------------------------------------
 
-  profile.calGoal = calories;
-  profile.pGoal = protein;
-  profile.cGoal = carbs;
-  profile.fGoal = fat;
+  profile.calGoal =
+    calories;
+
+  profile.pGoal =
+    protein;
+
+  profile.cGoal =
+    carbs;
+
+  profile.fGoal =
+    fat;
 
 
   // ----------------------------------------------------------
@@ -196,96 +253,175 @@ function calculateMetrics() {
 
   const bmi =
     weight /
-    Math.pow(height / 100, 2);
+    Math.pow(
+      height / 100,
+      2
+    );
 
 
-  let status = '';
-  let color = '';
+  let status;
+
+  let color;
 
 
   if (bmi < 18.5) {
 
-    status = 'Underweight';
-    color = 'under';
+    status =
+      'Underweight';
 
-  } else if (bmi < 25) {
+    color =
+      'under';
 
-    status = 'Normal';
-    color = 'normal';
+  }
 
-  } else if (bmi < 30) {
+  else if (bmi < 25) {
 
-    status = 'Overweight';
-    color = 'over';
+    status =
+      'Normal';
 
-  } else {
+    color =
+      'normal';
 
-    status = 'Obese';
-    color = 'obese';
+  }
+
+  else if (bmi < 30) {
+
+    status =
+      'Overweight';
+
+    color =
+      'over';
+
+  }
+
+  else {
+
+    status =
+      'Obese';
+
+    color =
+      'obese';
 
   }
 
 
-  // ----------------------------------------------------------
-  // Update BMI UI
-  // ----------------------------------------------------------
+  // ==========================================================
+  // UPDATE DASHBOARD BMI
+  // ==========================================================
 
   if ($('bmiValue')) {
-    $('bmiValue').textContent = bmi.toFixed(1);
+
+    $('bmiValue').textContent =
+      bmi.toFixed(1);
+
   }
+
 
   if ($('bmiStatus')) {
-    $('bmiStatus').textContent = status;
-    $('bmiStatus').className = `bmi ${color}`;
+
+    $('bmiStatus').textContent =
+      status;
+
+    $('bmiStatus').className =
+      `bmi ${color}`;
+
   }
 
 
-  // ----------------------------------------------------------
-  // Update dashboard calorie goal
-  // ----------------------------------------------------------
+  // ==========================================================
+  // UPDATE SETTINGS BMI
+  // ==========================================================
+
+  if ($('settingsBmiValue')) {
+
+    $('settingsBmiValue').textContent =
+      bmi.toFixed(1);
+
+  }
+
+
+  if ($('settingsBmiStatus')) {
+
+    $('settingsBmiStatus').textContent =
+      status;
+
+    $('settingsBmiStatus').className =
+      `bmi ${color}`;
+
+  }
+
+
+  // ==========================================================
+  // UPDATE CALORIE GOAL
+  // ==========================================================
 
   if ($('calGoal')) {
+
     $('calGoal').textContent =
       calories.toLocaleString();
+
   }
 
 
-  // ----------------------------------------------------------
-  // Update settings calculated values
-  // ----------------------------------------------------------
+  // ==========================================================
+  // UPDATE SETTINGS TARGETS
+  // ==========================================================
 
   if ($('goalCal')) {
-    $('goalCal').value = calories;
+
+    $('goalCal').value =
+      calories;
+
   }
+
 
   if ($('goalP')) {
-    $('goalP').value = protein;
+
+    $('goalP').value =
+      protein;
+
   }
+
 
   if ($('goalC')) {
-    $('goalC').value = carbs;
+
+    $('goalC').value =
+      carbs;
+
   }
+
 
   if ($('goalF')) {
-    $('goalF').value = fat;
+
+    $('goalF').value =
+      fat;
+
   }
 
 
-  // Return values in case another part of the app needs them
   return {
+
     bmr,
+
     calories,
+
     protein,
+
     carbs,
+
     fat,
+
     bmi,
+
     status
+
   };
+
 }
 
 
 // ============================================================
-// Navigation
+// NAVIGATION
 // ============================================================
 
 function show(id) {
@@ -293,7 +429,10 @@ function show(id) {
   document
     .querySelectorAll('.page')
     .forEach(page => {
-      page.hidden = page.id !== id;
+
+      page.hidden =
+        page.id !== id;
+
     });
 
 
@@ -309,21 +448,33 @@ function show(id) {
     });
 
 
-  if (id === 'food') {
-    food();
+  if (id === 'dash') {
+
+    refresh();
+
   }
+
+
+  if (id === 'food') {
+
+    food();
+
+  }
+
 
   if (id === 'workout') {
+
     exercises();
+
   }
+
 
   if (id === 'progress') {
+
     history();
+
   }
 
-  if (id === 'dash') {
-    refresh();
-  }
 }
 
 
@@ -332,42 +483,49 @@ document
   .forEach(button => {
 
     button.onclick = () => {
-      show(button.dataset.page);
+
+      show(
+        button.dataset.page
+      );
+
     };
 
   });
 
 
 // ============================================================
-// Authentication
+// AUTH TOGGLE
 // ============================================================
 
-if ($('toggle')) {
+$('toggle').onclick = () => {
 
-  $('toggle').onclick = () => {
-
-    signup = !signup;
-
-    $('authTitle').textContent =
-      signup
-        ? 'Create account'
-        : 'Sign in';
-
-    $('toggle').textContent =
-      signup
-        ? 'Back to sign in'
-        : 'Create account';
-
-  };
-
-}
+  signup =
+    !signup;
 
 
-if ($('authForm')) {
+  $('authTitle').textContent =
+    signup
+      ? 'Create account'
+      : 'Sign in';
 
-  $('authForm').onsubmit = async e => {
+
+  $('toggle').textContent =
+    signup
+      ? 'Back to sign in'
+      : 'Create account';
+
+};
+
+
+// ============================================================
+// AUTH FORM
+// ============================================================
+
+$('authForm').onsubmit =
+  async e => {
 
     e.preventDefault();
+
 
     try {
 
@@ -380,16 +538,22 @@ if ($('authForm')) {
             $('password').value
           );
 
-        user = credential.user;
+
+        user =
+          credential.user;
+
 
         calculateMetrics();
+
 
         await setDoc(
           userRef(),
           profile
         );
 
-      } else {
+      }
+
+      else {
 
         await signInWithEmailAndPassword(
           auth,
@@ -399,289 +563,334 @@ if ($('authForm')) {
 
       }
 
-    } catch (err) {
+    }
 
-      console.error(err);
+    catch (error) {
 
-      if ($('authMsg')) {
-        $('authMsg').textContent =
-          err.message;
-      }
+      console.error(error);
+
+      $('authMsg').textContent =
+        error.message;
 
     }
 
   };
 
-}
-
 
 // ============================================================
-// Authentication state
+// AUTH STATE
 // ============================================================
 
-onAuthStateChanged(auth, async u => {
+onAuthStateChanged(
+  auth,
+  async u => {
 
-  user = u;
-
-
-  // ----------------------------------------------------------
-  // Logged out
-  // ----------------------------------------------------------
-
-  if (!u) {
-
-    $('auth').hidden = false;
-    $('app').hidden = true;
-    $('logout').hidden = true;
-
-    return;
-  }
+    user = u;
 
 
-  // ----------------------------------------------------------
-  // Logged in
-  // ----------------------------------------------------------
+    if (!u) {
 
-  $('auth').hidden = true;
-  $('app').hidden = false;
-  $('logout').hidden = false;
+      $('auth').hidden =
+        false;
+
+      $('app').hidden =
+        true;
+
+      $('logout').hidden =
+        true;
+
+      return;
+
+    }
 
 
-  try {
+    $('auth').hidden =
+      true;
 
-    const snapshot =
-      await getDoc(userRef());
+    $('app').hidden =
+      false;
+
+    $('logout').hidden =
+      false;
 
 
-    if (snapshot.exists()) {
+    try {
 
-      profile = {
-        ...profile,
-        ...snapshot.data()
-      };
+      const snapshot =
+        await getDoc(
+          userRef()
+        );
 
-    } else {
+
+      if (snapshot.exists()) {
+
+        profile = {
+
+          ...profile,
+
+          ...snapshot.data()
+
+        };
+
+      }
+
+      else {
+
+        await setDoc(
+          userRef(),
+          profile
+        );
+
+      }
+
+
+      // Existing users
+      // may not have sex stored.
+
+      if (!profile.sex) {
+
+        profile.sex =
+          'male';
+
+      }
+
+
+      fill();
+
+
+      calculateMetrics();
+
 
       await setDoc(
         userRef(),
-        profile
+        profile,
+        {
+          merge: true
+        }
+      );
+
+
+      await refresh();
+
+
+      show('dash');
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'Profile loading error:',
+        error
       );
 
     }
 
-
-    // --------------------------------------------------------
-    // Backwards compatibility
-    // --------------------------------------------------------
-
-    // Older profiles may not have sex.
-    if (!profile.sex) {
-      profile.sex = 'male';
-    }
-
-
-    // --------------------------------------------------------
-    // Calculate metrics after login
-    // --------------------------------------------------------
-
-    fill();
-
-    calculateMetrics();
-
-
-    // Save calculated values
-    await setDoc(
-      userRef(),
-      profile,
-      { merge: true }
-    );
-
-
-    await refresh();
-
-    show('dash');
-
-  } catch (err) {
-
-    console.error(
-      'Error loading profile:',
-      err
-    );
-
   }
-
-});
-
-
-// ============================================================
-// Logout
-// ============================================================
-
-if ($('logout')) {
-
-  $('logout').onclick = () => {
-    signOut(auth);
-  };
-
-}
+);
 
 
 // ============================================================
-// Settings / Profile
+// LOGOUT
+// ============================================================
+
+$('logout').onclick = () => {
+
+  signOut(auth);
+
+};
+
+
+// ============================================================
+// FILL SETTINGS
 // ============================================================
 
 function fill() {
 
   if ($('age')) {
+
     $('age').value =
       profile.age;
+
   }
 
 
   if ($('sex')) {
+
     $('sex').value =
       profile.sex || 'male';
+
   }
 
 
   if ($('height')) {
+
     $('height').value =
       profile.height;
+
   }
 
 
   if ($('weight')) {
+
     $('weight').value =
       profile.weight;
+
   }
 
 
   if ($('goalCal')) {
+
     $('goalCal').value =
       profile.calGoal;
+
   }
 
 
   if ($('goalP')) {
+
     $('goalP').value =
       profile.pGoal;
+
   }
 
 
   if ($('goalC')) {
+
     $('goalC').value =
       profile.cGoal;
+
   }
 
 
   if ($('goalF')) {
+
     $('goalF').value =
       profile.fGoal;
+
   }
 
 
   if ($('goalSteps')) {
+
     $('goalSteps').value =
       profile.stepGoal;
+
   }
 
 }
 
 
 // ============================================================
-// Settings form
+// SETTINGS
 // ============================================================
 
-if ($('settingsForm')) {
-
-  $('settingsForm').onsubmit = async e => {
+$('settingsForm').onsubmit =
+  async e => {
 
     e.preventDefault();
 
+
     try {
 
-      // Read personal information
       profile.age =
-        Number($('age').value);
+        Number(
+          $('age').value
+        );
 
-      profile.height =
-        Number($('height').value);
-
-      profile.weight =
-        Number($('weight').value);
 
       profile.sex =
         $('sex').value;
 
 
-      // Recalculate BMI + macros
+      profile.height =
+        Number(
+          $('height').value
+        );
+
+
+      profile.weight =
+        Number(
+          $('weight').value
+        );
+
+
+      profile.stepGoal =
+        Number(
+          $('goalSteps').value
+        ) || 10000;
+
+
+      // ------------------------------------------------------
+      // AUTOMATIC CALCULATION
+      // ------------------------------------------------------
+
       calculateMetrics();
 
 
-      // Keep step goal
-      profile.stepGoal =
-        Number($('goalSteps').value) || 10000;
+      // ------------------------------------------------------
+      // SAVE
+      // ------------------------------------------------------
 
-
-      // Save everything
       await setDoc(
         userRef(),
         profile,
-        { merge: true }
+        {
+          merge: true
+        }
       );
 
 
-      // Update dashboard
+      // ------------------------------------------------------
+      // UPDATE UI
+      // ------------------------------------------------------
+
+      fill();
+
+      calculateMetrics();
+
       await refresh();
 
 
-      // Update settings UI
-      fill();
+      $('settingsMsg').textContent =
+        'Settings saved successfully.';
 
 
-      // Optional confirmation
-      if ($('settingsMsg')) {
-        $('settingsMsg').textContent =
-          'Settings saved successfully.';
-      }
-
-
-      // Clear message after a few seconds
       setTimeout(() => {
 
-        if ($('settingsMsg')) {
-          $('settingsMsg').textContent = '';
-        }
+        $('settingsMsg').textContent =
+          '';
 
       }, 3000);
 
-    } catch (err) {
+    }
+
+    catch (error) {
 
       console.error(
-        'Settings save error:',
-        err
+        'Settings error:',
+        error
       );
 
-      if ($('settingsMsg')) {
-        $('settingsMsg').textContent =
-          'Unable to save settings.';
-      }
+
+      $('settingsMsg').textContent =
+        'Unable to save settings.';
 
     }
 
   };
 
-}
-
 
 // ============================================================
-// Dashboard
+// DASHBOARD
 // ============================================================
 
 async function refresh() {
 
   if (!user) {
+
     return;
+
   }
 
 
@@ -689,129 +898,108 @@ async function refresh() {
     await getDay();
 
 
-  // ----------------------------------------------------------
   // Calories
-  // ----------------------------------------------------------
 
-  if ($('cal')) {
-    $('cal').textContent =
-      Math.round(d.cal).toLocaleString();
-  }
-
-
-  if ($('calGoal')) {
-    $('calGoal').textContent =
-      Math.round(profile.calGoal).toLocaleString();
-  }
+  $('cal').textContent =
+    Math.round(
+      d.cal
+    ).toLocaleString();
 
 
-  if ($('calBar')) {
-
-    const percentage =
-      profile.calGoal > 0
-        ? (d.cal / profile.calGoal) * 100
-        : 0;
-
-    $('calBar').style.width =
-      Math.min(100, percentage) + '%';
-
-  }
+  $('calGoal').textContent =
+    Math.round(
+      profile.calGoal
+    ).toLocaleString();
 
 
-  // ----------------------------------------------------------
+  const percentage =
+    profile.calGoal > 0
+
+      ? (
+          d.cal /
+          profile.calGoal
+        ) * 100
+
+      : 0;
+
+
+  $('calBar').style.width =
+    Math.min(
+      100,
+      percentage
+    ) + '%';
+
+
   // Weight
-  // ----------------------------------------------------------
 
-  if ($('weightDash')) {
-
-    $('weightDash').textContent =
-      profile.weight;
-
-  }
+  $('weightDash').textContent =
+    profile.weight;
 
 
-  // ----------------------------------------------------------
   // Steps
-  // ----------------------------------------------------------
 
-  if ($('stepsDash')) {
-
-    $('stepsDash').textContent =
-      (d.steps || 0).toLocaleString();
-
-  }
+  $('stepsDash').textContent =
+    (
+      d.steps || 0
+    ).toLocaleString();
 
 
-  // ----------------------------------------------------------
   // Workout
-  // ----------------------------------------------------------
 
-  if ($('workoutDash')) {
-
-    $('workoutDash').textContent =
-      d.workout || 'Rest';
-
-  }
+  $('workoutDash').textContent =
+    d.workout || 'Rest';
 
 
-  // ----------------------------------------------------------
   // Macros
-  // ----------------------------------------------------------
 
-  if ($('macros')) {
+  $('macros').innerHTML = `
 
-    $('macros').innerHTML = `
+    <div class="row">
+      Protein
+      <b>
+        ${Math.round(d.p || 0)}
+        /
+        ${profile.pGoal}
+        g
+      </b>
+    </div>
 
-      <div class="row">
-        Protein
-        <b>
-          ${Math.round(d.p || 0)}
-          /
-          ${profile.pGoal}
-          g
-        </b>
-      </div>
+    <div class="row">
+      Carbs
+      <b>
+        ${Math.round(d.c || 0)}
+        /
+        ${profile.cGoal}
+        g
+      </b>
+    </div>
 
-      <div class="row">
-        Carbs
-        <b>
-          ${Math.round(d.c || 0)}
-          /
-          ${profile.cGoal}
-          g
-        </b>
-      </div>
+    <div class="row">
+      Fat
+      <b>
+        ${Math.round(d.f || 0)}
+        /
+        ${profile.fGoal}
+        g
+      </b>
+    </div>
 
-      <div class="row">
-        Fat
-        <b>
-          ${Math.round(d.f || 0)}
-          /
-          ${profile.fGoal}
-          g
-        </b>
-      </div>
-
-    `;
-
-  }
+  `;
 
 
-  // ----------------------------------------------------------
-  // Recalculate BMI display
-  // ----------------------------------------------------------
+  // Recalculate display
 
   calculateMetrics();
+
 }
 
 
 // ============================================================
-// Food logging
+// FOOD
 // ============================================================
 
-if ($('foodForm')) {
-
-  $('foodForm').onsubmit = async e => {
+$('foodForm').onsubmit =
+  async e => {
 
     e.preventDefault();
 
@@ -825,16 +1013,24 @@ if ($('foodForm')) {
         $('serving').value,
 
       cal:
-        Number($('fcal').value),
+        Number(
+          $('fcal').value
+        ),
 
       p:
-        Number($('fp').value),
+        Number(
+          $('fp').value
+        ),
 
       c:
-        Number($('fc').value),
+        Number(
+          $('fc').value
+        ),
 
       f:
-        Number($('ff').value)
+        Number(
+          $('ff').value
+        )
 
     };
 
@@ -856,16 +1052,25 @@ if ($('foodForm')) {
       await getDay();
 
 
-    d.cal += f.cal;
-    d.p += f.p;
-    d.c += f.c;
-    d.f += f.f;
+    d.cal +=
+      f.cal;
+
+    d.p +=
+      f.p;
+
+    d.c +=
+      f.c;
+
+    d.f +=
+      f.f;
 
 
     await setDoc(
       dayRef(),
       d,
-      { merge: true }
+      {
+        merge: true
+      }
     );
 
 
@@ -878,21 +1083,24 @@ if ($('foodForm')) {
 
   };
 
-}
-
 
 // ============================================================
-// Food list
+// FOOD LIST
 // ============================================================
 
 async function food() {
 
-  if (!user || !$('foodList')) {
+  if (
+    !user ||
+    !$('foodList')
+  ) {
+
     return;
+
   }
 
 
-  const s =
+  const snapshot =
     await getDocs(
       query(
         collection(
@@ -909,104 +1117,120 @@ async function food() {
 
 
   $('foodList').innerHTML =
-    s.docs.map(x => {
+    snapshot.docs
+      .map(snapshot => {
 
-      const f =
-        x.data();
+        const f =
+          snapshot.data();
 
-      return `
 
-        <div class="row">
+        return `
 
-          <span>
-            ${f.name}
+          <div class="row">
 
-            <br>
+            <span>
 
-            <small>
-              ${f.serving || ''}
-              ·
-              ${f.cal} kcal
-              · P ${f.p}
-              C ${f.c}
-              F ${f.f}
-            </small>
+              ${f.name}
 
-          </span>
+              <br>
 
-          <button data-del="${x.id}">
-            Delete
-          </button>
+              <small>
+                ${f.serving || ''}
+                · ${f.cal} kcal
+                · P ${f.p}
+                C ${f.c}
+                F ${f.f}
+              </small>
 
-        </div>
+            </span>
 
-      `;
 
-    }).join('') ||
-    '<p>No food logged.</p>';
+            <button
+              data-del="${snapshot.id}"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        `;
+
+      })
+      .join('') ||
+      '<p>No food logged.</p>';
 
 
   document
     .querySelectorAll('[data-del]')
     .forEach(button => {
 
-      button.onclick = async () => {
+      button.onclick =
+        async () => {
 
-        const reference =
-          doc(
-            db,
-            'users',
-            user.uid,
-            'days',
-            day(),
-            'foods',
-            button.dataset.del
-          );
-
-
-        const snapshot =
-          await getDoc(reference);
+          const reference =
+            doc(
+              db,
+              'users',
+              user.uid,
+              'days',
+              day(),
+              'foods',
+              button.dataset.del
+            );
 
 
-        if (snapshot.exists()) {
-
-          const f =
-            snapshot.data();
-
-          const d =
-            await getDay();
+          const snapshot =
+            await getDoc(
+              reference
+            );
 
 
-          d.cal -=
-            Number(f.cal) || 0;
+          if (
+            snapshot.exists()
+          ) {
 
-          d.p -=
-            Number(f.p) || 0;
-
-          d.c -=
-            Number(f.c) || 0;
-
-          d.f -=
-            Number(f.f) || 0;
+            const f =
+              snapshot.data();
 
 
-          await setDoc(
-            dayRef(),
-            d,
-            { merge: true }
-          );
+            const d =
+              await getDay();
 
 
-          await deleteDoc(reference);
+            d.cal -=
+              Number(f.cal) || 0;
+
+            d.p -=
+              Number(f.p) || 0;
+
+            d.c -=
+              Number(f.c) || 0;
+
+            d.f -=
+              Number(f.f) || 0;
 
 
-          await refresh();
+            await setDoc(
+              dayRef(),
+              d,
+              {
+                merge: true
+              }
+            );
 
-          food();
 
-        }
+            await deleteDoc(
+              reference
+            );
 
-      };
+
+            await refresh();
+
+            food();
+
+          }
+
+        };
 
     });
 
@@ -1014,30 +1238,30 @@ async function food() {
 
 
 // ============================================================
-// Workout / PPL
+// WORKOUT PPL
 // ============================================================
 
 document
   .querySelectorAll('[data-ppl]')
   .forEach(button => {
 
-    button.onclick = () => {
+    button.onclick =
+      () => {
 
-      ppl =
-        button.dataset.ppl;
+        ppl =
+          button.dataset.ppl;
 
-    };
+      };
 
   });
 
 
 // ============================================================
-// Exercise form
+// EXERCISE
 // ============================================================
 
-if ($('exForm')) {
-
-  $('exForm').onsubmit = async e => {
+$('exForm').onsubmit =
+  async e => {
 
     e.preventDefault();
 
@@ -1053,19 +1277,26 @@ if ($('exForm')) {
       ),
       {
 
-        type: ppl,
+        type:
+          ppl,
 
         name:
           $('ename').value,
 
         sets:
-          Number($('sets').value),
+          Number(
+            $('sets').value
+          ),
 
         reps:
-          Number($('reps').value),
+          Number(
+            $('reps').value
+          ),
 
         weight:
-          Number($('ew').value)
+          Number(
+            $('ew').value
+          )
 
       }
     );
@@ -1073,25 +1304,24 @@ if ($('exForm')) {
 
     e.target.reset();
 
+
     await exercises();
 
   };
 
-}
-
 
 // ============================================================
-// Finish workout
+// FINISH WORKOUT
 // ============================================================
 
-if ($('finish')) {
-
-  $('finish').onclick = async () => {
+$('finish').onclick =
+  async () => {
 
     await setDoc(
       dayRef(),
       {
-        workout: ppl
+        workout:
+          ppl
       },
       {
         merge: true
@@ -1103,21 +1333,24 @@ if ($('finish')) {
 
   };
 
-}
-
 
 // ============================================================
-// Exercise list
+// EXERCISES
 // ============================================================
 
 async function exercises() {
 
-  if (!user || !$('exList')) {
+  if (
+    !user ||
+    !$('exList')
+  ) {
+
     return;
+
   }
 
 
-  const s =
+  const snapshot =
     await getDocs(
       collection(
         db,
@@ -1131,64 +1364,70 @@ async function exercises() {
 
 
   $('exList').innerHTML =
-    s.docs.map(x => {
+    snapshot.docs
+      .map(snapshot => {
 
-      const e =
-        x.data();
+        const e =
+          snapshot.data();
 
-      return `
 
-        <div class="row">
+        return `
 
-          <span>
+          <div class="row">
 
-            ${e.name}
+            <span>
 
-            <br>
+              ${e.name}
 
-            <small>
-              ${e.type}
-              ·
-              ${e.sets}×${e.reps}
-              @ ${e.weight} kg
-            </small>
+              <br>
 
-          </span>
+              <small>
+                ${e.type}
+                · ${e.sets}×${e.reps}
+                @ ${e.weight} kg
+              </small>
 
-          <button data-ex="${x.id}">
-            Delete
-          </button>
+            </span>
 
-        </div>
 
-      `;
+            <button
+              data-ex="${snapshot.id}"
+            >
+              Delete
+            </button>
 
-    }).join('') ||
-    '<p>No exercises logged.</p>';
+          </div>
+
+        `;
+
+      })
+      .join('') ||
+      '<p>No exercises logged.</p>';
 
 
   document
     .querySelectorAll('[data-ex]')
     .forEach(button => {
 
-      button.onclick = async () => {
+      button.onclick =
+        async () => {
 
-        await deleteDoc(
-          doc(
-            db,
-            'users',
-            user.uid,
-            'days',
-            day(),
-            'exercises',
-            button.dataset.ex
-          )
-        );
+          await deleteDoc(
+            doc(
+              db,
+              'users',
+              user.uid,
+              'days',
+              day(),
+              'exercises',
+              button.dataset.ex
+            )
+          );
 
 
-        await exercises();
+          await exercises();
 
-      };
+        };
 
     });
 
@@ -1196,22 +1435,28 @@ async function exercises() {
 
 
 // ============================================================
-// Weight tracking
+// WEIGHT TRACKING
 // ============================================================
 
-if ($('weightForm')) {
-
-  $('weightForm').onsubmit = async e => {
+$('weightForm').onsubmit =
+  async e => {
 
     e.preventDefault();
 
 
     const newWeight =
-      Number($('weightInput').value);
+      Number(
+        $('weightInput').value
+      );
 
 
-    if (!newWeight || newWeight <= 0) {
+    if (
+      !newWeight ||
+      newWeight <= 0
+    ) {
+
       return;
+
     }
 
 
@@ -1219,11 +1464,13 @@ if ($('weightForm')) {
       newWeight;
 
 
-    // Recalculate BMI + macros
+    // Recalculate
+
     calculateMetrics();
 
 
-    // Save updated profile
+    // Save profile
+
     await setDoc(
       userRef(),
       profile,
@@ -1233,7 +1480,8 @@ if ($('weightForm')) {
     );
 
 
-    // Save weight history
+    // Save history
+
     await addDoc(
       collection(
         db,
@@ -1242,8 +1490,13 @@ if ($('weightForm')) {
         'weights'
       ),
       {
-        date: day(),
-        weight: profile.weight
+
+        date:
+          day(),
+
+        weight:
+          profile.weight
+
       }
     );
 
@@ -1254,22 +1507,21 @@ if ($('weightForm')) {
 
   };
 
-}
-
 
 // ============================================================
-// Steps tracking
+// STEPS
 // ============================================================
 
-if ($('stepsForm')) {
-
-  $('stepsForm').onsubmit = async e => {
+$('stepsForm').onsubmit =
+  async e => {
 
     e.preventDefault();
 
 
     const steps =
-      Number($('stepsInput').value);
+      Number(
+        $('stepsInput').value
+      );
 
 
     await setDoc(
@@ -1287,21 +1539,24 @@ if ($('stepsForm')) {
 
   };
 
-}
-
 
 // ============================================================
-// Weight history
+// HISTORY
 // ============================================================
 
 async function history() {
 
-  if (!user || !$('history')) {
+  if (
+    !user ||
+    !$('history')
+  ) {
+
     return;
+
   }
 
 
-  const s =
+  const snapshot =
     await getDocs(
       query(
         collection(
@@ -1319,87 +1574,101 @@ async function history() {
 
 
   $('history').innerHTML =
-    s.docs.map(x => {
+    snapshot.docs
+      .map(snapshot => {
 
-      const data =
-        x.data();
+        const data =
+          snapshot.data();
 
-      return `
 
-        <div class="row">
+        return `
 
-          ${data.date}
+          <div class="row">
 
-          <b>
-            ${data.weight} kg
-          </b>
+            ${data.date}
 
-        </div>
+            <b>
+              ${data.weight} kg
+            </b>
 
-      `;
+          </div>
 
-    }).join('') ||
-    '<p>No history.</p>';
+        `;
+
+      })
+      .join('') ||
+      '<p>No history.</p>';
 
 }
 
 
 // ============================================================
-// Barcode scanning
-// Open Food Facts
+// BARCODE SCANNER
 // ============================================================
 
-if ($('scan')) {
+$('scan').onclick =
+  async () => {
 
-  $('scan').onclick = async () => {
-
-    if (!('BarcodeDetector' in window)) {
+    if (
+      !('BarcodeDetector' in window)
+    ) {
 
       alert(
         'Barcode scanning is not supported by this browser.'
       );
 
       return;
+
     }
 
 
     try {
 
       stream =
-        await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment'
-          }
-        });
+        await navigator.mediaDevices
+          .getUserMedia({
+
+            video: {
+              facingMode:
+                'environment'
+            }
+
+          });
 
 
-      $('video').hidden = false;
+      $('video').hidden =
+        false;
+
 
       $('video').srcObject =
         stream;
+
 
       await $('video').play();
 
 
       const detector =
         new BarcodeDetector({
+
           formats: [
             'ean_13',
             'ean_8',
             'upc_a',
             'upc_e'
           ]
+
         });
 
 
-      const loop = async () => {
+      const loop =
+        async () => {
 
-        if (!stream) {
-          return;
-        }
+          if (!stream) {
 
+            return;
 
-        try {
+          }
+
 
           const codes =
             await detector.detect(
@@ -1415,14 +1684,18 @@ if ($('scan')) {
 
             stream
               .getTracks()
-              .forEach(track =>
-                track.stop()
+              .forEach(
+                track =>
+                  track.stop()
               );
 
 
-            stream = null;
+            stream =
+              null;
 
-            $('video').hidden = true;
+
+            $('video').hidden =
+              true;
 
 
             const response =
@@ -1435,7 +1708,9 @@ if ($('scan')) {
               await response.json();
 
 
-            if (json.status === 1) {
+            if (
+              json.status === 1
+            ) {
 
               const product =
                 json.product;
@@ -1483,7 +1758,9 @@ if ($('scan')) {
                 nutrients.fat_100g ??
                 0;
 
-            } else {
+            }
+
+            else {
 
               alert(
                 'Product not found; enter nutrition manually.'
@@ -1491,39 +1768,36 @@ if ($('scan')) {
 
             }
 
-          } else {
+          }
 
-            requestAnimationFrame(loop);
+          else {
+
+            requestAnimationFrame(
+              loop
+            );
 
           }
 
-        } catch (error) {
-
-          console.error(
-            'Barcode detection error:',
-            error
-          );
-
-        }
-
-      };
+        };
 
 
       loop();
 
-    } catch (error) {
+    }
 
-      alert(error.message);
+    catch (error) {
+
+      alert(
+        error.message
+      );
 
     }
 
   };
 
-}
-
 
 // ============================================================
-// Constellation Background
+// CONSTELLATION BACKGROUND
 // ============================================================
 
 const canvas =
@@ -1540,12 +1814,13 @@ if (canvas) {
 
   let stars = [];
 
-  let animationFrame;
+
+  const STAR_COUNT =
+    110;
 
 
-  const STAR_COUNT = 110;
-
-  const CONNECTION_DISTANCE = 130;
+  const CONNECTION_DISTANCE =
+    130;
 
 
   function resizeConstellation() {
@@ -1557,12 +1832,14 @@ if (canvas) {
     canvas.width =
       window.innerWidth * dpr;
 
+
     canvas.height =
       window.innerHeight * dpr;
 
 
     canvas.style.width =
       window.innerWidth + 'px';
+
 
     canvas.style.height =
       window.innerHeight + 'px';
@@ -1649,42 +1926,52 @@ if (canvas) {
     );
 
 
-    // --------------------------------------------------------
-    // Move + draw stars
-    // --------------------------------------------------------
-
-    for (const star of stars) {
+    for (
+      const star of stars
+    ) {
 
       star.x += star.vx;
 
       star.y += star.vy;
 
 
-      // Wrap horizontally
-      if (star.x < -10) {
+      if (
+        star.x < -10
+      ) {
+
         star.x =
           window.innerWidth + 10;
+
       }
+
 
       if (
         star.x >
         window.innerWidth + 10
       ) {
+
         star.x = -10;
+
       }
 
 
-      // Wrap vertically
-      if (star.y < -10) {
+      if (
+        star.y < -10
+      ) {
+
         star.y =
           window.innerHeight + 10;
+
       }
+
 
       if (
         star.y >
         window.innerHeight + 10
       ) {
+
         star.y = -10;
+
       }
 
 
@@ -1701,6 +1988,7 @@ if (canvas) {
 
 
       // Glow
+
       ctx.beginPath();
 
       ctx.arc(
@@ -1723,6 +2011,7 @@ if (canvas) {
 
 
       // Star
+
       ctx.beginPath();
 
       ctx.arc(
@@ -1746,9 +2035,7 @@ if (canvas) {
     }
 
 
-    // --------------------------------------------------------
-    // Connect nearby stars
-    // --------------------------------------------------------
+    // Connections
 
     for (
       let i = 0;
@@ -1799,10 +2086,12 @@ if (canvas) {
 
           ctx.beginPath();
 
+
           ctx.moveTo(
             a.x,
             a.y
           );
+
 
           ctx.lineTo(
             b.x,
@@ -1827,10 +2116,9 @@ if (canvas) {
     }
 
 
-    animationFrame =
-      requestAnimationFrame(
-        drawConstellation
-      );
+    requestAnimationFrame(
+      drawConstellation
+    );
 
   }
 
