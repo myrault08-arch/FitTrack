@@ -110,8 +110,9 @@ button:hover {
 /* ================= Forms ================= */
 
 .card form {
-  display: grid;
-  gap: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin: 10px 0;
 }
 
@@ -126,6 +127,31 @@ button:hover {
 .card form button {
   background: #2563eb;
   border: 0;
+}
+
+/* ---- Label beside input ---- */
+
+.form-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-row label {
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+.form-row input {
+  width: 100%;
+}
+
+@media (max-width: 500px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
 }
 
 /* ================= Workout / PPL ================= */
@@ -166,6 +192,7 @@ video {
     font-size: 14px;
   }
 }
+
 /* ================================
    Constellation Background
 ================================ */
