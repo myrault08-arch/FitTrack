@@ -1,201 +1,10 @@
+/* ============================================================
+   GLOBAL
+   ============================================================ */
+
 * {
   box-sizing: border-box;
 }
-
-body {
-  margin: 0;
-  padding: 0 14px;
-  background: #0b1220;
-  color: #e5e7eb;
-  font: 15px system-ui;
-}
-
-/* ================= Layout ================= */
-
-header {
-  max-width: 1050px;
-  margin: auto;
-  padding: 20px 0;
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-header h1 {
-  margin: 0;
-}
-
-header span {
-  color: #94a3b8;
-}
-
-header button {
-  margin-left: auto;
-}
-
-main,
-#auth {
-  max-width: 1050px;
-  margin: auto;
-}
-
-nav {
-  display: flex;
-  gap: 8px;
-  overflow: auto;
-  padding-bottom: 15px;
-}
-
-.page {
-  min-height: 300px;
-}
-
-/* ================= Buttons ================= */
-
-button {
-  padding: 10px 14px;
-  background: #172236;
-  color: #e5e7eb;
-  border: 1px solid #334155;
-  border-radius: 9px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #243451;
-}
-
-/* ================= Cards & grid ================= */
-
-.card {
-  margin-bottom: 14px;
-  padding: 18px;
-  background: #111827;
-  border: 1px solid #26344a;
-  border-radius: 15px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-.stat {
-  text-align: center;
-}
-
-/* ================= Dashboard elements ================= */
-
-.big {
-  margin: 15px 0;
-  font-size: 32px;
-}
-
-.bar {
-  height: 10px;
-  background: #25334a;
-  border-radius: 20px;
-  overflow: hidden;
-}
-
-.bar i {
-  display: block;
-  height: 100%;
-  width: 0;
-  background: #3b82f6;
-}
-
-/* ================= Forms ================= */
-
-.card form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 10px 0;
-}
-
-.card input {
-  padding: 11px;
-  background: #0b1220;
-  color: #fff;
-  border: 1px solid #334155;
-  border-radius: 8px;
-}
-
-.card form button {
-  background: #2563eb;
-  border: 0;
-}
-
-/* ---- Label beside input ---- */
-
-.form-row {
-  display: grid;
-  grid-template-columns: 130px 1fr;
-  align-items: center;
-  gap: 12px;
-}
-
-.form-row label {
-  font-size: 14px;
-  color: #cbd5e1;
-}
-
-.form-row input {
-  width: 100%;
-}
-
-@media (max-width: 500px) {
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 5px;
-  }
-}
-
-/* ================= Workout / PPL ================= */
-
-.ppl {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-/* ================= Rows / lists ================= */
-
-.row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  border-bottom: 1px solid #26344a;
-}
-
-/* ================= Barcode scanner ================= */
-
-video {
-  width: 100%;
-  max-height: 350px;
-  margin: 10px 0;
-  border-radius: 10px;
-  background: #000;
-}
-
-/* ================= Responsive ================= */
-
-@media (max-width: 650px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  body {
-    font-size: 14px;
-  }
-}
-
-/* ================================
-   Constellation Background
-================================ */
 
 html,
 body {
@@ -204,31 +13,54 @@ body {
 }
 
 body {
+  padding: 0 14px;
+
   background:
-    radial-gradient(circle at 20% 20%, rgba(70, 90, 180, 0.12), transparent 30%),
-    radial-gradient(circle at 80% 70%, rgba(120, 60, 180, 0.10), transparent 30%),
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(70, 90, 180, 0.12),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(120, 60, 180, 0.10),
+      transparent 30%
+    ),
     #050812;
 
-  color: #fff;
+  color: #e5e7eb;
+  font: 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
   position: relative;
   overflow-x: hidden;
 }
 
-/* Canvas fills the entire background */
+
+/* ============================================================
+   CONSTELLATION BACKGROUND
+   ============================================================ */
+
 #constellation {
   position: fixed;
   inset: 0;
+
   width: 100%;
   height: 100%;
+
   z-index: -2;
   pointer-events: none;
 }
 
-/* Dark overlay for readability */
+
+/* Dark readability overlay */
+
 body::before {
   content: "";
+
   position: fixed;
   inset: 0;
+
   z-index: -1;
   pointer-events: none;
 
@@ -241,42 +73,700 @@ body::before {
     );
 }
 
-/* Make sure your app stays above the canvas */
-header,
-main,
-#auth {
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+
+header {
+  max-width: 1050px;
+
+  margin: auto;
+  padding: 20px 0;
+
+  display: flex;
+  gap: 15px;
+
+  align-items: center;
+  flex-wrap: wrap;
+
   position: relative;
   z-index: 1;
 }
-.bmi-card h2{
-  font-size:42px;
-  margin:10px 0 6px;
+
+header h1 {
+  margin: 0;
+
+  font-size: 28px;
+  font-weight: 700;
 }
 
-.bmi{
-  display:inline-block;
-  padding:6px 14px;
-  border-radius:999px;
-  font-size:13px;
-  font-weight:600;
+header span {
+  color: #94a3b8;
 }
 
-.normal{
-  background:#14532d;
-  color:#86efac;
+header button {
+  margin-left: auto;
 }
 
-.over{
-  background:#78350f;
-  color:#fcd34d;
+
+main,
+#auth {
+  max-width: 1050px;
+  margin: auto;
+
+  position: relative;
+  z-index: 1;
 }
 
-.obese{
-  background:#7f1d1d;
-  color:#fca5a5;
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+nav {
+  display: flex;
+  gap: 8px;
+
+  overflow-x: auto;
+
+  padding-bottom: 15px;
+
+  scrollbar-width: thin;
 }
 
-.under{
-  background:#1e3a8a;
-  color:#93c5fd;
+nav button {
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   PAGES
+   ============================================================ */
+
+.page {
+  min-height: 300px;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+button {
+  padding: 10px 14px;
+
+  background: #172236;
+  color: #e5e7eb;
+
+  border: 1px solid #334155;
+  border-radius: 9px;
+
+  cursor: pointer;
+
+  font: inherit;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+button:hover {
+  background: #243451;
+  border-color: #475569;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+
+/* Primary buttons */
+
+.card form button {
+  background: #2563eb;
+  border: 0;
+  color: #fff;
+}
+
+.card form button:hover {
+  background: #1d4ed8;
+}
+
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.card {
+  margin-bottom: 14px;
+  padding: 18px;
+
+  background: rgba(17, 24, 39, 0.92);
+
+  border: 1px solid #26344a;
+  border-radius: 15px;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+
+/* ============================================================
+   GRID
+   ============================================================ */
+
+.grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+
+.stat {
+  text-align: center;
+}
+
+.stat h2,
+.stat h3 {
+  margin-top: 0;
+}
+
+.stat .big {
+  margin: 10px 0;
+
+  font-size: 32px;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   DASHBOARD BIG NUMBERS
+   ============================================================ */
+
+.big {
+  margin: 15px 0;
+
+  font-size: 32px;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   CALORIE PROGRESS BAR
+   ============================================================ */
+
+.bar {
+  height: 10px;
+
+  background: #25334a;
+
+  border-radius: 20px;
+
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+
+  height: 100%;
+  width: 0;
+
+  background: #3b82f6;
+
+  border-radius: inherit;
+
+  transition: width 0.35s ease;
+}
+
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+
+.card form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  margin: 10px 0;
+}
+
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+.card input,
+.card select {
+  width: 100%;
+
+  padding: 11px;
+
+  background: #0b1220;
+
+  color: #fff;
+
+  border: 1px solid #334155;
+
+  border-radius: 8px;
+
+  font: inherit;
+
+  outline: none;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card input:focus,
+.card select:focus {
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+
+/* Select dropdown */
+
+.card select {
+  appearance: auto;
+
+  cursor: pointer;
+}
+
+
+/* Placeholder */
+
+.card input::placeholder {
+  color: #64748b;
+}
+
+
+/* ============================================================
+   READONLY CALCULATED FIELDS
+   ============================================================ */
+
+.card input[readonly] {
+  color: #93c5fd;
+
+  background: #0f1a2e;
+
+  border-color: #263d61;
+
+  cursor: not-allowed;
+}
+
+
+/* ============================================================
+   LABEL + INPUT ROW
+   ============================================================ */
+
+.form-row {
+  display: grid;
+
+  grid-template-columns:
+    130px minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.form-row label {
+  font-size: 14px;
+
+  color: #cbd5e1;
+
+  font-weight: 500;
+}
+
+.form-row input,
+.form-row select {
+  width: 100%;
+}
+
+
+/* Small description beneath a field */
+
+.form-help {
+  margin-top: -4px;
+
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+
+/* ============================================================
+   SETTINGS SECTIONS
+   ============================================================ */
+
+.settings-section {
+  margin-bottom: 20px;
+}
+
+.settings-section h3 {
+  margin-bottom: 12px;
+
+  font-size: 16px;
+
+  color: #f8fafc;
+}
+
+
+/* ============================================================
+   BMI CARD
+   ============================================================ */
+
+.bmi-card {
+  position: relative;
+
+  overflow: hidden;
+}
+
+.bmi-card h2 {
+  font-size: 42px;
+
+  line-height: 1;
+
+  margin: 10px 0 8px;
+
+  font-weight: 700;
+}
+
+.bmi-card p {
+  margin: 0;
+
+  color: #94a3b8;
+}
+
+
+/* ============================================================
+   BMI STATUS BADGE
+   ============================================================ */
+
+.bmi {
+  display: inline-block;
+
+  padding: 6px 14px;
+
+  border-radius: 999px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  line-height: 1.2;
+}
+
+
+/* Normal BMI */
+
+.normal {
+  background: #14532d;
+
+  color: #86efac;
+}
+
+
+/* Overweight */
+
+.over {
+  background: #78350f;
+
+  color: #fcd34d;
+}
+
+
+/* Obese */
+
+.obese {
+  background: #7f1d1d;
+
+  color: #fca5a5;
+}
+
+
+/* Underweight */
+
+.under {
+  background: #1e3a8a;
+
+  color: #93c5fd;
+}
+
+
+/* ============================================================
+   MACROS
+   ============================================================ */
+
+#macros {
+  margin-top: 5px;
+}
+
+#macros .row {
+  padding: 12px 10px;
+}
+
+#macros .row b {
+  color: #93c5fd;
+}
+
+
+/* ============================================================
+   WORKOUT / PPL
+   ============================================================ */
+
+.ppl {
+  display: flex;
+
+  gap: 8px;
+
+  margin-bottom: 10px;
+
+  flex-wrap: wrap;
+}
+
+.ppl button {
+  flex: 1;
+
+  min-width: 90px;
+}
+
+
+/* ============================================================
+   ROWS / LISTS
+   ============================================================ */
+
+.row {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 10px;
+
+  border-bottom: 1px solid #26344a;
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row span {
+  min-width: 0;
+}
+
+.row small {
+  color: #94a3b8;
+}
+
+.row button {
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+
+#auth {
+  max-width: 450px;
+
+  margin: 50px auto;
+}
+
+#auth .card {
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+#authTitle {
+  margin-top: 0;
+
+  text-align: center;
+}
+
+
+/* Auth message */
+
+#authMsg {
+  color: #fca5a5;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   SETTINGS SUCCESS MESSAGE
+   ============================================================ */
+
+#settingsMsg {
+  min-height: 18px;
+
+  color: #86efac;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   BARCODE SCANNER
+   ============================================================ */
+
+video {
+  width: 100%;
+
+  max-height: 350px;
+
+  margin: 10px 0;
+
+  border-radius: 10px;
+
+  background: #000;
+
+  object-fit: cover;
+}
+
+
+/* ============================================================
+   FOOD LIST
+   ============================================================ */
+
+#foodList {
+  margin-top: 10px;
+}
+
+
+/* ============================================================
+   EXERCISE LIST
+   ============================================================ */
+
+#exList {
+  margin-top: 10px;
+}
+
+
+/* ============================================================
+   WEIGHT HISTORY
+   ============================================================ */
+
+#history {
+  margin-top: 10px;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 650px) {
+
+  body {
+    font-size: 14px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  header {
+    padding-top: 15px;
+  }
+
+  header h1 {
+    font-size: 24px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 500px) {
+
+  .form-row {
+    grid-template-columns: 1fr;
+
+    gap: 5px;
+  }
+
+  .form-row label {
+    margin-bottom: 2px;
+  }
+
+  .bmi-card h2 {
+    font-size: 36px;
+  }
+
+  .big {
+    font-size: 28px;
+  }
+
+  .row {
+    align-items: flex-start;
+  }
+
+  .row button {
+    padding: 8px 10px;
+  }
+
+}
+
+
+/* ============================================================
+   VERY SMALL SCREENS
+   ============================================================ */
+
+@media (max-width: 360px) {
+
+  body {
+    padding: 0 10px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  nav {
+    gap: 5px;
+  }
+
+  nav button {
+    padding: 8px 10px;
+  }
+
 }
