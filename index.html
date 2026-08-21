@@ -9,22 +9,64 @@
 <title>FitTrack</title>
 
 <link rel="stylesheet" href="styles.css">
-@@ -16,6 +15,7 @@
-<!-- ================= Constellation Background ================= -->
+</head>
+
+<body>
+
+  <!-- ================= Constellation Background ================= -->
+  <!-- ================= Background ================= -->
 <canvas id="constellation"></canvas>
 
 
 <!-- ================= Header ================= -->
 <header>
-<h1>FitTrack</h1>
-@@ -103,17 +103,16 @@
+    <h1>FitTrack</h1>
+
+    <span id="date"></span>
+    <div class="header-left">
+      <h1>FitTrack</h1>
+      <span id="date"></span>
+    </div>
+
+<button id="logout" hidden>
+Sign out
+</button>
+
+</header>
+
+
+<!-- ================= Authentication ================= -->
+<section id="auth">
+
+    <div class="card">
+    <div class="card auth-card">
+
+      <h2 id="authTitle">
+        Sign in
+      </h2>
+      <h2 id="authTitle">Sign in</h2>
+
+<form id="authForm">
+
+@@ -73,7 +74,7 @@ <h2 id="authTitle">
+</section>
+
+
+  <!-- ================= Main Application ================= -->
+  <!-- ================= Application ================= -->
+<main id="app" hidden>
+
+
+@@ -103,13 +104,15 @@ <h2 id="authTitle">
 </nav>
 
 
-    <!-- ================= Dashboard ================= -->
     <!-- =====================================================
-         DASHBOARD
+    <!-- =================================================
+        DASHBOARD
          ===================================================== -->
+         ================================================= -->
+
 <section id="dash" class="page">
 
 <div class="grid">
@@ -32,432 +74,254 @@
         <!-- Calories -->
 <div class="card">
 
-          <h2>
-            Calories
-          </h2>
-          <h2>Calories</h2>
-
-<div class="big">
-<b id="cal">0</b>
-@@ -129,12 +128,9 @@
+<h2>Calories</h2>
+@@ -128,6 +131,7 @@ <h2>Calories</h2>
 </div>
 
 
         <!-- Macros -->
 <div class="card">
 
-          <h2>
-            Macros
-          </h2>
-          <h2>Macros</h2>
-
-<div id="macros"></div>
-
-@@ -143,7 +139,6 @@
+<h2>Macros</h2>
+@@ -139,23 +143,23 @@ <h2>Macros</h2>
 </div>
 
 
+      <div class="grid">
       <!-- Statistics -->
-<div class="grid">
+      <div class="grid stats-grid">
 
 <div class="card stat">
-@@ -169,73 +164,178 @@
+          Weight
+          <br>
+          <b id="weightDash">73</b> kg
+          <span>Weight</span>
+          <b>
+            <span id="weightDash">73</span> kg
+          </b>
+</div>
+
+<div class="card stat">
+          Steps
+          <br>
+          <span>Steps</span>
+<b id="stepsDash">0</b>
+</div>
+
+<div class="card stat">
+          Workout
+          <br>
+          <span>Workout</span>
+<b id="workoutDash">Rest</b>
+</div>
+
+@@ -164,25 +168,27 @@ <h2>Macros</h2>
 </section>
 
 
-    <!-- ================= Food ================= -->
     <!-- =====================================================
-         FOOD
+    <!-- =================================================
+        FOOD
          ===================================================== -->
+         ================================================= -->
+
 <section id="food" class="page" hidden>
 
 <div class="card">
 
-        <h2>
-          Scan / Add Food
-        </h2>
         <h2>🍎 Add Food</h2>
 
-        <button id="scan" type="button">
-          📷 Scan barcode
-        </button>
         <p class="section-description">
           Add the food you ate today and track its nutritional values.
         </p>
-
-        <video
-          id="video"
-          playsinline
-          hidden
-        ></video>
-
-        <!-- Barcode -->
-        <div class="food-scan">
-
-        <form id="foodForm">
-          <button id="scan" type="button">
-            📷 Scan Barcode
-          </button>
-
-          <input
-            id="fname"
-            placeholder="Food name"
-            required
-          >
-          <video
-            id="video"
-            playsinline
-            hidden
-          ></video>
-
-          <input
-            id="serving"
-            placeholder="Serving"
-          >
+        <div class="card-header">
+          <div>
+            <h2>Food</h2>
+            <p>Add the food you ate today.</p>
+          </div>
         </div>
 
-          <input
-            id="fcal"
-            type="number"
-            placeholder="Calories"
-            required
-          >
 
-          <input
-            id="fp"
-            type="number"
-            step=".1"
-            placeholder="Protein g"
-            required
-          >
+<!-- Barcode -->
+        <div class="food-scan">
+        <div class="scan-area">
+
+<button id="scan" type="button">
+            📷 Scan Barcode
+            📷 Scan barcode
+</button>
+
+<video
+@@ -194,7 +200,8 @@ <h2>🍎 Add Food</h2>
+</div>
+
+
         <form id="foodForm" class="form-layout">
-
-          <input
-            id="fc"
-            type="number"
-            step=".1"
-            placeholder="Carbs g"
-            required
-          >
-
-          <input
-            id="ff"
-            type="number"
-            step=".1"
-            placeholder="Fat g"
-            required
-          >
-          <!-- Food Name -->
-          <div class="form-row">
-
-          <button type="submit">
-            Add food
-          </button>
-            <label for="fname">
-              Food Name
-            </label>
-
-            <input
-              id="fname"
-              type="text"
-              placeholder="e.g. Chicken breast"
-              required
-            >
-
-          </div>
+        <!-- Food Form -->
+        <form id="foodForm" class="labeled-form">
 
 
-          <!-- Serving -->
-          <div class="form-row">
-
-            <label for="serving">
-              Serving
-            </label>
-
-            <input
-              id="serving"
-              type="text"
+<!-- Food Name -->
+@@ -224,7 +231,7 @@ <h2>🍎 Add Food</h2>
+<input
+id="serving"
+type="text"
               placeholder="e.g. 100g or 1 cup"
-            >
+              placeholder="e.g. 100g"
+>
 
-          </div>
-
-
-          <!-- Calories -->
-          <div class="form-row">
-
-            <label for="fcal">
-              Calories
-            </label>
+</div>
+@@ -237,7 +244,7 @@ <h2>🍎 Add Food</h2>
+Calories
+</label>
 
             <div class="input-unit">
+            <div class="unit-input">
 
-              <input
-                id="fcal"
-                type="number"
-                placeholder="0"
-                min="0"
-                required
-              >
-
-              <span>kcal</span>
-
-            </div>
-
-          </div>
-
-
-          <!-- Protein -->
-          <div class="form-row">
-
-            <label for="fp">
-              Protein
-            </label>
+<input
+id="fcal"
+@@ -261,7 +268,7 @@ <h2>🍎 Add Food</h2>
+Protein
+</label>
 
             <div class="input-unit">
+            <div class="unit-input">
 
-              <input
-                id="fp"
-                type="number"
-                step=".1"
-                placeholder="0"
-                min="0"
-                required
-              >
+<input
+id="fp"
+@@ -283,10 +290,10 @@ <h2>🍎 Add Food</h2>
+<div class="form-row">
 
-              <span>g</span>
-
-            </div>
-
-          </div>
-
-
-          <!-- Carbs -->
-          <div class="form-row">
-
-            <label for="fc">
+<label for="fc">
               Carbohydrates
-            </label>
+              Carbs
+</label>
 
             <div class="input-unit">
+            <div class="unit-input">
 
-              <input
-                id="fc"
-                type="number"
-                step=".1"
-                placeholder="0"
-                min="0"
-                required
-              >
-
-              <span>g</span>
-
-            </div>
-
-          </div>
-
-
-          <!-- Fat -->
-          <div class="form-row">
-
-            <label for="ff">
-              Fat
-            </label>
+<input
+id="fc"
+@@ -311,7 +318,7 @@ <h2>🍎 Add Food</h2>
+Fat
+</label>
 
             <div class="input-unit">
+            <div class="unit-input">
 
-              <input
-                id="ff"
-                type="number"
-                step=".1"
-                placeholder="0"
-                min="0"
-                required
-              >
+<input
+id="ff"
+@@ -332,7 +339,7 @@ <h2>🍎 Add Food</h2>
+<div class="form-actions">
 
-              <span>g</span>
-
-            </div>
-
-          </div>
-
-
-          <div class="form-actions">
-
-            <button type="submit">
+<button type="submit">
               ➕ Add Food
-            </button>
+              Add food
+</button>
 
-          </div>
-
-</form>
-
-@@ -245,9 +345,7 @@
+</div>
+@@ -345,7 +352,12 @@ <h2>🍎 Add Food</h2>
 <!-- Today's Food -->
 <div class="card">
 
-        <h2>
-          Today's food
-        </h2>
         <h2>🍽️ Today's Food</h2>
+        <div class="card-header">
+          <div>
+            <h2>Today's Food</h2>
+            <p>Food you've added today.</p>
+          </div>
+        </div>
 
 <div id="foodList"></div>
 
-@@ -256,17 +354,21 @@
+@@ -354,21 +366,23 @@ <h2>🍽️ Today's Food</h2>
 </section>
 
 
-    <!-- ================= Workout ================= -->
     <!-- =====================================================
-         WORKOUT
+    <!-- =================================================
+        WORKOUT
          ===================================================== -->
+         ================================================= -->
+
 <section id="workout" class="page" hidden>
 
 <div class="card">
 
-        <h2>
-          PPL Workout
-        </h2>
         <h2>💪 PPL Workout</h2>
 
         <p class="section-description">
           Select your workout and add the exercises you completed.
         </p>
+        <div class="card-header">
+          <div>
+            <h2>Workout</h2>
+            <p>Build your PPL workout.</p>
+          </div>
+        </div>
 
 
-        <!-- Push / Pull / Legs -->
         <!-- Push Pull Legs -->
+        <!-- PPL -->
 <div class="ppl">
 
 <button
-@@ -293,89 +395,169 @@
+@@ -395,7 +409,8 @@ <h2>💪 PPL Workout</h2>
 </div>
 
 
-        <!-- Exercise Form -->
-        <form id="exForm">
         <form id="exForm" class="form-layout">
-
-          <input
-            id="ename"
-            placeholder="Exercise"
-            required
-          >
-
-          <input
-            id="sets"
-            type="number"
-            value="3"
-            placeholder="Sets"
-          >
-          <!-- Exercise -->
-          <div class="form-row">
-
-          <input
-            id="reps"
-            type="number"
-            value="10"
-            placeholder="Reps"
-          >
-            <label for="ename">
-              Exercise
-            </label>
-
-          <input
-            id="ew"
-            type="number"
-            step=".5"
-            value="0"
-            placeholder="Weight kg"
-          >
-            <input
-              id="ename"
-              type="text"
-              placeholder="e.g. Bench Press"
-              required
-            >
-
-          <button type="submit">
-            Add exercise
-          </button>
-          </div>
+        <!-- Exercise Form -->
+        <form id="exForm" class="labeled-form">
 
 
-          <!-- Sets -->
-          <div class="form-row">
+<!-- Exercise -->
+@@ -427,6 +442,7 @@ <h2>💪 PPL Workout</h2>
+type="number"
+value="3"
+min="1"
+              placeholder="Sets"
+>
 
-            <label for="sets">
-              Sets
-            </label>
+</div>
+@@ -444,6 +460,7 @@ <h2>💪 PPL Workout</h2>
+type="number"
+value="10"
+min="1"
+              placeholder="Reps"
+>
 
-            <input
-              id="sets"
-              type="number"
-              value="3"
-              min="1"
-            >
-
-          </div>
-
-
-          <!-- Reps -->
-          <div class="form-row">
-
-            <label for="reps">
-              Reps
-            </label>
-
-            <input
-              id="reps"
-              type="number"
-              value="10"
-              min="1"
-            >
-
-          </div>
-
-
-          <!-- Weight -->
-          <div class="form-row">
-
-            <label for="ew">
-              Weight
-            </label>
+</div>
+@@ -456,14 +473,15 @@ <h2>💪 PPL Workout</h2>
+Weight
+</label>
 
             <div class="input-unit">
+            <div class="unit-input">
 
-              <input
-                id="ew"
-                type="number"
-                step=".5"
-                value="0"
-                min="0"
-              >
+<input
+id="ew"
+type="number"
+step=".5"
+value="0"
+min="0"
+                placeholder="Weight"
+>
 
-              <span>kg</span>
+<span>kg</span>
+@@ -476,32 +494,34 @@ <h2>💪 PPL Workout</h2>
+<div class="form-actions">
 
-            </div>
-
-          </div>
-
-
-          <div class="form-actions">
-
-            <button type="submit">
+<button type="submit">
               ➕ Add Exercise
-            </button>
+              Add exercise
+</button>
 
-          </div>
+</div>
 
 </form>
 
 
-        <button
-          id="finish"
-          type="button"
-        >
-          Finish workout
-        </button>
         <div class="workout-finish">
 
           <button
@@ -468,6 +332,13 @@
           </button>
 
         </div>
+        <button
+          id="finish"
+          type="button"
+          class="finish-button"
+        >
+          Finish workout
+        </button>
 
 </div>
 
@@ -476,400 +347,311 @@
 <div class="card">
 
         <h2>Today's Exercises</h2>
+        <div class="card-header">
+          <div>
+            <h2>Exercises</h2>
+            <p>Your current workout.</p>
+          </div>
+        </div>
 
 <div id="exList"></div>
 
-</div>
-
+@@ -510,9 +530,10 @@ <h2>Today's Exercises</h2>
 </section>
 
 
-    <!-- ================= Progress ================= -->
     <!-- =====================================================
-         PROGRESS
+    <!-- =================================================
+        PROGRESS
          ===================================================== -->
+         ================================================= -->
+
 <section id="progress" class="page" hidden>
 
 <div class="grid">
-
-
+@@ -521,27 +542,27 @@ <h2>Today's Exercises</h2>
 <!-- Weight -->
 <div class="card">
 
-          <h2>
-            Weight
-          </h2>
           <h2>⚖️ Weight</h2>
+          <h2>Weight</h2>
 
-          <form id="weightForm">
           <p class="section-description">
-            Record your current body weight.
-          </p>
+          <p class="description">
+Record your current body weight.
+</p>
 
-            <input
-              id="weightInput"
-              type="number"
-              step=".1"
-              placeholder="Weight kg"
-              required
-            >
           <form id="weightForm" class="form-layout">
+          <form id="weightForm" class="labeled-form">
 
-            <button type="submit">
-              Save weight
-            </button>
-            <div class="form-row">
+<div class="form-row">
 
-              <label for="weightInput">
+<label for="weightInput">
                 Current Weight
-              </label>
+                Weight
+</label>
 
               <div class="input-unit">
+              <div class="unit-input">
 
-                <input
-                  id="weightInput"
-                  type="number"
-                  step=".1"
+<input
+id="weightInput"
+type="number"
+step=".1"
                   placeholder="e.g. 73"
-                  required
-                >
+                  placeholder="73"
+required
+>
 
-                <span>kg</span>
+@@ -554,7 +575,7 @@ <h2>⚖️ Weight</h2>
+<div class="form-actions">
 
-              </div>
-
-            </div>
-
-            <div class="form-actions">
-
-              <button type="submit">
+<button type="submit">
                 Save Weight
-              </button>
+                Save weight
+</button>
 
-            </div>
-
-</form>
-
-@@ -385,22 +567,43 @@
+</div>
+@@ -567,26 +588,26 @@ <h2>⚖️ Weight</h2>
 <!-- Steps -->
 <div class="card">
 
-          <h2>
-            Steps
-          </h2>
           <h2>🚶 Steps</h2>
+          <h2>Steps</h2>
 
-          <form id="stepsForm">
           <p class="section-description">
             Record the number of steps you walked today.
-          </p>
+          <p class="description">
+            Record how many steps you walked today.
+</p>
 
-            <input
-              id="stepsInput"
-              type="number"
-              placeholder="Daily steps"
-              required
-            >
           <form id="stepsForm" class="form-layout">
+          <form id="stepsForm" class="labeled-form">
 
-            <button type="submit">
-              Save steps
-            </button>
-            <div class="form-row">
+<div class="form-row">
 
-              <label for="stepsInput">
+<label for="stepsInput">
                 Today's Steps
-              </label>
+                Daily Steps
+</label>
 
               <div class="input-unit">
+              <div class="unit-input">
 
-                <input
-                  id="stepsInput"
-                  type="number"
+<input
+id="stepsInput"
+type="number"
                   placeholder="e.g. 10000"
-                  min="0"
-                  required
-                >
+                  placeholder="10000"
+min="0"
+required
+>
+@@ -600,7 +621,7 @@ <h2>🚶 Steps</h2>
+<div class="form-actions">
 
-                <span>steps</span>
-
-              </div>
-
-            </div>
-
-            <div class="form-actions">
-
-              <button type="submit">
+<button type="submit">
                 Save Steps
-              </button>
+                Save steps
+</button>
 
-            </div>
-
-</form>
-
-@@ -412,9 +615,7 @@
+</div>
+@@ -615,7 +636,7 @@ <h2>🚶 Steps</h2>
 <!-- History -->
 <div class="card">
 
-        <h2>
-          History
-        </h2>
         <h2>📊 History</h2>
+        <h2>History</h2>
 
 <div id="history"></div>
 
-@@ -423,204 +624,194 @@
+@@ -624,23 +645,32 @@ <h2>📊 History</h2>
 </section>
 
 
-    <!-- ================= Settings ================= -->
     <!-- =====================================================
-         SETTINGS
+    <!-- =================================================
+        SETTINGS
          ===================================================== -->
+         ================================================= -->
+
 <section id="settings" class="page" hidden>
 
 <div class="card settings-card">
 
-        <h2>
-          Goals
-        </h2>
         <h2>⚙️ Goals & Settings</h2>
+        <div class="card-header">
 
         <p class="section-description">
           Set your personal information and daily fitness goals.
         </p>
+          <div>
+
+            <h2>Settings</h2>
+
+            <p>
+              Configure your personal information and daily goals.
+            </p>
+
+          </div>
+
+        </div>
 
 
 <form
 id="settingsForm"
-          class="settings-form"
           class="form-layout"
+          class="labeled-form"
 >
 
 
-<!-- Age -->
-          <div class="setting-row">
-          <div class="form-row">
-
-<label for="age">
+@@ -651,12 +681,12 @@ <h2>⚙️ Goals & Settings</h2>
 Age
 </label>
 
-            <div class="setting-input">
             <div class="input-unit">
+            <div class="unit-input">
 
 <input
 id="age"
 type="number"
-                placeholder="Enter age"
                 placeholder="e.g. 31"
+                placeholder="31"
 min="1"
 max="120"
 >
-
-              <span>
-                years
-              </span>
-              <span>years</span>
-
-</div>
-
-</div>
-
-
-<!-- Height -->
-          <div class="setting-row">
-          <div class="form-row">
-
-<label for="height">
+@@ -675,12 +705,12 @@ <h2>⚙️ Goals & Settings</h2>
 Height
 </label>
 
-            <div class="setting-input">
             <div class="input-unit">
+            <div class="unit-input">
 
 <input
 id="height"
 type="number"
-                placeholder="Enter height"
                 placeholder="e.g. 170"
+                placeholder="170"
 min="50"
 max="250"
 >
-
-              <span>
-                cm
-              </span>
-              <span>cm</span>
-
-</div>
-
-</div>
-
-
-<!-- Calories -->
-          <div class="setting-row">
-          <div class="form-row">
+@@ -696,15 +726,15 @@ <h2>⚙️ Goals & Settings</h2>
+<div class="form-row">
 
 <label for="goalCal">
-Daily Calories
+              Daily Calories
+              Calories
 </label>
 
-            <div class="setting-input">
             <div class="input-unit">
+            <div class="unit-input">
 
 <input
 id="goalCal"
 type="number"
-                placeholder="Enter calorie goal"
                 placeholder="e.g. 1950"
+                placeholder="1950"
 min="1"
 >
 
-              <span>
-                kcal
-              </span>
-              <span>kcal</span>
-
-</div>
-
-</div>
-
-
-<!-- Protein -->
-          <div class="setting-row">
-          <div class="form-row">
+@@ -719,15 +749,15 @@ <h2>⚙️ Goals & Settings</h2>
+<div class="form-row">
 
 <label for="goalP">
-              Protein
               Protein Goal
+              Protein
 </label>
 
-            <div class="setting-input">
             <div class="input-unit">
+            <div class="unit-input">
 
 <input
 id="goalP"
 type="number"
-                placeholder="Enter protein goal"
                 placeholder="e.g. 140"
+                placeholder="140"
 min="0"
 >
 
-              <span>
-                g
-              </span>
-              <span>g</span>
-
-</div>
-
-</div>
-
-
-<!-- Carbs -->
-          <div class="setting-row">
-          <div class="form-row">
+@@ -742,15 +772,15 @@ <h2>⚙️ Goals & Settings</h2>
+<div class="form-row">
 
 <label for="goalC">
-              Carbohydrates
               Carbohydrate Goal
+              Carbs
 </label>
 
-            <div class="setting-input">
             <div class="input-unit">
+            <div class="unit-input">
 
 <input
 id="goalC"
 type="number"
-                placeholder="Enter carb goal"
                 placeholder="e.g. 200"
+                placeholder="200"
 min="0"
 >
 
-              <span>
-                g
-              </span>
-              <span>g</span>
-
-</div>
-
-</div>
-
-
-<!-- Fat -->
-          <div class="setting-row">
-          <div class="form-row">
+@@ -765,15 +795,15 @@ <h2>⚙️ Goals & Settings</h2>
+<div class="form-row">
 
 <label for="goalF">
-              Fat
               Fat Goal
+              Fat
 </label>
 
-            <div class="setting-input">
             <div class="input-unit">
+            <div class="unit-input">
 
 <input
 id="goalF"
 type="number"
-                placeholder="Enter fat goal"
                 placeholder="e.g. 60"
+                placeholder="60"
 min="0"
 >
 
-              <span>
-                g
-              </span>
-              <span>g</span>
-
-</div>
-
-</div>
-
-
-<!-- Steps -->
-          <div class="setting-row">
-          <div class="form-row">
+@@ -788,15 +818,15 @@ <h2>⚙️ Goals & Settings</h2>
+<div class="form-row">
 
 <label for="goalSteps">
-              Daily Steps
               Daily Step Goal
+              Daily Steps
 </label>
 
-            <div class="setting-input">
             <div class="input-unit">
+            <div class="unit-input">
 
 <input
 id="goalSteps"
 type="number"
-                placeholder="Enter step goal"
                 placeholder="e.g. 10000"
+                placeholder="10000"
 min="0"
 >
 
-              <span>
-                steps
-              </span>
-              <span>steps</span>
-
-</div>
-
-</div>
+@@ -808,10 +838,10 @@ <h2>⚙️ Goals & Settings</h2>
 
 
 <!-- Save -->
-          <div class="settings-actions">
           <div class="form-actions settings-actions">
+          <div class="form-actions">
 
 <button type="submit">
-              Save
               💾 Save Settings
+              Save Settings
 </button>
 
 </div>
-@@ -631,7 +822,6 @@
-
-</section>
+@@ -826,6 +856,7 @@ <h2>⚙️ Goals & Settings</h2>
 
 
-</main>
+<!-- ================= JavaScript ================= -->
 
+<script
+type="module"
+src="app.js"
+@@ -834,4 +865,3 @@ <h2>⚙️ Goals & Settings</h2>
+</body>
+
+</html>
+```
