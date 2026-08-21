@@ -1,130 +1,104 @@
-```css
 /* =========================================================
-   FitTrack
-   Main Styles
    FitTrack CSS
-  ========================================================= */
+   ========================================================= */
 
-
-/* ================= Global ================= */
 /* ================= RESET ================= */
 
 * {
-box-sizing: border-box;
-@@ -25,43 +24,50 @@ body {
+  box-sizing: border-box;
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
 
-/* ================= Constellation Background ================= */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #080b12;
+  color: #ffffff;
+}
+
 /* ================= CONSTELLATION ================= */
 
 #constellation {
-position: fixed;
-inset: 0;
-
-width: 100%;
-height: 100%;
-
-z-index: -1;
-
-pointer-events: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
 }
 
-
-/* ================= Header ================= */
 /* ================= HEADER ================= */
 
 header {
   width: 100%;
-min-height: 70px;
-
-display: flex;
-align-items: center;
-
-padding: 15px 30px;
-
-  background: rgba(8, 11, 18, 0.85);
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 15px 30px;
   background: rgba(8, 11, 18, 0.88);
-
-border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
 }
 
 header h1 {
-margin: 0;
-
-font-size: 26px;
+  margin: 0;
+  font-size: 26px;
   font-weight: 700;
 }
 
 #date {
-margin-left: 20px;
-  color: #aaa;
-
+  margin-left: 20px;
   color: #999;
-
-font-size: 14px;
+  font-size: 14px;
 }
 
-@@ -70,34 +76,68 @@ header h1 {
+#logout {
+  margin-left: auto;
 }
 
-
-/* ================= Main ================= */
 /* ================= MAIN ================= */
 
 main {
-width: 100%;
-max-width: 1200px;
-
-  margin: 0 auto;
+  width: 100%;
+  max-width: 1200px;
   margin: auto;
-
-padding: 25px;
+  padding: 25px;
 }
 
-
-/* ================= Navigation ================= */
 /* ================= NAVIGATION ================= */
 
 nav {
-display: flex;
-flex-wrap: wrap;
-
-gap: 10px;
-
-margin-bottom: 25px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
 }
 
 nav button {
-flex: 1;
-
-min-width: 120px;
+  flex: 1;
+  min-width: 120px;
 }
 
+.page {
+  min-height: 300px;
+}
 
-/* ================= Cards ================= */
 /* ================= BUTTONS ================= */
 
 button {
   border: 0;
-
   border-radius: 8px;
-
   padding: 11px 16px;
-
   background: #202938;
-
   color: #ffffff;
-
   font-size: 14px;
-
   cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    transform 0.1s ease;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
 button:hover {
@@ -134,236 +108,164 @@ button:hover {
 button:active {
   transform: scale(0.98);
 }
-
 
 /* ================= CARDS ================= */
 
 .card {
-background: rgba(18, 23, 34, 0.88);
-@@ -108,107 +148,165 @@ nav button {
-
-padding: 22px;
-
+  background: rgba(18, 23, 34, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 22px;
+  margin-bottom: 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.25);
-
-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .card h2 {
-margin-top: 0;
-
+  margin-top: 0;
   margin-bottom: 10px;
 }
 
+.card-header {
+  margin-bottom: 15px;
+}
 
-/* ================= Grid ================= */
+.card-header p {
+  margin: 0;
+}
+
 /* ================= GRID ================= */
 
 .grid {
-display: grid;
-
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(250px, 1fr)
-  );
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(250px, 1fr)
-    );
-
-gap: 20px;
-
-margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
-
-/* ================= Buttons ================= */
 /* ================= INPUTS ================= */
 
-button {
-  border: none;
 input {
   width: 100%;
-
-  border-radius: 8px;
   padding: 12px 14px;
-
-  padding: 11px 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-
-  background: #202938;
   border-radius: 8px;
-
   background: rgba(7, 10, 16, 0.9);
-
-color: #ffffff;
-
+  color: #ffffff;
   outline: none;
-
-font-size: 14px;
+  font-size: 14px;
 }
 
-  cursor: pointer;
 input:focus {
   border-color: rgba(255, 255, 255, 0.35);
-
-  transition:
-    background 0.2s ease,
-    transform 0.1s ease;
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.04);
 }
 
-button:hover {
-  background: #2d394d;
 input::placeholder {
   color: #777;
 }
-
-button:active {
-  transform: scale(0.98);
 
 /* ================= FORMS ================= */
 
 .form-layout {
   display: flex;
-
   flex-direction: column;
-
   gap: 15px;
-
   margin-top: 20px;
 }
 
-
-/* ================= Inputs ================= */
-/* ================= FORM ROW ================= */
-
-input {
-  width: 100%;
 .form-row {
   display: grid;
-
-  padding: 12px 14px;
   grid-template-columns: 180px 1fr;
-
-  margin-bottom: 10px;
   align-items: center;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
   gap: 20px;
-
-  border-radius: 8px;
   min-height: 46px;
 }
 
-  background: rgba(7, 10, 16, 0.9);
-
-  color: #ffffff;
-/* ================= LABELS ================= */
-
-  outline: none;
 .form-row label {
   color: #ffffff;
-
-font-size: 14px;
-
+  font-size: 14px;
   font-weight: 600;
-
   text-align: left;
 }
 
-input:focus {
-  border-color: rgba(255, 255, 255, 0.35);
-
-/* ================= INPUT + UNIT ================= */
-
 .input-unit {
   display: flex;
-
   align-items: center;
-
   gap: 10px;
 }
 
-input::placeholder {
-  color: #777;
 .input-unit input {
   flex: 1;
 }
 
 .input-unit span {
   width: 55px;
-
-/* ================= Forms ================= */
   color: #888;
-
-form {
-  display: flex;
-  flex-direction: column;
   font-size: 13px;
 }
 
-form button {
-
-/* ================= FORM ACTIONS ================= */
-
 .form-actions {
   display: flex;
-
   justify-content: flex-end;
-
-margin-top: 5px;
+  margin-top: 5px;
 }
 
 .form-actions button {
   min-width: 120px;
 }
 
-
-/* ================= DESCRIPTION ================= */
-
 .section-description {
   margin-top: 0;
-
   margin-bottom: 20px;
-
   color: #888;
-
   font-size: 14px;
-
   line-height: 1.5;
 }
 
+/* ================= ROWS / LISTS ================= */
 
-/* ================= Authentication ================= */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row small {
+  color: #999;
+}
+
 /* =========================================================
    AUTH
    ========================================================= */
 
 #auth {
-min-height: calc(100vh - 100px);
-@@ -223,15 +321,33 @@ form button {
+  min-height: calc(100vh - 100px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
 
 #auth .card {
-width: 100%;
-
-max-width: 400px;
+  width: 100%;
+  max-width: 400px;
 }
 
 #auth h2 {
-text-align: center;
-
+  text-align: center;
   margin-bottom: 20px;
 }
 
-#auth #toggle {
 #authForm {
   display: flex;
-
   flex-direction: column;
 }
 
@@ -376,275 +278,169 @@ text-align: center;
 }
 
 #toggle {
-width: 100%;
-
-margin-top: 10px;
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
 }
 
-@@ -244,11 +360,14 @@ form button {
+#authMsg {
+  min-height: 20px;
+  text-align: center;
+  color: #aaa;
 }
 
-
-/* ================= Dashboard ================= */
 /* =========================================================
    DASHBOARD
    ========================================================= */
 
 .big {
-  font-size: 24px;
-margin: 15px 0;
-
+  margin: 15px 0;
   font-size: 24px;
 }
 
 .big b {
-@@ -268,10 +387,11 @@ form button {
+  font-size: 32px;
 }
 
+.stat {
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.8;
+}
 
-/* ================= Progress Bar ================= */
-/* ================= PROGRESS BAR ================= */
+.stat b {
+  font-size: 28px;
+}
+
+/* Progress bar */
 
 .bar {
-width: 100%;
-
-height: 10px;
-
-overflow: hidden;
-@@ -285,6 +405,7 @@ form button {
-display: block;
-
-width: 0%;
-
-height: 100%;
-
-border-radius: inherit;
-@@ -295,136 +416,99 @@ form button {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #202633;
 }
 
-
-/* ================= PPL ================= */
-
-.ppl {
-  display: flex;
-
-  gap: 10px;
-
-  margin-bottom: 15px;
+.bar i {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: #ffffff;
+  transition: width 0.3s ease;
 }
+
 /* =========================================================
    FOOD
    ========================================================= */
 
-.ppl button {
-  flex: 1;
 #food .card {
   margin-bottom: 20px;
 }
 
-
-/* ================= Settings ================= */
-/* Barcode */
-
-.settings-card {
-  width: 100%;
-  max-width: 750px;
 .food-scan {
   display: flex;
-
-  margin: 0 auto;
   margin-bottom: 10px;
 }
 
-.settings-card h2 {
-  margin-bottom: 25px;
 #scan {
   width: 100%;
 }
 
+video {
+  width: 100%;
+  max-height: 350px;
+  margin: 10px 0;
+  border-radius: 10px;
+  background: #000;
+  display: block;
+}
 
-/* Settings Form */
-
-.settings-form {
-  display: flex;
-
-  flex-direction: column;
 /* =========================================================
    WORKOUT
    ========================================================= */
 
-  gap: 14px;
 #workout .card {
   margin-bottom: 20px;
 }
 
-
-/* Individual Setting */
-/* Push Pull Legs */
-
-.setting-row {
 .ppl {
-display: grid;
-
-  grid-template-columns: 180px 1fr;
-
-  align-items: center;
-  grid-template-columns:
-    repeat(3, 1fr);
-
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-
-  min-height: 48px;
   margin-bottom: 20px;
 }
 
-
-/* Setting Label */
-
-.setting-row label {
-  color: #ffffff;
-
-  font-size: 15px;
-
-  font-weight: 600;
-
-  text-align: left;
 .ppl button {
   width: 100%;
 }
 
+.ppl button.active {
+  background: #2563eb;
+}
 
-/* Input + Unit */
-
-.setting-input {
-  display: flex;
-
-  align-items: center;
-/* Finish Workout */
-
-  gap: 10px;
 .workout-finish {
   margin-top: 15px;
 }
 
-
-/* Remove default bottom margin
-   because the unit is beside the input */
-
-.setting-input input {
-  flex: 1;
-
-  margin-bottom: 0;
-#finish {
+#finish,
+.finish-button {
   width: 100%;
+  margin-top: 15px;
+  background: #16a34a;
 }
 
-
-/* Units */
-
-.setting-input span {
-  width: 55px;
-
-  color: #888;
 /* =========================================================
    PROGRESS
    ========================================================= */
 
-  font-size: 14px;
 #progress .card {
   margin-bottom: 20px;
 }
 
-
-/* Save Button */
-
-.settings-actions {
-  display: flex;
 /* =========================================================
    SETTINGS
    ========================================================= */
 
-  justify-content: flex-end;
 .settings-card {
   width: 100%;
-
-  margin-top: 10px;
-}
   max-width: 750px;
-
-.settings-actions button {
-  min-width: 110px;
   margin: 0 auto;
 }
 
-
-/* ================= Food ================= */
-
-#food .card {
-  margin-bottom: 20px;
 .settings-card h2 {
   margin-bottom: 8px;
 }
 
-
-/* ================= Workout ================= */
-
-#workout .card {
-  margin-bottom: 20px;
 .settings-actions {
   margin-top: 10px;
 }
 
-
-/* ================= Responsive ================= */
 /* =========================================================
    RESPONSIVE
    ========================================================= */
 
 @media (max-width: 700px) {
+  header {
+    padding: 15px 20px;
+  }
 
-@@ -437,24 +521,30 @@ form button {
-}
+  main {
+    padding: 15px;
+  }
 
-
-  /* Settings */
   /* Labels above inputs */
 
-  .setting-row {
   .form-row {
-grid-template-columns: 1fr;
-
-gap: 7px;
-
-    align-items: stretch;
+    grid-template-columns: 1fr;
+    gap: 7px;
     min-height: auto;
-}
+  }
 
-  .setting-row label {
   .form-row label {
-font-size: 14px;
-}
-
-  .setting-input {
-    width: 100%;
-
-  /* Navigation */
-
-  nav button {
-    min-width: calc(50% - 5px);
-}
-
-
-  /* Settings */
-
-.settings-actions {
-justify-content: stretch;
-}
-@@ -463,17 +553,12 @@ form button {
-width: 100%;
-}
-
+    font-size: 14px;
+  }
 
   /* Navigation */
 
@@ -652,42 +448,48 @@ width: 100%;
     min-width: calc(50% - 5px);
   }
 
+  /* Settings */
+
+  .settings-actions {
+    justify-content: stretch;
+  }
+
+  .settings-actions button {
+    width: 100%;
+  }
 }
 
-
-/* ================= Small Phones ================= */
 /* =========================================================
    SMALL PHONES
    ========================================================= */
 
 @media (max-width: 450px) {
+  header {
+    flex-wrap: wrap;
+  }
 
-@@ -489,12 +574,26 @@ form button {
-margin-left: auto;
-}
+  header h1 {
+    font-size: 22px;
+  }
 
+  #date {
+    margin-left: auto;
+  }
 
   nav {
     display: grid;
-
-    grid-template-columns:
-      repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
-nav button {
-    min-width: 100%;
+  nav button {
     min-width: 0;
-}
+  }
 
-
-.ppl {
-    flex-direction: column;
+  .ppl {
     grid-template-columns: 1fr;
   }
 
-
   .input-unit {
     width: 100%;
-}
-
+  }
 }
