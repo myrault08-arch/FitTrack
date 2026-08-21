@@ -1,13 +1,9 @@
-```css
 /* =========================================================
-   FitTrack
-   Complete Stylesheet
+   FitTrack CSS
    ========================================================= */
 
 
-/* =========================================================
-   RESET
-   ========================================================= */
+/* ================= RESET ================= */
 
 * {
   box-sizing: border-box;
@@ -17,30 +13,21 @@ html,
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
   min-height: 100%;
 }
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-
   background: #080b12;
-
   color: #ffffff;
-
-  min-height: 100vh;
 }
 
 
-/* =========================================================
-   CONSTELLATION BACKGROUND
-   ========================================================= */
+/* ================= CONSTELLATION ================= */
 
 #constellation {
   position: fixed;
-
-  top: 0;
-  left: 0;
+  inset: 0;
 
   width: 100%;
   height: 100%;
@@ -51,15 +38,9 @@ body {
 }
 
 
-/* =========================================================
-   HEADER
-   ========================================================= */
+/* ================= HEADER ================= */
 
 header {
-  position: relative;
-  z-index: 10;
-
-  width: 100%;
   min-height: 70px;
 
   display: flex;
@@ -69,32 +50,22 @@ header {
 
   background: rgba(8, 11, 18, 0.88);
 
-  border-bottom:
-    1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 
   backdrop-filter: blur(10px);
-}
-
-.header-left {
-  display: flex;
-
-  align-items: center;
-
-  gap: 18px;
 }
 
 header h1 {
   margin: 0;
 
   font-size: 26px;
-
   font-weight: 700;
-
-  letter-spacing: 0.3px;
 }
 
 #date {
-  color: #888;
+  margin-left: 20px;
+
+  color: #999;
 
   font-size: 14px;
 }
@@ -104,64 +75,48 @@ header h1 {
 }
 
 
-/* =========================================================
-   MAIN
-   ========================================================= */
+/* ================= MAIN ================= */
 
 main {
-  position: relative;
-  z-index: 1;
-
   width: 100%;
-
   max-width: 1200px;
 
-  margin: 0 auto;
+  margin: auto;
 
   padding: 25px;
 }
 
 
-/* =========================================================
-   NAVIGATION
-   ========================================================= */
+/* ================= NAVIGATION ================= */
 
 nav {
   display: flex;
+  flex-wrap: wrap;
 
-  align-items: center;
-
-  gap: 8px;
+  gap: 10px;
 
   margin-bottom: 25px;
-
-  padding: 6px;
-
-  background:
-    rgba(15, 19, 28, 0.88);
-
-  border:
-    1px solid rgba(255, 255, 255, 0.08);
-
-  border-radius: 12px;
-
-  backdrop-filter: blur(10px);
 }
 
 nav button {
   flex: 1;
 
-  min-height: 42px;
+  min-width: 120px;
+}
 
-  padding: 10px 15px;
 
-  background: transparent;
+/* ================= BUTTONS ================= */
 
+button {
   border: 0;
 
   border-radius: 8px;
 
-  color: #999;
+  padding: 11px 16px;
+
+  background: #202938;
+
+  color: #ffffff;
 
   font-size: 14px;
 
@@ -169,112 +124,43 @@ nav button {
 
   transition:
     background 0.2s ease,
-    color 0.2s ease;
+    transform 0.1s ease;
 }
 
-nav button:hover {
-  background:
-    rgba(255, 255, 255, 0.06);
-
-  color: #ffffff;
+button:hover {
+  background: #2d394d;
 }
 
-nav button.active {
-  background:
-    rgba(255, 255, 255, 0.10);
-
-  color: #ffffff;
+button:active {
+  transform: scale(0.98);
 }
 
 
-/* =========================================================
-   PAGE
-   ========================================================= */
-
-.page {
-  width: 100%;
-
-  animation:
-    pageFade 0.2s ease;
-}
-
-@keyframes pageFade {
-
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-}
-
-
-/* =========================================================
-   CARDS
-   ========================================================= */
+/* ================= CARDS ================= */
 
 .card {
-  width: 100%;
+  background: rgba(18, 23, 34, 0.88);
 
-  padding: 22px;
-
-  margin-bottom: 20px;
-
-  background:
-    rgba(17, 22, 32, 0.88);
-
-  border:
-    1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   border-radius: 12px;
 
-  box-shadow:
-    0 12px 35px rgba(0, 0, 0, 0.25);
+  padding: 22px;
 
-  backdrop-filter: blur(10px);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.25);
+
+  backdrop-filter: blur(8px);
 }
 
 .card h2 {
-  margin: 0 0 15px;
+  margin-top: 0;
 
-  font-size: 20px;
-
-  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 
-/* =========================================================
-   CARD HEADER
-   ========================================================= */
-
-.card-header {
-  display: flex;
-
-  align-items: center;
-
-  margin-bottom: 18px;
-}
-
-.card-header h2 {
-  margin: 0 0 5px;
-}
-
-.card-header p {
-  margin: 0;
-
-  color: #777;
-
-  font-size: 13px;
-}
-
-
-/* =========================================================
-   GRID
-   ========================================================= */
+/* ================= GRID ================= */
 
 .grid {
   display: grid;
@@ -291,201 +177,110 @@ nav button.active {
 }
 
 
-/* =========================================================
-   BUTTONS
-   ========================================================= */
-
-button {
-  border: 0;
-
-  border-radius: 8px;
-
-  padding: 11px 16px;
-
-  background: #202938;
-
-  color: #ffffff;
-
-  font-family: inherit;
-
-  font-size: 14px;
-
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    transform 0.1s ease,
-    opacity 0.2s ease;
-}
-
-button:hover {
-  background: #2d394d;
-}
-
-button:active {
-  transform: scale(0.98);
-}
-
-button:disabled {
-  opacity: 0.5;
-
-  cursor: not-allowed;
-}
-
-
-/* =========================================================
-   INPUTS
-   ========================================================= */
+/* ================= INPUTS ================= */
 
 input {
   width: 100%;
 
-  height: 44px;
+  padding: 12px 14px;
 
-  padding: 0 13px;
-
-  background:
-    rgba(7, 10, 16, 0.90);
-
-  border:
-    1px solid rgba(255, 255, 255, 0.11);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 
   border-radius: 8px;
 
-  outline: none;
+  background: rgba(7, 10, 16, 0.9);
 
   color: #ffffff;
 
-  font-family: inherit;
+  outline: none;
 
   font-size: 14px;
-
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-input:hover {
-  border-color:
-    rgba(255, 255, 255, 0.18);
 }
 
 input:focus {
-  border-color:
-    rgba(255, 255, 255, 0.35);
-
-  background:
-    rgba(10, 14, 21, 0.95);
+  border-color: rgba(255, 255, 255, 0.35);
 
   box-shadow:
-    0 0 0 2px
-    rgba(255, 255, 255, 0.03);
+    0 0 0 2px rgba(255, 255, 255, 0.04);
 }
 
 input::placeholder {
-  color: #666;
+  color: #777;
 }
 
 
-/* Remove number arrows */
+/* ================= FORMS ================= */
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  opacity: 0.5;
-}
-
-
-/* =========================================================
-   FORM LAYOUT
-   ========================================================= */
-
-.labeled-form {
-  width: 100%;
-
+.form-layout {
   display: flex;
 
   flex-direction: column;
 
-  gap: 13px;
+  gap: 15px;
 
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 
-/* =========================================================
-   FORM ROW
-   ========================================================= */
+/* ================= FORM ROW ================= */
 
 .form-row {
   display: grid;
 
-  grid-template-columns:
-    150px 1fr;
+  grid-template-columns: 180px 1fr;
 
   align-items: center;
 
-  gap: 18px;
+  gap: 20px;
 
-  min-height: 44px;
+  min-height: 46px;
 }
 
+
+/* ================= LABELS ================= */
+
 .form-row label {
-  color: #ddd;
+  color: #ffffff;
 
   font-size: 14px;
 
   font-weight: 600;
 
-  line-height: 1.4;
-
   text-align: left;
 }
 
 
-/* =========================================================
-   INPUT WITH UNIT
-   ========================================================= */
+/* ================= INPUT + UNIT ================= */
 
-.unit-input {
+.input-unit {
   display: flex;
 
   align-items: center;
 
   gap: 10px;
-
-  width: 100%;
 }
 
-.unit-input input {
+.input-unit input {
   flex: 1;
-
-  min-width: 0;
 }
 
-.unit-input span {
+.input-unit span {
   width: 55px;
 
-  flex-shrink: 0;
-
-  color: #777;
+  color: #888;
 
   font-size: 13px;
-
-  text-align: left;
 }
 
 
-/* =========================================================
-   FORM ACTIONS
-   ========================================================= */
+/* ================= FORM ACTIONS ================= */
 
 .form-actions {
   display: flex;
 
   justify-content: flex-end;
 
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
 .form-actions button {
@@ -493,48 +288,43 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 
-/* =========================================================
-   DESCRIPTION
-   ========================================================= */
+/* ================= DESCRIPTION ================= */
 
-.description {
-  margin:
-    -5px 0 18px;
+.section-description {
+  margin-top: 0;
 
-  color: #777;
+  margin-bottom: 20px;
 
-  font-size: 13px;
+  color: #888;
+
+  font-size: 14px;
 
   line-height: 1.5;
 }
 
 
 /* =========================================================
-   AUTHENTICATION
+   AUTH
    ========================================================= */
 
 #auth {
-  width: 100%;
-
-  min-height:
-    calc(100vh - 70px);
+  min-height: calc(100vh - 100px);
 
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
-  padding: 25px;
+  padding: 20px;
 }
 
-.auth-card {
+#auth .card {
   width: 100%;
 
   max-width: 400px;
 }
 
-.auth-card h2 {
+#auth h2 {
   text-align: center;
 
   margin-bottom: 20px;
@@ -544,8 +334,10 @@ input[type="number"]::-webkit-outer-spin-button {
   display: flex;
 
   flex-direction: column;
+}
 
-  gap: 10px;
+#authForm input {
+  margin-bottom: 10px;
 }
 
 #authForm button {
@@ -561,15 +353,9 @@ input[type="number"]::-webkit-outer-spin-button {
 #authMsg {
   min-height: 20px;
 
-  margin: 12px 0 0;
+  text-align: center;
 
   color: #aaa;
-
-  font-size: 14px;
-
-  line-height: 1.4;
-
-  text-align: center;
 }
 
 
@@ -578,51 +364,29 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .big {
-  margin:
-    18px 0;
+  margin: 15px 0;
 
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .big b {
   font-size: 32px;
 }
 
-.stats-grid {
-  grid-template-columns:
-    repeat(3, 1fr);
-}
-
 .stat {
-  min-height: 120px;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 7px;
-
-  color: #888;
-
-  font-size: 14px;
-
   text-align: center;
+
+  font-size: 15px;
+
+  line-height: 1.8;
 }
 
 .stat b {
-  color: #ffffff;
-
-  font-size: 27px;
+  font-size: 28px;
 }
 
 
-/* =========================================================
-   CALORIE BAR
-   ========================================================= */
+/* ================= PROGRESS BAR ================= */
 
 .bar {
   width: 100%;
@@ -631,9 +395,9 @@ input[type="number"]::-webkit-outer-spin-button {
 
   overflow: hidden;
 
-  background: #202633;
-
   border-radius: 10px;
+
+  background: #202633;
 }
 
 .bar i {
@@ -643,12 +407,11 @@ input[type="number"]::-webkit-outer-spin-button {
 
   height: 100%;
 
+  border-radius: inherit;
+
   background: #ffffff;
 
-  border-radius: 10px;
-
-  transition:
-    width 0.3s ease;
+  transition: width 0.3s ease;
 }
 
 
@@ -656,36 +419,34 @@ input[type="number"]::-webkit-outer-spin-button {
    FOOD
    ========================================================= */
 
-.scan-area {
-  width: 100%;
+#food .card {
+  margin-bottom: 20px;
+}
 
-  margin-bottom: 15px;
+
+/* Barcode */
+
+.food-scan {
+  display: flex;
+
+  margin-bottom: 10px;
 }
 
 #scan {
   width: 100%;
 }
 
-#video {
-  display: block;
-
-  width: 100%;
-
-  max-height: 350px;
-
-  margin-top: 15px;
-
-  object-fit: cover;
-
-  border-radius: 10px;
-
-  background: #000;
-}
-
 
 /* =========================================================
    WORKOUT
    ========================================================= */
+
+#workout .card {
+  margin-bottom: 20px;
+}
+
+
+/* Push Pull Legs */
 
 .ppl {
   display: grid;
@@ -702,10 +463,15 @@ input[type="number"]::-webkit-outer-spin-button {
   width: 100%;
 }
 
-.finish-button {
-  width: 100%;
 
+/* Finish Workout */
+
+.workout-finish {
   margin-top: 15px;
+}
+
+#finish {
+  width: 100%;
 }
 
 
@@ -714,7 +480,7 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 #progress .card {
-  min-width: 0;
+  margin-bottom: 20px;
 }
 
 
@@ -727,112 +493,63 @@ input[type="number"]::-webkit-outer-spin-button {
 
   max-width: 750px;
 
-  margin-left: auto;
+  margin: 0 auto;
+}
 
-  margin-right: auto;
+.settings-card h2 {
+  margin-bottom: 8px;
+}
+
+.settings-actions {
+  margin-top: 10px;
 }
 
 
 /* =========================================================
-   FOOD / WORKOUT / HISTORY LISTS
-   ========================================================= */
-
-#foodList,
-#exList,
-#history,
-#macros {
-  width: 100%;
-}
-
-
-/* =========================================================
-   MOBILE
+   RESPONSIVE
    ========================================================= */
 
 @media (max-width: 700px) {
 
   header {
-    min-height: 65px;
-
-    padding:
-      14px 18px;
+    padding: 15px 20px;
   }
-
-  header h1 {
-    font-size: 22px;
-  }
-
-  .header-left {
-    gap: 10px;
-  }
-
-  #date {
-    font-size: 12px;
-  }
-
 
   main {
     padding: 15px;
   }
 
 
-  /* Navigation */
-
-  nav {
-    display: grid;
-
-    grid-template-columns:
-      repeat(2, 1fr);
-
-    gap: 7px;
-  }
-
-  nav button {
-    min-width: 0;
-  }
-
-
-  /* Grid */
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-
-  /* Forms */
+  /* Labels above inputs */
 
   .form-row {
     grid-template-columns: 1fr;
 
-    gap: 6px;
+    gap: 7px;
 
     min-height: auto;
   }
 
   .form-row label {
-    font-size: 13px;
+    font-size: 14px;
   }
 
 
-  /* Buttons */
+  /* Navigation */
 
-  .form-actions {
+  nav button {
+    min-width: calc(50% - 5px);
+  }
+
+
+  /* Settings */
+
+  .settings-actions {
     justify-content: stretch;
   }
 
-  .form-actions button {
+  .settings-actions button {
     width: 100%;
-  }
-
-
-  /* PPL */
-
-  .ppl {
-    grid-template-columns: 1fr;
   }
 
 }
@@ -848,105 +565,35 @@ input[type="number"]::-webkit-outer-spin-button {
     flex-wrap: wrap;
   }
 
-  .header-left {
-    width: 100%;
-  }
-
-  #logout {
-    position: absolute;
-
-    right: 18px;
-
-    top: 13px;
-  }
-
   header h1 {
-    font-size: 21px;
+    font-size: 22px;
   }
 
-
-  main {
-    padding: 10px;
-  }
-
-
-  .card {
-    padding: 17px;
+  #date {
+    margin-left: auto;
   }
 
 
   nav {
+    display: grid;
+
     grid-template-columns:
       repeat(2, 1fr);
   }
 
-
-  .big {
-    font-size: 18px;
-  }
-
-  .big b {
-    font-size: 28px;
+  nav button {
+    min-width: 0;
   }
 
 
-  .unit-input span {
-    width: 48px;
-  }
-
-}
-
-
-/* =========================================================
-   VERY SMALL SCREENS
-   ========================================================= */
-
-@media (max-width: 350px) {
-
-  nav {
+  .ppl {
     grid-template-columns: 1fr;
   }
 
-  header {
-    min-height: 80px;
-  }
 
-  #logout {
-    position: static;
-
-    margin-left: auto;
+  .input-unit {
+    width: 100%;
   }
 
 }
 ```
-
-### One important thing
-
-Use this CSS **with the latest HTML I gave you**, not with the older version.
-
-Your `app.js` should remain unchanged because the important IDs are still the same. The new CSS is specifically responsible for making the forms look like:
-
-```text
-Food Name       [ Chicken breast          ]
-Serving         [ 100g                    ]
-Calories        [ 250                 ] kcal
-Protein         [ 30                  ] g
-Carbs           [ 20                  ] g
-Fat             [ 10                  ] g
-                                      [ Add food ]
-```
-
-On mobile, it automatically changes to:
-
-```text
-Food Name
-[ Chicken breast ]
-
-Serving
-[ 100g ]
-
-Calories
-[ 250                 ] kcal
-```
-
-So you get the **left-side labels on desktop** without breaking the layout on smaller screens.
