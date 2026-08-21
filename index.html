@@ -19,8 +19,14 @@
     <div class="card">
       <h2 id="authTitle">Sign in</h2>
       <form id="authForm">
-        <input id="email" type="email" placeholder="Email" required>
-        <input id="password" type="password" placeholder="Password" minlength="6" required>
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" type="email" required>
+        </div>
+        <div class="form-row">
+          <label for="password">Password</label>
+          <input id="password" type="password" minlength="6" required>
+        </div>
         <button>Continue</button>
       </form>
       <button id="toggle">Create account</button>
@@ -66,12 +72,30 @@
         <button id="scan">📷 Scan barcode</button>
         <video id="video" playsinline hidden></video>
         <form id="foodForm">
-          <input id="fname" placeholder="Food name" required>
-          <input id="serving" placeholder="Serving">
-          <input id="fcal" type="number" placeholder="Calories" required>
-          <input id="fp" type="number" step=".1" placeholder="Protein g" required>
-          <input id="fc" type="number" step=".1" placeholder="Carbs g" required>
-          <input id="ff" type="number" step=".1" placeholder="Fat g" required>
+          <div class="form-row">
+            <label for="fname">Food name</label>
+            <input id="fname" required>
+          </div>
+          <div class="form-row">
+            <label for="serving">Serving</label>
+            <input id="serving">
+          </div>
+          <div class="form-row">
+            <label for="fcal">Calories</label>
+            <input id="fcal" type="number" required>
+          </div>
+          <div class="form-row">
+            <label for="fp">Protein (g)</label>
+            <input id="fp" type="number" step=".1" required>
+          </div>
+          <div class="form-row">
+            <label for="fc">Carbs (g)</label>
+            <input id="fc" type="number" step=".1" required>
+          </div>
+          <div class="form-row">
+            <label for="ff">Fat (g)</label>
+            <input id="ff" type="number" step=".1" required>
+          </div>
           <button>Add food</button>
         </form>
       </div>
@@ -91,10 +115,22 @@
           <button data-ppl="Legs">Legs</button>
         </div>
         <form id="exForm">
-          <input id="ename" placeholder="Exercise" required>
-          <input id="sets" type="number" value="3" placeholder="Sets">
-          <input id="reps" type="number" value="10" placeholder="Reps">
-          <input id="ew" type="number" step=".5" value="0" placeholder="Weight kg">
+          <div class="form-row">
+            <label for="ename">Exercise</label>
+            <input id="ename" required>
+          </div>
+          <div class="form-row">
+            <label for="sets">Sets</label>
+            <input id="sets" type="number" value="3">
+          </div>
+          <div class="form-row">
+            <label for="reps">Reps</label>
+            <input id="reps" type="number" value="10">
+          </div>
+          <div class="form-row">
+            <label for="ew">Weight (kg)</label>
+            <input id="ew" type="number" step=".5" value="0">
+          </div>
           <button>Add exercise</button>
         </form>
         <button id="finish">Finish workout</button>
@@ -110,14 +146,20 @@
         <div class="card">
           <h2>Weight</h2>
           <form id="weightForm">
-            <input id="weightInput" type="number" step=".1" required>
+            <div class="form-row">
+              <label for="weightInput">Weight (kg)</label>
+              <input id="weightInput" type="number" step=".1" required>
+            </div>
             <button>Save weight</button>
           </form>
         </div>
         <div class="card">
           <h2>Steps</h2>
           <form id="stepsForm">
-            <input id="stepsInput" type="number" required>
+            <div class="form-row">
+              <label for="stepsInput">Steps</label>
+              <input id="stepsInput" type="number" required>
+            </div>
             <button>Save steps</button>
           </form>
         </div>
@@ -133,13 +175,34 @@
       <div class="card">
         <h2>Goals</h2>
         <form id="settingsForm">
-          <input id="age" type="number" placeholder="Age">
-          <input id="height" type="number" placeholder="Height cm">
-          <input id="goalCal" type="number" placeholder="Calories">
-          <input id="goalP" type="number" placeholder="Protein g">
-          <input id="goalC" type="number" placeholder="Carbs g">
-          <input id="goalF" type="number" placeholder="Fat g">
-          <input id="goalSteps" type="number" placeholder="Steps">
+          <div class="form-row">
+            <label for="age">Age</label>
+            <input id="age" type="number">
+          </div>
+          <div class="form-row">
+            <label for="height">Height (cm)</label>
+            <input id="height" type="number">
+          </div>
+          <div class="form-row">
+            <label for="goalCal">Calories</label>
+            <input id="goalCal" type="number">
+          </div>
+          <div class="form-row">
+            <label for="goalP">Protein (g)</label>
+            <input id="goalP" type="number">
+          </div>
+          <div class="form-row">
+            <label for="goalC">Carbs (g)</label>
+            <input id="goalC" type="number">
+          </div>
+          <div class="form-row">
+            <label for="goalF">Fat (g)</label>
+            <input id="goalF" type="number">
+          </div>
+          <div class="form-row">
+            <label for="goalSteps">Steps</label>
+            <input id="goalSteps" type="number">
+          </div>
           <button>Save</button>
         </form>
       </div>
