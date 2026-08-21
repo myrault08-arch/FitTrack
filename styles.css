@@ -1,11 +1,10 @@
+/* =========================================================
+   GLOBAL
+========================================================= */
+
 * {
   box-sizing: border-box;
 }
-
-
-/* ==========================================
-   BODY
-========================================== */
 
 html,
 body {
@@ -13,10 +12,8 @@ body {
   min-height: 100%;
 }
 
-
 body {
-
-  padding: 0 14px;
+  padding: 0 16px;
 
   background:
     radial-gradient(
@@ -33,21 +30,24 @@ body {
 
   color: #e5e7eb;
 
-  font: 15px system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 
-  position: relative;
+  font-size: 15px;
 
   overflow-x: hidden;
 }
 
 
-/* ==========================================
+/* =========================================================
    CONSTELLATION
-========================================== */
+========================================================= */
 
 #constellation {
-
   position: fixed;
 
   inset: 0;
@@ -60,9 +60,7 @@ body {
   pointer-events: none;
 }
 
-
 body::before {
-
   content: "";
 
   position: fixed;
@@ -77,66 +75,99 @@ body::before {
     radial-gradient(
       circle at center,
       transparent 0%,
-      rgba(5, 8, 18, 0.12) 45%,
+      rgba(5, 8, 18, 0.10) 40%,
       rgba(5, 8, 18, 0.60) 100%
     );
 }
 
 
-/* ==========================================
+/* =========================================================
    HEADER
-========================================== */
+========================================================= */
 
 header {
-
-  max-width: 1050px;
+  width: 100%;
+  max-width: 1100px;
 
   margin: auto;
 
-  padding: 20px 0;
+  padding: 22px 0;
 
   display: flex;
 
-  gap: 15px;
-
   align-items: center;
 
-  flex-wrap: wrap;
+  gap: 14px;
 
   position: relative;
 
   z-index: 1;
 }
 
+.brand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #7c3aed
+    );
+
+  color: white;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  box-shadow:
+    0 8px 25px rgba(37, 99, 235, .25);
+}
 
 header h1 {
-
   margin: 0;
 
-  font-size: 28px;
-}
+  font-size: 22px;
 
+  letter-spacing: -.5px;
+}
 
 header span {
+  color: #64748b;
 
-  color: #94a3b8;
+  font-size: 12px;
 }
 
-
-header button {
-
+.logout-btn {
   margin-left: auto;
 }
 
 
-/* ==========================================
-   MAIN / AUTH
-========================================== */
+/* =========================================================
+   MAIN
+========================================================= */
 
 main,
 #auth {
+  width: 100%;
 
-  max-width: 1050px;
+  max-width: 1100px;
 
   margin: auto;
 
@@ -146,107 +177,493 @@ main,
 }
 
 
-.page {
-
-  min-height: 300px;
-}
-
-
-/* ==========================================
+/* =========================================================
    NAVIGATION
-========================================== */
+========================================================= */
 
 nav {
-
   display: flex;
 
   gap: 8px;
 
   overflow-x: auto;
 
-  padding-bottom: 15px;
+  padding-bottom: 18px;
+
+  scrollbar-width: none;
 }
 
+nav::-webkit-scrollbar {
+  display: none;
+}
 
 nav button {
-
   white-space: nowrap;
+
+  min-width: 95px;
+
+  background: rgba(17, 24, 39, .78);
+
+  backdrop-filter: blur(12px);
 }
 
+nav button.nav-active {
+  background: #2563eb;
 
-/* ==========================================
-   BUTTONS
-========================================== */
-
-button {
-
-  padding: 10px 14px;
-
-  background: #172236;
-
-  color: #e5e7eb;
-
-  border: 1px solid #334155;
-
-  border-radius: 9px;
-
-  cursor: pointer;
-
-  transition:
-    background .2s ease,
-    transform .15s ease;
-}
-
-
-button:hover {
-
-  background: #243451;
-
-  transform: translateY(-1px);
-}
-
-
-button:active {
-
-  transform: translateY(0);
-}
-
-
-/* ==========================================
-   CARDS
-========================================== */
-
-.card {
-
-  margin-bottom: 14px;
-
-  padding: 18px;
-
-  background: rgba(17, 24, 39, 0.88);
-
-  border: 1px solid #26344a;
-
-  border-radius: 15px;
-
-  backdrop-filter: blur(5px);
+  border-color: #3b82f6;
 
   box-shadow:
-    0 10px 30px rgba(0, 0, 0, .15);
+    0 6px 20px rgba(37, 99, 235, .20);
 }
 
 
-.card h2 {
+/* =========================================================
+   PAGES
+========================================================= */
 
+.page {
+  min-height: 300px;
+
+  padding-bottom: 50px;
+}
+
+.page-header {
+  margin: 10px 0 22px;
+}
+
+.page-header h2 {
+  margin: 3px 0 5px;
+
+  font-size: 28px;
+
+  letter-spacing: -.7px;
+}
+
+.page-header p:not(.eyebrow) {
+  margin: 0;
+
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   EYEBROW
+========================================================= */
+
+.eyebrow {
+  margin: 0;
+
+  color: #60a5fa;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.4px;
+}
+
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.card {
+  margin-bottom: 14px;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17, 24, 39, .94),
+      rgba(11, 18, 32, .90)
+    );
+
+  border: 1px solid rgba(51, 65, 85, .65);
+
+  border-radius: 17px;
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, .18);
+
+  backdrop-filter: blur(12px);
+}
+
+.card h2,
+.card h3 {
   margin-top: 0;
 }
 
+.card h3 {
+  margin-bottom: 18px;
+}
 
-/* ==========================================
+.card-heading {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.card-heading h2 {
+  margin: 3px 0 0;
+
+  font-size: 19px;
+}
+
+.icon-box {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: rgba(37, 99, 235, .12);
+
+  border: 1px solid rgba(59, 130, 246, .20);
+
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+.dashboard-top {
+  display: grid;
+
+  grid-template-columns: 1.5fr 1fr;
+
+  gap: 14px;
+}
+
+.calories-card,
+.bmi-card {
+  min-height: 220px;
+}
+
+.calorie-number {
+  margin: 25px 0 17px;
+
+  display: flex;
+
+  align-items: baseline;
+
+  gap: 7px;
+
+  flex-wrap: wrap;
+}
+
+.calorie-number strong {
+  font-size: 44px;
+
+  line-height: 1;
+
+  letter-spacing: -2px;
+}
+
+.calorie-number span {
+  color: #94a3b8;
+
+  font-size: 14px;
+}
+
+.calorie-number b {
+  color: #cbd5e1;
+}
+
+.bar {
+  width: 100%;
+
+  height: 10px;
+
+  overflow: hidden;
+
+  background: #1e293b;
+
+  border-radius: 999px;
+}
+
+.bar i {
+  display: block;
+
+  width: 0;
+
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #60a5fa
+    );
+
+  border-radius: inherit;
+
+  transition: width .5s ease;
+}
+
+.progress-label {
+  margin-top: 9px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  color: #64748b;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   BMI
+========================================================= */
+
+.bmi-number {
+  margin: 24px 0 7px;
+
+  font-size: 52px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -2px;
+}
+
+.bmi {
+  display: inline-block;
+
+  padding: 6px 14px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.bmi-description {
+  margin: 18px 0 0;
+
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+
+/* BMI COLORS */
+
+.normal {
+  background: rgba(20, 83, 45, .8);
+
+  color: #86efac;
+
+  border: 1px solid rgba(134, 239, 172, .15);
+}
+
+.over {
+  background: rgba(120, 53, 15, .8);
+
+  color: #fcd34d;
+
+  border: 1px solid rgba(252, 211, 77, .15);
+}
+
+.obese {
+  background: rgba(127, 29, 29, .8);
+
+  color: #fca5a5;
+
+  border: 1px solid rgba(252, 165, 165, .15);
+}
+
+.under {
+  background: rgba(30, 58, 138, .8);
+
+  color: #93c5fd;
+
+  border: 1px solid rgba(147, 197, 253, .15);
+}
+
+
+/* =========================================================
+   SECTION TITLES
+========================================================= */
+
+.section-title {
+  margin: 25px 0 12px;
+}
+
+.section-title h2 {
+  margin: 4px 0 0;
+
+  font-size: 20px;
+
+  letter-spacing: -.4px;
+}
+
+
+/* =========================================================
+   MACROS
+========================================================= */
+
+.macro-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 14px;
+}
+
+.macro-card {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  min-height: 115px;
+
+  margin-bottom: 0;
+}
+
+.macro-icon {
+  width: 46px;
+  height: 46px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  font-weight: 800;
+
+  font-size: 15px;
+}
+
+.protein-icon {
+  background: rgba(37, 99, 235, .15);
+
+  color: #60a5fa;
+}
+
+.carbs-icon {
+  background: rgba(168, 85, 247, .15);
+
+  color: #c084fc;
+}
+
+.fat-icon {
+  background: rgba(234, 179, 8, .15);
+
+  color: #facc15;
+}
+
+.macro-info {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.macro-info > span {
+  color: #94a3b8;
+
+  font-size: 12px;
+}
+
+.macro-info strong {
+  font-size: 23px;
+
+  line-height: 1.1;
+}
+
+.macro-info small {
+  color: #64748b;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   ACTIVITY
+========================================================= */
+
+.activity-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 14px;
+}
+
+.activity-card {
+  margin-bottom: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+}
+
+.activity-icon {
+  width: 43px;
+  height: 43px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: rgba(51, 65, 85, .35);
+
+  font-size: 18px;
+}
+
+.activity-card span {
+  display: block;
+
+  color: #64748b;
+
+  font-size: 11px;
+
+  margin-bottom: 3px;
+}
+
+.activity-card strong {
+  display: block;
+
+  font-size: 18px;
+}
+
+
+/* =========================================================
    GRID
-========================================== */
+========================================================= */
 
 .grid {
-
   display: grid;
 
   grid-template-columns:
@@ -256,291 +673,270 @@ button:active {
 }
 
 
-.stat {
+/* =========================================================
+   BUTTONS
+========================================================= */
 
-  text-align: center;
-}
+button {
+  padding: 10px 14px;
 
+  background: rgba(23, 34, 54, .90);
 
-/* ==========================================
-   BIG NUMBER
-========================================== */
-
-.big {
-
-  margin: 15px 0;
-
-  font-size: 32px;
-}
-
-
-/* ==========================================
-   PROGRESS BAR
-========================================== */
-
-.bar {
-
-  height: 10px;
-
-  background: #25334a;
-
-  border-radius: 20px;
-
-  overflow: hidden;
-}
-
-
-.bar i {
-
-  display: block;
-
-  height: 100%;
-
-  width: 0;
-
-  background: #3b82f6;
-
-  transition: width .3s ease;
-}
-
-
-/* ==========================================
-   FORMS
-========================================== */
-
-.card form {
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 10px;
-
-  margin: 10px 0;
-}
-
-
-.form-row {
-
-  display: grid;
-
-  grid-template-columns: 130px 1fr;
-
-  align-items: center;
-
-  gap: 12px;
-}
-
-
-.form-row label {
-
-  font-size: 14px;
-
-  color: #cbd5e1;
-}
-
-
-.form-row input,
-.form-row select {
-
-  width: 100%;
-
-  padding: 11px;
-
-  background: #0b1220;
-
-  color: #fff;
+  color: #e5e7eb;
 
   border: 1px solid #334155;
 
-  border-radius: 8px;
+  border-radius: 9px;
 
-  outline: none;
+  cursor: pointer;
+
+  font: inherit;
+
+  transition:
+    background .2s,
+    transform .15s,
+    border-color .2s;
 }
 
+button:hover {
+  background: #243451;
 
-.form-row input:focus,
-.form-row select:focus {
-
-  border-color: #3b82f6;
-
-  box-shadow:
-    0 0 0 2px rgba(59,130,246,.15);
+  border-color: #475569;
 }
 
-
-.form-row input[readonly] {
-
-  background: #111827;
-
-  color: #93c5fd;
-
-  cursor: not-allowed;
+button:active {
+  transform: scale(.98);
 }
 
-
-.card form button {
-
+.primary-btn {
   background: #2563eb;
 
-  border: 0;
-}
+  border-color: #2563eb;
 
-
-.card form button:hover {
-
-  background: #1d4ed8;
-}
-
-
-/* ==========================================
-   AUTH
-========================================== */
-
-.auth-card {
-
-  max-width: 600px;
-
-  margin: 40px auto;
-}
-
-
-#authMsg {
-
-  color: #fca5a5;
-
-  min-height: 20px;
-}
-
-
-/* ==========================================
-   BMI
-========================================== */
-
-.bmi-card h2 {
-
-  font-size: 42px;
-
-  margin: 10px 0 6px;
-}
-
-
-.bmi {
-
-  display: inline-block;
-
-  padding: 6px 14px;
-
-  border-radius: 999px;
-
-  font-size: 13px;
+  color: white;
 
   font-weight: 600;
-
-  border: 1px solid transparent;
 }
 
+.primary-btn:hover {
+  background: #1d4ed8;
 
-.normal {
+  border-color: #1d4ed8;
+}
 
-  background: #14532d;
+.secondary-btn {
+  width: 100%;
+
+  margin-top: 10px;
+}
+
+.scanner-btn {
+  width: 100%;
+
+  margin-bottom: 12px;
+
+  background: rgba(37, 99, 235, .12);
+
+  border-color: rgba(59, 130, 246, .35);
+
+  color: #93c5fd;
+}
+
+.finish-btn {
+  width: 100%;
+
+  margin-top: 12px;
+
+  background: rgba(34, 197, 94, .12);
+
+  border-color: rgba(34, 197, 94, .30);
 
   color: #86efac;
 }
 
 
-.over {
+/* =========================================================
+   FORMS
+========================================================= */
 
-  background: #78350f;
+.card form {
+  display: flex;
 
-  color: #fcd34d;
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin: 12px 0;
+}
+
+.form-row {
+  display: grid;
+
+  grid-template-columns: 150px 1fr;
+
+  align-items: center;
+
+  gap: 14px;
+}
+
+.form-row label {
+  color: #cbd5e1;
+
+  font-size: 13px;
+
+  font-weight: 500;
+}
+
+.form-row input,
+.form-row select {
+  width: 100%;
+
+  padding: 11px 12px;
+
+  background: rgba(5, 8, 18, .75);
+
+  color: #fff;
+
+  border: 1px solid #334155;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  font: inherit;
+
+  transition:
+    border-color .2s,
+    box-shadow .2s;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, .10);
+}
+
+.form-row select {
+  appearance: auto;
+}
+
+hr {
+  width: 100%;
+
+  border: 0;
+
+  border-top: 1px solid #26344a;
+
+  margin: 8px 0;
 }
 
 
-.obese {
+/* =========================================================
+   SETTINGS CALCULATIONS
+========================================================= */
 
-  background: #7f1d1d;
+.calculated-section {
+  padding: 18px;
 
-  color: #fca5a5;
+  margin: 5px 0 15px;
+
+  background: rgba(15, 23, 42, .65);
+
+  border: 1px solid #26344a;
+
+  border-radius: 14px;
 }
 
+.calculated-note {
+  margin: 5px 0 15px;
 
-.under {
+  color: #64748b;
 
-  background: #1e3a8a;
-
-  color: #93c5fd;
+  font-size: 12px;
 }
 
+.calculated-grid {
+  display: grid;
 
-/* ==========================================
-   SETTINGS BMI
-========================================== */
+  grid-template-columns:
+    repeat(5, 1fr);
 
-.bmi-settings-card {
+  gap: 10px;
+}
+
+.calculated-item {
+  padding: 13px;
+
+  background: rgba(5, 8, 18, .55);
+
+  border: 1px solid rgba(51, 65, 85, .5);
+
+  border-radius: 11px;
 
   text-align: center;
 }
 
-
-.settings-bmi-display {
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 15px;
-
-  flex-wrap: wrap;
-
-  margin: 20px 0;
-}
-
-
-.settings-bmi-display strong {
-
-  font-size: 48px;
-
-  line-height: 1;
-}
-
-
-.muted {
+.calculated-item span {
+  display: block;
 
   color: #94a3b8;
+
+  font-size: 11px;
+}
+
+.calculated-item strong {
+  display: block;
+
+  margin: 5px 0;
+
+  font-size: 21px;
+}
+
+.calculated-item small {
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+.info-card p {
+  color: #94a3b8;
+
+  line-height: 1.6;
 
   font-size: 13px;
 }
 
 
-/* ==========================================
+/* =========================================================
    PPL
-========================================== */
+========================================================= */
 
 .ppl {
-
   display: flex;
 
   gap: 8px;
 
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-
 .ppl button {
-
   flex: 1;
 }
 
+.ppl button.ppl-active {
+  background: #2563eb;
 
-/* ==========================================
-   ROWS
-========================================== */
+  border-color: #2563eb;
+}
+
+
+/* =========================================================
+   ROWS / LISTS
+========================================================= */
 
 .row {
-
   display: flex;
 
   justify-content: space-between;
@@ -549,98 +945,199 @@ button:active {
 
   gap: 15px;
 
-  padding: 10px;
+  padding: 13px 4px;
 
   border-bottom: 1px solid #26344a;
 }
 
-
 .row:last-child {
-
   border-bottom: 0;
 }
 
-
 .row small {
+  color: #64748b;
+}
 
-  color: #94a3b8;
+.row button {
+  flex-shrink: 0;
+
+  padding: 7px 10px;
+
+  font-size: 12px;
+
+  background: rgba(127, 29, 29, .25);
+
+  border-color: rgba(248, 113, 113, .25);
+
+  color: #fca5a5;
 }
 
 
-/* ==========================================
-   VIDEO / BARCODE
-========================================== */
+/* =========================================================
+   BARCODE
+========================================================= */
 
 video {
-
   width: 100%;
 
   max-height: 350px;
 
   margin: 10px 0;
 
-  border-radius: 10px;
+  border-radius: 12px;
 
   background: #000;
 }
 
 
-/* ==========================================
+/* =========================================================
+   AUTH
+========================================================= */
+
+#auth {
+  max-width: 440px;
+
+  padding-top: 60px;
+}
+
+.auth-card {
+  padding: 30px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17, 24, 39, .96),
+      rgba(11, 18, 32, .94)
+    );
+
+  border: 1px solid rgba(51, 65, 85, .70);
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, .30);
+
+  backdrop-filter: blur(15px);
+}
+
+.auth-logo {
+  width: 55px;
+  height: 55px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 18px;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #7c3aed
+    );
+
+  font-weight: 800;
+}
+
+.auth-card h2 {
+  margin: 0 0 5px;
+
+  font-size: 26px;
+}
+
+.auth-subtitle {
+  margin: 0 0 25px;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.message {
+  color: #fca5a5;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
    RESPONSIVE
-========================================== */
+========================================================= */
 
-@media (max-width: 650px) {
+@media (max-width: 850px) {
 
-  .grid {
-
+  .dashboard-top {
     grid-template-columns: 1fr;
   }
 
-  body {
+  .calculated-grid {
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
 
-    font-size: 14px;
+}
+
+
+@media (max-width: 650px) {
+
+  body {
+    padding: 0 12px;
+  }
+
+  header {
+    padding: 16px 0;
+  }
+
+  .dashboard-top,
+  .macro-grid,
+  .activity-grid,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .macro-card,
+  .activity-card {
+    margin-bottom: 0;
+  }
+
+  .calculated-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
   }
 
   .form-row {
-
     grid-template-columns: 1fr;
 
     gap: 5px;
   }
 
   .form-row label {
-
-    margin-bottom: 2px;
+    font-size: 12px;
   }
 
-  .bmi-card h2 {
-
-    font-size: 36px;
+  .calorie-number strong {
+    font-size: 38px;
   }
 
-  .settings-bmi-display strong {
+  .bmi-number {
+    font-size: 46px;
+  }
 
-    font-size: 40px;
+  .auth-card {
+    padding: 23px;
   }
 
 }
 
 
-@media (max-width: 500px) {
+@media (max-width: 400px) {
 
-  header {
-
-    padding-top: 15px;
-  }
-
-  header h1 {
-
-    font-size: 24px;
-  }
-
-  .card {
-
-    padding: 15px;
+  .calculated-grid {
+    grid-template-columns: 1fr;
   }
 
 }

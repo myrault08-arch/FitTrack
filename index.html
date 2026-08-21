@@ -1,8 +1,8 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>FitTrack</title>
 
@@ -11,762 +11,696 @@
 
 <body>
 
-  <!-- ==========================================
-       Constellation Background
-  =========================================== -->
+<!-- =========================================================
+     CONSTELLATION BACKGROUND
+========================================================= -->
 
-  <canvas id="constellation"></canvas>
+<canvas id="constellation"></canvas>
 
 
-  <!-- ==========================================
-       Header
-  =========================================== -->
+<!-- =========================================================
+     HEADER
+========================================================= -->
 
-  <header>
+<header>
 
-    <h1>FitTrack</h1>
+  <div class="brand">
+    <div class="brand-icon">FT</div>
 
-    <span id="date"></span>
+    <div>
+      <h1>FitTrack</h1>
+      <span id="date"></span>
+    </div>
+  </div>
 
-    <button id="logout" hidden>
-      Sign out
+  <button id="logout" class="logout-btn" hidden>
+    Sign out
+  </button>
+
+</header>
+
+
+<!-- =========================================================
+     AUTH
+========================================================= -->
+
+<section id="auth">
+
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      FT
+    </div>
+
+    <h2 id="authTitle">
+      Sign in
+    </h2>
+
+    <p class="auth-subtitle">
+      Track your nutrition, workouts and progress.
+    </p>
+
+    <form id="authForm">
+
+      <div class="form-row">
+        <label for="email">Email</label>
+
+        <input
+          id="email"
+          type="email"
+          autocomplete="email"
+          required
+        >
+      </div>
+
+
+      <div class="form-row">
+        <label for="password">Password</label>
+
+        <input
+          id="password"
+          type="password"
+          minlength="6"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+
+      <button class="primary-btn" type="submit">
+        Continue
+      </button>
+
+    </form>
+
+
+    <button id="toggle" class="secondary-btn">
+      Create account
     </button>
 
-  </header>
+    <p id="authMsg" class="message"></p>
+
+  </div>
+
+</section>
 
 
-  <!-- ==========================================
-       Authentication
-  =========================================== -->
+<!-- =========================================================
+     APPLICATION
+========================================================= -->
 
-  <section id="auth">
+<main id="app" hidden>
 
-    <div class="card auth-card">
 
-      <h2 id="authTitle">
-        Sign in
-      </h2>
+  <!-- =======================================================
+       NAVIGATION
+  ======================================================== -->
 
-      <form id="authForm">
+  <nav>
+
+    <button
+      class="nav-active"
+      data-page="dash">
+      Dashboard
+    </button>
+
+    <button data-page="food">
+      Food
+    </button>
+
+    <button data-page="workout">
+      Workout
+    </button>
+
+    <button data-page="progress">
+      Progress
+    </button>
+
+    <button data-page="settings">
+      Settings
+    </button>
+
+  </nav>
+
+
+  <!-- =======================================================
+       DASHBOARD
+  ======================================================== -->
+
+  <section id="dash" class="page">
+
+
+    <!-- TOP STATS -->
+
+    <div class="dashboard-top">
+
+
+      <!-- CALORIES -->
+
+      <div class="card calories-card">
+
+        <div class="card-heading">
+
+          <div>
+            <p class="eyebrow">DAILY CALORIES</p>
+            <h2>Calories</h2>
+          </div>
+
+          <div class="icon-box">
+            🔥
+          </div>
+
+        </div>
+
+        <div class="calorie-number">
+
+          <strong id="cal">0</strong>
+
+          <span>
+            / <b id="calGoal">0</b> kcal
+          </span>
+
+        </div>
+
+        <div class="bar">
+          <i id="calBar"></i>
+        </div>
+
+        <div class="progress-label">
+          <span>Today's intake</span>
+          <span id="calRemaining">0 kcal remaining</span>
+        </div>
+
+      </div>
+
+
+      <!-- BMI -->
+
+      <div class="card bmi-card">
+
+        <div class="card-heading">
+
+          <div>
+            <p class="eyebrow">BODY MASS INDEX</p>
+            <h2>BMI</h2>
+          </div>
+
+          <div class="icon-box">
+            ⚖️
+          </div>
+
+        </div>
+
+        <div class="bmi-number" id="bmiValue">
+          0.0
+        </div>
+
+        <span
+          id="bmiStatus"
+          class="bmi normal">
+          Normal
+        </span>
+
+        <p class="bmi-description">
+          Based on your current height and weight.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MACROS
+    ====================================================== -->
+
+    <div class="section-title">
+
+      <div>
+        <p class="eyebrow">NUTRITION</p>
+        <h2>Today's Macros</h2>
+      </div>
+
+    </div>
+
+
+    <div class="macro-grid">
+
+
+      <!-- PROTEIN -->
+
+      <div class="card macro-card">
+
+        <div class="macro-icon protein-icon">
+          P
+        </div>
+
+        <div class="macro-info">
+
+          <span>Protein</span>
+
+          <strong>
+            <span id="macroProtein">0</span> g
+          </strong>
+
+          <small>
+            Goal: <span id="macroProteinGoal">0</span> g
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <!-- CARBS -->
+
+      <div class="card macro-card">
+
+        <div class="macro-icon carbs-icon">
+          C
+        </div>
+
+        <div class="macro-info">
+
+          <span>Carbohydrates</span>
+
+          <strong>
+            <span id="macroCarbs">0</span> g
+          </strong>
+
+          <small>
+            Goal: <span id="macroCarbsGoal">0</span> g
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <!-- FAT -->
+
+      <div class="card macro-card">
+
+        <div class="macro-icon fat-icon">
+          F
+        </div>
+
+        <div class="macro-info">
+
+          <span>Fat</span>
+
+          <strong>
+            <span id="macroFat">0</span> g
+          </strong>
+
+          <small>
+            Goal: <span id="macroFatGoal">0</span> g
+          </small>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         QUICK STATS
+    ====================================================== -->
+
+    <div class="section-title">
+
+      <div>
+        <p class="eyebrow">OVERVIEW</p>
+        <h2>Today's Activity</h2>
+      </div>
+
+    </div>
+
+
+    <div class="activity-grid">
+
+
+      <div class="card activity-card">
+
+        <div class="activity-icon">
+          ⚖
+        </div>
+
+        <div>
+          <span>Weight</span>
+          <strong>
+            <span id="weightDash">0</span> kg
+          </strong>
+        </div>
+
+      </div>
+
+
+      <div class="card activity-card">
+
+        <div class="activity-icon">
+          🚶
+        </div>
+
+        <div>
+          <span>Steps</span>
+          <strong id="stepsDash">
+            0
+          </strong>
+        </div>
+
+      </div>
+
+
+      <div class="card activity-card">
+
+        <div class="activity-icon">
+          🏋️
+        </div>
+
+        <div>
+          <span>Workout</span>
+          <strong id="workoutDash">
+            Rest
+          </strong>
+        </div>
+
+      </div>
+
+    </div>
+
+
+  </section>
+
+
+  <!-- =======================================================
+       FOOD
+  ======================================================== -->
+
+  <section id="food" class="page" hidden>
+
+    <div class="page-header">
+
+      <div>
+        <p class="eyebrow">NUTRITION</p>
+        <h2>Food Tracker</h2>
+        <p>
+          Log what you eat throughout the day.
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>Scan / Add Food</h3>
+
+      <button
+        id="scan"
+        class="scanner-btn">
+        📷 Scan barcode
+      </button>
+
+      <video
+        id="video"
+        playsinline
+        hidden>
+      </video>
+
+
+      <form id="foodForm">
 
         <div class="form-row">
-
-          <label for="email">
-            Email
+          <label for="fname">
+            Food name
           </label>
 
           <input
-            id="email"
-            type="email"
-            required
-          >
-
+            id="fname"
+            required>
         </div>
 
 
         <div class="form-row">
-
-          <label for="password">
-            Password
+          <label for="serving">
+            Serving
           </label>
 
-          <input
-            id="password"
-            type="password"
-            minlength="6"
-            required
-          >
-
+          <input id="serving">
         </div>
 
 
-        <button type="submit">
-          Continue
+        <div class="form-row">
+          <label for="fcal">
+            Calories
+          </label>
+
+          <input
+            id="fcal"
+            type="number"
+            required>
+        </div>
+
+
+        <div class="form-row">
+          <label for="fp">
+            Protein (g)
+          </label>
+
+          <input
+            id="fp"
+            type="number"
+            step=".1"
+            required>
+        </div>
+
+
+        <div class="form-row">
+          <label for="fc">
+            Carbs (g)
+          </label>
+
+          <input
+            id="fc"
+            type="number"
+            step=".1"
+            required>
+        </div>
+
+
+        <div class="form-row">
+          <label for="ff">
+            Fat (g)
+          </label>
+
+          <input
+            id="ff"
+            type="number"
+            step=".1"
+            required>
+        </div>
+
+
+        <button
+          class="primary-btn"
+          type="submit">
+          Add food
         </button>
 
       </form>
 
-
-      <button id="toggle">
-        Create account
-      </button>
+    </div>
 
 
-      <p id="authMsg"></p>
+    <div class="card">
+
+      <div class="card-heading">
+
+        <div>
+          <p class="eyebrow">TODAY</p>
+          <h3>Food Log</h3>
+        </div>
+
+      </div>
+
+      <div id="foodList"></div>
 
     </div>
 
   </section>
 
 
+  <!-- =======================================================
+       WORKOUT
+  ======================================================== -->
 
-  <!-- ==========================================
-       Main Application
-  =========================================== -->
+  <section id="workout" class="page" hidden>
 
-  <main id="app" hidden>
+    <div class="page-header">
 
-
-    <!-- ========================================
-         Navigation
-    ========================================= -->
-
-    <nav>
-
-      <button data-page="dash">
-        Dashboard
-      </button>
-
-      <button data-page="food">
-        Food
-      </button>
-
-      <button data-page="workout">
-        Workout
-      </button>
-
-      <button data-page="progress">
-        Progress
-      </button>
-
-      <button data-page="settings">
-        Settings
-      </button>
-
-    </nav>
-
-
-
-    <!-- ========================================
-         DASHBOARD
-    ========================================= -->
-
-    <section id="dash" class="page">
-
-      <div class="grid">
-
-
-        <!-- Calories -->
-
-        <div class="card">
-
-          <h2>
-            Calories
-          </h2>
-
-          <div class="big">
-
-            <b id="cal">
-              0
-            </b>
-
-            /
-
-            <span id="calGoal">
-              0
-            </span>
-
-            kcal
-
-          </div>
-
-
-          <div class="bar">
-
-            <i id="calBar"></i>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- BMI -->
-
-        <div class="card stat bmi-card">
-
-          <h2>
-            BMI
-          </h2>
-
-          <h2 id="bmiValue">
-            --
-          </h2>
-
-          <span
-            id="bmiStatus"
-            class="bmi"
-          >
-            --
-          </span>
-
-        </div>
-
-
-
-        <!-- Macros -->
-
-        <div class="card">
-
-          <h2>
-            Macros
-          </h2>
-
-          <div id="macros"></div>
-
-        </div>
-
+      <div>
+        <p class="eyebrow">TRAINING</p>
+        <h2>Workout Tracker</h2>
+        <p>
+          Track your Push, Pull and Legs workouts.
+        </p>
       </div>
 
+    </div>
 
 
-      <!-- Dashboard Stats -->
+    <div class="card">
 
-      <div class="grid">
-
-        <div class="card stat">
-
-          Weight
-
-          <br>
-
-          <b id="weightDash">
-            0
-          </b>
-
-          kg
-
-        </div>
+      <h3>PPL Workout</h3>
 
 
-        <div class="card stat">
+      <div class="ppl">
 
-          Steps
-
-          <br>
-
-          <b id="stepsDash">
-            0
-          </b>
-
-        </div>
-
-
-        <div class="card stat">
-
-          Workout
-
-          <br>
-
-          <b id="workoutDash">
-            Rest
-          </b>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- ========================================
-         FOOD
-    ========================================= -->
-
-    <section
-      id="food"
-      class="page"
-      hidden
-    >
-
-      <div class="card">
-
-        <h2>
-          Scan / Add Food
-        </h2>
-
-
-        <button id="scan">
-          📷 Scan barcode
+        <button
+          class="ppl-active"
+          data-ppl="Push">
+          Push
         </button>
 
-
-        <video
-          id="video"
-          playsinline
-          hidden
-        ></video>
-
-
-        <form id="foodForm">
-
-
-          <div class="form-row">
-
-            <label for="fname">
-              Food name
-            </label>
-
-            <input
-              id="fname"
-              required
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="serving">
-              Serving
-            </label>
-
-            <input id="serving">
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="fcal">
-              Calories
-            </label>
-
-            <input
-              id="fcal"
-              type="number"
-              required
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="fp">
-              Protein (g)
-            </label>
-
-            <input
-              id="fp"
-              type="number"
-              step=".1"
-              required
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="fc">
-              Carbs (g)
-            </label>
-
-            <input
-              id="fc"
-              type="number"
-              step=".1"
-              required
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="ff">
-              Fat (g)
-            </label>
-
-            <input
-              id="ff"
-              type="number"
-              step=".1"
-              required
-            >
-
-          </div>
-
-
-
-          <button type="submit">
-            Add food
-          </button>
-
-        </form>
-
-      </div>
-
-
-
-      <div class="card">
-
-        <h2>
-          Today's food
-        </h2>
-
-        <div id="foodList"></div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- ========================================
-         WORKOUT
-    ========================================= -->
-
-    <section
-      id="workout"
-      class="page"
-      hidden
-    >
-
-      <div class="card">
-
-        <h2>
-          PPL Workout
-        </h2>
-
-
-        <div class="ppl">
-
-          <button data-ppl="Push">
-            Push
-          </button>
-
-          <button data-ppl="Pull">
-            Pull
-          </button>
-
-          <button data-ppl="Legs">
-            Legs
-          </button>
-
-        </div>
-
-
-
-        <form id="exForm">
-
-
-          <div class="form-row">
-
-            <label for="ename">
-              Exercise
-            </label>
-
-            <input
-              id="ename"
-              required
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="sets">
-              Sets
-            </label>
-
-            <input
-              id="sets"
-              type="number"
-              value="3"
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="reps">
-              Reps
-            </label>
-
-            <input
-              id="reps"
-              type="number"
-              value="10"
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="ew">
-              Weight (kg)
-            </label>
-
-            <input
-              id="ew"
-              type="number"
-              step=".5"
-              value="0"
-            >
-
-          </div>
-
-
-
-          <button type="submit">
-            Add exercise
-          </button>
-
-        </form>
-
-
-        <button id="finish">
-          Finish workout
+        <button data-ppl="Pull">
+          Pull
+        </button>
+
+        <button data-ppl="Legs">
+          Legs
         </button>
 
       </div>
 
 
+      <form id="exForm">
 
-      <div class="card">
+        <div class="form-row">
+          <label for="ename">
+            Exercise
+          </label>
 
-        <div id="exList"></div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- ========================================
-         PROGRESS
-    ========================================= -->
-
-    <section
-      id="progress"
-      class="page"
-      hidden
-    >
-
-      <div class="grid">
-
-
-        <!-- Weight -->
-
-        <div class="card">
-
-          <h2>
-            Weight
-          </h2>
-
-          <form id="weightForm">
-
-            <div class="form-row">
-
-              <label for="weightInput">
-                Weight (kg)
-              </label>
-
-              <input
-                id="weightInput"
-                type="number"
-                step=".1"
-                required
-              >
-
-            </div>
-
-
-            <button type="submit">
-              Save weight
-            </button>
-
-          </form>
-
+          <input
+            id="ename"
+            required>
         </div>
 
 
+        <div class="form-row">
+          <label for="sets">
+            Sets
+          </label>
 
-        <!-- Steps -->
-
-        <div class="card">
-
-          <h2>
-            Steps
-          </h2>
-
-          <form id="stepsForm">
-
-            <div class="form-row">
-
-              <label for="stepsInput">
-                Steps
-              </label>
-
-              <input
-                id="stepsInput"
-                type="number"
-                required
-              >
-
-            </div>
-
-
-            <button type="submit">
-              Save steps
-            </button>
-
-          </form>
-
+          <input
+            id="sets"
+            type="number"
+            value="3">
         </div>
 
+
+        <div class="form-row">
+          <label for="reps">
+            Reps
+          </label>
+
+          <input
+            id="reps"
+            type="number"
+            value="10">
+        </div>
+
+
+        <div class="form-row">
+          <label for="ew">
+            Weight (kg)
+          </label>
+
+          <input
+            id="ew"
+            type="number"
+            step=".5"
+            value="0">
+        </div>
+
+
+        <button
+          class="primary-btn"
+          type="submit">
+          Add exercise
+        </button>
+
+      </form>
+
+
+      <button
+        id="finish"
+        class="finish-btn">
+        Finish workout
+      </button>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>Today's Exercises</h3>
+
+      <div id="exList"></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       PROGRESS
+  ======================================================== -->
+
+  <section id="progress" class="page" hidden>
+
+    <div class="page-header">
+
+      <div>
+        <p class="eyebrow">PROGRESS</p>
+        <h2>Your Progress</h2>
+        <p>
+          Keep track of your body weight and daily steps.
+        </p>
       </div>
 
+    </div>
 
+
+    <div class="grid">
+
+
+      <!-- WEIGHT -->
 
       <div class="card">
 
-        <h2>
-          History
-        </h2>
+        <h3>Weight</h3>
 
-        <div id="history"></div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- ========================================
-         SETTINGS
-    ========================================= -->
-
-    <section
-      id="settings"
-      class="page"
-      hidden
-    >
-
-
-      <!-- Personal Information -->
-
-      <div class="card">
-
-        <h2>
-          Personal Information
-        </h2>
-
-
-        <form id="settingsForm">
-
+        <form id="weightForm">
 
           <div class="form-row">
 
-            <label for="age">
-              Age
-            </label>
-
-            <input
-              id="age"
-              type="number"
-              min="1"
-              max="120"
-              required
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="sex">
-              Sex
-            </label>
-
-            <select id="sex">
-
-              <option value="male">
-                Male
-              </option>
-
-              <option value="female">
-                Female
-              </option>
-
-            </select>
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="height">
-              Height (cm)
-            </label>
-
-            <input
-              id="height"
-              type="number"
-              min="50"
-              max="250"
-              step=".1"
-              required
-            >
-
-          </div>
-
-
-
-          <div class="form-row">
-
-            <label for="weight">
+            <label for="weightInput">
               Weight (kg)
             </label>
 
             <input
-              id="weight"
+              id="weightInput"
               type="number"
-              min="20"
-              max="500"
               step=".1"
-              required
-            >
+              required>
 
           </div>
 
-
-
-          <div class="form-row">
-
-            <label for="goalSteps">
-              Step Goal
-            </label>
-
-            <input
-              id="goalSteps"
-              type="number"
-              min="0"
-              required
-            >
-
-          </div>
-
-
-
-          <button type="submit">
-            Save Profile
+          <button
+            class="primary-btn">
+            Save weight
           </button>
 
         </form>
@@ -774,130 +708,330 @@
       </div>
 
 
-
-      <!-- BMI -->
-
-      <div class="card bmi-settings-card">
-
-        <h2>
-          BMI
-        </h2>
-
-
-        <div class="settings-bmi-display">
-
-          <strong id="settingsBmiValue">
-            --
-          </strong>
-
-          <span
-            id="settingsBmiStatus"
-            class="bmi"
-          >
-            --
-          </span>
-
-        </div>
-
-
-        <p class="muted">
-          BMI is automatically calculated from your height and weight.
-        </p>
-
-      </div>
-
-
-
-      <!-- Calculated Goals -->
+      <!-- STEPS -->
 
       <div class="card">
 
-        <h2>
-          Automatically Calculated Goals
-        </h2>
+        <h3>Steps</h3>
+
+        <form id="stepsForm">
+
+          <div class="form-row">
+
+            <label for="stepsInput">
+              Steps
+            </label>
+
+            <input
+              id="stepsInput"
+              type="number"
+              required>
+
+          </div>
+
+          <button
+            class="primary-btn">
+            Save steps
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
 
 
-        <p class="muted">
-          These values are calculated automatically using the
-          Mifflin-St Jeor equation and moderate activity.
+    <div class="card">
+
+      <h3>Weight History</h3>
+
+      <div id="history"></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       SETTINGS
+  ======================================================== -->
+
+  <section id="settings" class="page" hidden>
+
+    <div class="page-header">
+
+      <div>
+        <p class="eyebrow">PROFILE</p>
+        <h2>Settings</h2>
+        <p>
+          Update your body information. FitTrack will calculate
+          your BMI and nutrition targets automatically.
         </p>
+      </div>
+
+    </div>
 
 
-        <div class="form-row">
+    <!-- BODY INFORMATION -->
 
-          <label for="goalCal">
-            Calories
-          </label>
+    <div class="card">
 
-          <input
-            id="goalCal"
-            type="number"
-            readonly
-          >
+      <div class="card-heading">
 
+        <div>
+          <p class="eyebrow">PERSONAL INFORMATION</p>
+          <h3>Body Profile</h3>
         </div>
-
-
-
-        <div class="form-row">
-
-          <label for="goalP">
-            Protein (g)
-          </label>
-
-          <input
-            id="goalP"
-            type="number"
-            readonly
-          >
-
-        </div>
-
-
-
-        <div class="form-row">
-
-          <label for="goalC">
-            Carbs (g)
-          </label>
-
-          <input
-            id="goalC"
-            type="number"
-            readonly
-          >
-
-        </div>
-
-
-
-        <div class="form-row">
-
-          <label for="goalF">
-            Fat (g)
-          </label>
-
-          <input
-            id="goalF"
-            type="number"
-            readonly
-          >
-
-        </div>
-
 
       </div>
 
 
-    </section>
-
-  </main>
+      <form id="settingsForm">
 
 
-  <script
-    type="module"
-    src="app.js"
-  ></script>
+        <div class="form-row">
+
+          <label for="age">
+            Age
+          </label>
+
+          <input
+            id="age"
+            type="number"
+            min="1"
+            required>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <label for="sex">
+            Sex
+          </label>
+
+          <select id="sex" required>
+
+            <option value="male">
+              Male
+            </option>
+
+            <option value="female">
+              Female
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <label for="height">
+            Height (cm)
+          </label>
+
+          <input
+            id="height"
+            type="number"
+            min="50"
+            step=".1"
+            required>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <label for="weight">
+            Weight (kg)
+          </label>
+
+          <input
+            id="weight"
+            type="number"
+            min="1"
+            step=".1"
+            required>
+
+        </div>
+
+
+        <hr>
+
+
+        <div class="calculated-section">
+
+          <p class="eyebrow">
+            AUTOMATIC CALCULATIONS
+          </p>
+
+          <p class="calculated-note">
+            These values are calculated from your age, sex,
+            height and weight.
+          </p>
+
+
+          <div class="calculated-grid">
+
+
+            <div class="calculated-item">
+
+              <span>
+                BMI
+              </span>
+
+              <strong id="settingsBmi">
+                0.0
+              </strong>
+
+              <small id="settingsBmiStatus">
+                --
+              </small>
+
+            </div>
+
+
+            <div class="calculated-item">
+
+              <span>
+                Daily Calories
+              </span>
+
+              <strong id="settingsCalories">
+                0
+              </strong>
+
+              <small>
+                kcal/day
+              </small>
+
+            </div>
+
+
+            <div class="calculated-item">
+
+              <span>
+                Protein
+              </span>
+
+              <strong id="settingsProtein">
+                0
+              </strong>
+
+              <small>
+                g/day
+              </small>
+
+            </div>
+
+
+            <div class="calculated-item">
+
+              <span>
+                Carbohydrates
+              </span>
+
+              <strong id="settingsCarbs">
+                0
+              </strong>
+
+              <small>
+                g/day
+              </small>
+
+            </div>
+
+
+            <div class="calculated-item">
+
+              <span>
+                Fat
+              </span>
+
+              <strong id="settingsFat">
+                0
+              </strong>
+
+              <small>
+                g/day
+              </small>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <label for="goalSteps">
+            Daily Steps Goal
+          </label>
+
+          <input
+            id="goalSteps"
+            type="number"
+            min="0"
+            value="10000">
+
+        </div>
+
+
+        <button
+          class="primary-btn"
+          type="submit">
+          Save Profile
+        </button>
+
+
+      </form>
+
+    </div>
+
+
+    <!-- CALCULATION INFO -->
+
+    <div class="card info-card">
+
+      <h3>How FitTrack calculates your targets</h3>
+
+      <p>
+        Calories use the Mifflin-St Jeor equation with a
+        moderate activity multiplier of 1.55.
+      </p>
+
+      <p>
+        Protein is calculated at approximately
+        <strong>2 g/kg</strong> body weight.
+      </p>
+
+      <p>
+        Fat is calculated at approximately
+        <strong>0.8 g/kg</strong> body weight.
+      </p>
+
+      <p>
+        Remaining calories are assigned to carbohydrates.
+      </p>
+
+    </div>
+
+  </section>
+
+
+</main>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script
+  type="module"
+  src="app.js">
+</script>
 
 </body>
 </html>

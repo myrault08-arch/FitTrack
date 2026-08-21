@@ -23,13 +23,11 @@ import {
   deleteDoc
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
-import {
-  firebaseConfig
-} from './firebase-config.js';
+import { firebaseConfig } from './firebase-config.js';
 
 
 // ============================================================
-// Firebase
+// FIREBASE
 // ============================================================
 
 const app = initializeApp(firebaseConfig);
@@ -40,100 +38,96 @@ const db = getFirestore(app);
 
 
 // ============================================================
-// Helpers
+// HELPERS
 // ============================================================
 
 const $ = id => document.getElementById(id);
 
 
 // ============================================================
-// State
+// STATE
 // ============================================================
 
 let user = null;
 
-let profile = {
-
-  age: 31,
-
-  sex: "male",
-
-  height: 170,
-
-  weight: 73,
-
-  calGoal: 0,
-
-  pGoal: 0,
-
-  cGoal: 0,
-
-  fGoal: 0,
-
-  stepGoal: 10000
-
-};
-
-let ppl = "Push";
-
 let signup = false;
+
+let ppl = 'Push';
 
 let stream = null;
 
 
 // ============================================================
-// Date
+// DEFAULT PROFILE
 // ============================================================
 
-$("date").textContent =
-  new Date().toLocaleDateString();
+let profile = {
 
+  age: 31,
 
-// ============================================================
-// Firebase References
-// ============================================================
+  sex: 'male',
 
-const day = () => {
+  height: 170,
 
-  return new Date()
-    .toISOString()
-    .slice(0, 10);
+  weight: 73,
+
+  calGoal: 2546,
+
+  pGoal: 146,
+
+  cGoal: 341,
+
+  fGoal: 58,
+
+  stepGoal: 10000
 
 };
 
 
-const userRef = () => {
+// ============================================================
+// DATE
+// ============================================================
 
-  return doc(
-    db,
-    "users",
-    user.uid
+$('date').textContent =
+  new Date().toLocaleDateString(
+    undefined,
+    {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }
   );
 
-};
+
+// ============================================================
+// DATE HELPERS
+// ============================================================
+
+const day = () =>
+  new Date().toISOString().slice(0, 10);
 
 
-const dayRef = () => {
+const userRef = () =>
+  doc(db, 'users', user.uid);
 
-  return doc(
+
+const dayRef = () =>
+  doc(
     db,
-    "users",
+    'users',
     user.uid,
-    "days",
+    'days',
     day()
   );
 
-};
-
 
 // ============================================================
-// Get Today's Data
+// GET TODAY
 // ============================================================
 
 async function getDay() {
 
-  const snapshot =
-    await getDoc(dayRef());
+  const snapshot = await getDoc(dayRef());
 
   const data =
     snapshot.exists()
@@ -152,7 +146,8 @@ async function getDay() {
 
     steps: Number(data.steps) || 0,
 
-    workout: data.workout || "Rest"
+    workout:
+      data.workout || 'Rest'
 
   };
 
@@ -160,7 +155,7 @@ async function getDay() {
 
 
 // ============================================================
-// BMI + Macro Calculator
+// BMI + MACRO CALCULATOR
 // ============================================================
 
 function calculateMetrics() {
@@ -175,27 +170,21 @@ function calculateMetrics() {
     Number(profile.weight);
 
 
-  // Prevent invalid calculations
-
   if (
     !age ||
     !height ||
-    !weight ||
-    height <= 0 ||
-    weight <= 0
+    !weight
   ) {
-
     return;
-
   }
 
 
   // ----------------------------------------------------------
-  // Mifflin-St Jeor BMR
+  // Mifflin-St Jeor
   // ----------------------------------------------------------
 
   const bmr =
-    profile.sex === "female"
+    profile.sex === 'female'
 
       ? (
           10 * weight +
@@ -212,17 +201,13 @@ function calculateMetrics() {
         );
 
 
-  // ----------------------------------------------------------
   // Moderate activity
-  // PPL approximately 3x/week
-  // ----------------------------------------------------------
-
   const calories =
     Math.round(bmr * 1.55);
 
 
   // ----------------------------------------------------------
-  // Macro targets
+  // MACROS
   // ----------------------------------------------------------
 
   const protein =
@@ -244,13 +229,11 @@ function calculateMetrics() {
   const carbs =
     Math.max(
       0,
-      Math.round(carbCalories / 4)
+      Math.round(
+        carbCalories / 4
+      )
     );
 
-
-  // ----------------------------------------------------------
-  // Save calculated values into profile
-  // ----------------------------------------------------------
 
   profile.calGoal = calories;
 
@@ -267,149 +250,189 @@ function calculateMetrics() {
 
   const bmi =
     weight /
-    Math.pow(height / 100, 2);
+    Math.pow(
+      height / 100,
+      2
+    );
 
 
-  let status = "";
+  let status = '';
 
-  let cssClass = "";
+  let color = '';
 
 
   if (bmi < 18.5) {
 
-    status = "Underweight";
+    status = 'Underweight';
 
-    cssClass = "under";
+    color = 'under';
 
   }
 
   else if (bmi < 25) {
 
-    status = "Normal";
+    status = 'Normal';
 
-    cssClass = "normal";
+    color = 'normal';
 
   }
 
   else if (bmi < 30) {
 
-    status = "Overweight";
+    status = 'Overweight';
 
-    cssClass = "over";
+    color = 'over';
 
   }
 
   else {
 
-    status = "Obese";
+    status = 'Obese';
 
-    cssClass = "obese";
+    color = 'obese';
 
   }
 
 
   // ----------------------------------------------------------
-  // Dashboard BMI
+  // DASHBOARD BMI
   // ----------------------------------------------------------
 
-  if ($("bmiValue")) {
+  if ($('bmiValue')) {
 
-    $("bmiValue").textContent =
+    $('bmiValue').textContent =
       bmi.toFixed(1);
 
   }
 
 
-  if ($("bmiStatus")) {
+  if ($('bmiStatus')) {
 
-    $("bmiStatus").textContent =
+    $('bmiStatus').textContent =
       status;
 
-    $("bmiStatus").className =
-      "bmi " + cssClass;
+    $('bmiStatus').className =
+      `bmi ${color}`;
 
   }
 
 
   // ----------------------------------------------------------
-  // Settings BMI
+  // SETTINGS BMI
   // ----------------------------------------------------------
 
-  if ($("settingsBmiValue")) {
+  if ($('settingsBmi')) {
 
-    $("settingsBmiValue").textContent =
+    $('settingsBmi').textContent =
       bmi.toFixed(1);
 
   }
 
 
-  if ($("settingsBmiStatus")) {
+  if ($('settingsBmiStatus')) {
 
-    $("settingsBmiStatus").textContent =
+    $('settingsBmiStatus').textContent =
       status;
 
-    $("settingsBmiStatus").className =
-      "bmi " + cssClass;
+    $('settingsBmiStatus').className =
+      `bmi ${color}`;
 
   }
 
 
   // ----------------------------------------------------------
-  // Settings calculated goals
+  // SETTINGS CALCULATIONS
   // ----------------------------------------------------------
 
-  if ($("goalCal")) {
+  if ($('settingsCalories')) {
 
-    $("goalCal").value =
-      calories;
+    $('settingsCalories').textContent =
+      calories.toLocaleString();
 
   }
 
 
-  if ($("goalP")) {
+  if ($('settingsProtein')) {
 
-    $("goalP").value =
+    $('settingsProtein').textContent =
       protein;
 
   }
 
 
-  if ($("goalC")) {
+  if ($('settingsCarbs')) {
 
-    $("goalC").value =
+    $('settingsCarbs').textContent =
       carbs;
 
   }
 
 
-  if ($("goalF")) {
+  if ($('settingsFat')) {
 
-    $("goalF").value =
+    $('settingsFat').textContent =
       fat;
 
   }
 
 
-  // Dashboard calorie target
+  // ----------------------------------------------------------
+  // DASHBOARD GOALS
+  // ----------------------------------------------------------
 
-  if ($("calGoal")) {
+  if ($('calGoal')) {
 
-    $("calGoal").textContent =
+    $('calGoal').textContent =
       calories;
 
   }
+
+
+  if ($('macroProteinGoal')) {
+
+    $('macroProteinGoal').textContent =
+      protein;
+
+  }
+
+
+  if ($('macroCarbsGoal')) {
+
+    $('macroCarbsGoal').textContent =
+      carbs;
+
+  }
+
+
+  if ($('macroFatGoal')) {
+
+    $('macroFatGoal').textContent =
+      fat;
+
+  }
+
+
+  return {
+    bmr,
+    calories,
+    protein,
+    carbs,
+    fat,
+    bmi,
+    status
+  };
 
 }
 
 
 // ============================================================
-// Navigation
+// NAVIGATION
 // ============================================================
 
 function show(id) {
 
   document
-    .querySelectorAll(".page")
+    .querySelectorAll('.page')
     .forEach(page => {
 
       page.hidden =
@@ -419,50 +442,34 @@ function show(id) {
 
 
   document
-    .querySelectorAll("nav button")
+    .querySelectorAll('nav button')
     .forEach(button => {
 
-      if (button.dataset.page === id) {
-
-        button.style.background =
-          "#2563eb";
-
-      } else {
-
-        button.style.background =
-          "#172236";
-
-      }
+      button.classList.toggle(
+        'nav-active',
+        button.dataset.page === id
+      );
 
     });
 
 
-  if (id === "food") {
+  if (id === 'food') {
 
     food();
 
   }
 
 
-  if (id === "workout") {
+  if (id === 'workout') {
 
     exercises();
 
   }
 
 
-  if (id === "progress") {
+  if (id === 'progress') {
 
     history();
-
-  }
-
-
-  if (id === "settings") {
-
-    fill();
-
-    calculateMetrics();
 
   }
 
@@ -470,7 +477,7 @@ function show(id) {
 
 
 document
-  .querySelectorAll("nav button")
+  .querySelectorAll('nav button')
   .forEach(button => {
 
     button.onclick = () => {
@@ -483,54 +490,57 @@ document
 
 
 // ============================================================
-// Authentication
+// AUTH MODE
 // ============================================================
 
-$("toggle").onclick = () => {
+$('toggle').onclick = () => {
 
   signup = !signup;
 
 
-  $("authTitle").textContent =
+  $('authTitle').textContent =
     signup
-      ? "Create account"
-      : "Sign in";
+      ? 'Create account'
+      : 'Sign in';
 
 
-  $("toggle").textContent =
+  $('toggle').textContent =
     signup
-      ? "Back to sign in"
-      : "Create account";
+      ? 'Back to sign in'
+      : 'Create account';
 
 
-  $("authMsg").textContent = "";
+  $('authMsg').textContent = '';
 
 };
 
 
-$("authForm").onsubmit =
+// ============================================================
+// AUTH FORM
+// ============================================================
+
+$('authForm').onsubmit =
   async event => {
 
     event.preventDefault();
 
-    $("authMsg").textContent = "";
+    $('authMsg').textContent = '';
+
 
     try {
 
       if (signup) {
 
-        const credential =
+        const credentials =
           await createUserWithEmailAndPassword(
             auth,
-            $("email").value,
-            $("password").value
+            $('email').value,
+            $('password').value
           );
 
 
-        user = credential.user;
-
-
-        calculateMetrics();
+        user =
+          credentials.user;
 
 
         await setDoc(
@@ -544,8 +554,8 @@ $("authForm").onsubmit =
 
         await signInWithEmailAndPassword(
           auth,
-          $("email").value,
-          $("password").value
+          $('email').value,
+          $('password').value
         );
 
       }
@@ -556,7 +566,7 @@ $("authForm").onsubmit =
 
       console.error(error);
 
-      $("authMsg").textContent =
+      $('authMsg').textContent =
         error.message;
 
     }
@@ -565,7 +575,7 @@ $("authForm").onsubmit =
 
 
 // ============================================================
-// Auth State
+// AUTH STATE
 // ============================================================
 
 onAuthStateChanged(
@@ -577,45 +587,42 @@ onAuthStateChanged(
 
     if (!currentUser) {
 
-      $("auth").hidden = false;
+      $('auth').hidden = false;
 
-      $("app").hidden = true;
+      $('app').hidden = true;
 
-      $("logout").hidden = true;
+      $('logout').hidden = true;
 
       return;
 
     }
 
 
-    $("auth").hidden = true;
+    $('auth').hidden = true;
 
-    $("app").hidden = false;
+    $('app').hidden = false;
 
-    $("logout").hidden = false;
+    $('logout').hidden = false;
 
 
     try {
 
       const snapshot =
-        await getDoc(userRef());
+        await getDoc(
+          userRef()
+        );
 
 
       if (snapshot.exists()) {
 
         profile = {
-
           ...profile,
-
           ...snapshot.data()
-
         };
 
       }
 
       else {
-
-        calculateMetrics();
 
         await setDoc(
           userRef(),
@@ -625,36 +632,24 @@ onAuthStateChanged(
       }
 
 
-      // Make sure old profiles
-      // get the sex field
-
-      if (!profile.sex) {
-
-        profile.sex = "male";
-
-      }
-
-
-      // Calculate BMI/macros
-      calculateMetrics();
-
-
-      // Put values into Settings
       fill();
 
 
-      // Update dashboard
+      // Calculate BMI and macros
+      calculateMetrics();
+
+
       await refresh();
 
 
-      show("dash");
+      show('dash');
 
     }
 
     catch (error) {
 
       console.error(
-        "Profile loading error:",
+        'Profile loading error:',
         error
       );
 
@@ -665,179 +660,114 @@ onAuthStateChanged(
 
 
 // ============================================================
-// Logout
+// LOGOUT
 // ============================================================
 
-$("logout").onclick = () => {
-
-  signOut(auth);
-
-};
+$('logout').onclick =
+  () => signOut(auth);
 
 
 // ============================================================
-// Fill Settings
+// FILL SETTINGS
 // ============================================================
 
 function fill() {
 
-  if ($("age")) {
-
-    $("age").value =
-      profile.age;
-
-  }
+  $('age').value =
+    profile.age;
 
 
-  if ($("sex")) {
-
-    $("sex").value =
-      profile.sex || "male";
-
-  }
+  $('sex').value =
+    profile.sex || 'male';
 
 
-  if ($("height")) {
-
-    $("height").value =
-      profile.height;
-
-  }
+  $('height').value =
+    profile.height;
 
 
-  if ($("weight")) {
-
-    $("weight").value =
-      profile.weight;
-
-  }
+  $('weight').value =
+    profile.weight;
 
 
-  if ($("goalSteps")) {
+  $('goalSteps').value =
+    profile.stepGoal;
 
-    $("goalSteps").value =
-      profile.stepGoal;
-
-  }
-
-
-  if ($("goalCal")) {
-
-    $("goalCal").value =
-      profile.calGoal;
-
-  }
-
-
-  if ($("goalP")) {
-
-    $("goalP").value =
-      profile.pGoal;
-
-  }
-
-
-  if ($("goalC")) {
-
-    $("goalC").value =
-      profile.cGoal;
-
-  }
-
-
-  if ($("goalF")) {
-
-    $("goalF").value =
-      profile.fGoal;
-
-  }
-
-}
-
-
-// ============================================================
-// Live BMI calculation in Settings
-// ============================================================
-
-function updateProfilePreview() {
-
-  profile.age =
-    Number($("age").value);
-
-  profile.sex =
-    $("sex").value;
-
-  profile.height =
-    Number($("height").value);
-
-  profile.weight =
-    Number($("weight").value);
 
   calculateMetrics();
 
 }
 
 
-$("age").addEventListener(
-  "input",
-  updateProfilePreview
-);
+// ============================================================
+// LIVE SETTINGS CALCULATION
+// ============================================================
+
+[
+  'age',
+  'sex',
+  'height',
+  'weight'
+]
+.forEach(id => {
+
+  $(id).addEventListener(
+    'input',
+    () => {
+
+      profile.age =
+        Number($('age').value);
+
+      profile.sex =
+        $('sex').value;
+
+      profile.height =
+        Number($('height').value);
+
+      profile.weight =
+        Number($('weight').value);
 
 
-$("sex").addEventListener(
-  "change",
-  updateProfilePreview
-);
+      calculateMetrics();
 
+    }
+  );
 
-$("height").addEventListener(
-  "input",
-  updateProfilePreview
-);
-
-
-$("weight").addEventListener(
-  "input",
-  updateProfilePreview
-);
+});
 
 
 // ============================================================
-// Save Settings
+// SETTINGS SAVE
 // ============================================================
 
-$("settingsForm").onsubmit =
+$('settingsForm').onsubmit =
   async event => {
 
     event.preventDefault();
 
 
     profile.age =
-      Number($("age").value);
+      Number($('age').value);
 
 
     profile.sex =
-      $("sex").value;
+      $('sex').value;
 
 
     profile.height =
-      Number($("height").value);
+      Number($('height').value);
 
 
     profile.weight =
-      Number($("weight").value);
+      Number($('weight').value);
 
 
     profile.stepGoal =
-      Number($("goalSteps").value);
+      Number($('goalSteps').value);
 
 
-    // Recalculate everything
-
+    // Recalculate before saving
     calculateMetrics();
 
-
-    // Save complete profile
 
     await setDoc(
       userRef(),
@@ -852,22 +782,17 @@ $("settingsForm").onsubmit =
 
 
     alert(
-      "Profile and goals updated!"
+      'Profile saved successfully.'
     );
 
   };
 
 
 // ============================================================
-// Dashboard Refresh
+// DASHBOARD REFRESH
 // ============================================================
 
 async function refresh() {
-
-  if (!user) return;
-
-
-  // Recalculate BMI/macros
 
   calculateMetrics();
 
@@ -876,15 +801,17 @@ async function refresh() {
     await getDay();
 
 
-  $("cal").textContent =
+  // Calories
+
+  $('cal').textContent =
     Math.round(d.cal);
 
 
-  $("calGoal").textContent =
+  $('calGoal').textContent =
     profile.calGoal;
 
 
-  const percentage =
+  const caloriePercent =
     profile.calGoal > 0
 
       ? (
@@ -895,79 +822,79 @@ async function refresh() {
       : 0;
 
 
-  $("calBar").style.width =
+  $('calBar').style.width =
     Math.min(
       100,
-      percentage
-    ) + "%";
+      caloriePercent
+    ) + '%';
 
 
-  $("weightDash").textContent =
-    profile.weight;
+  const remaining =
+    Math.max(
+      0,
+      profile.calGoal -
+      d.cal
+    );
 
 
-  $("stepsDash").textContent =
-    (d.steps || 0)
+  $('calRemaining').textContent =
+    `${Math.round(remaining)} kcal remaining`;
+
+
+  // Weight
+
+  $('weightDash').textContent =
+    Number(profile.weight).toFixed(1);
+
+
+  // Steps
+
+  $('stepsDash').textContent =
+    Number(d.steps)
       .toLocaleString();
 
 
-  $("workoutDash").textContent =
-    d.workout || "Rest";
+  // Workout
+
+  $('workoutDash').textContent =
+    d.workout || 'Rest';
 
 
-  $("macros").innerHTML = `
+  // Macro values
 
-    <div class="row">
-
-      Protein
-
-      <b>
-        ${Math.round(d.p || 0)}
-        /
-        ${profile.pGoal}
-        g
-      </b>
-
-    </div>
+  $('macroProtein').textContent =
+    Math.round(d.p);
 
 
-    <div class="row">
-
-      Carbs
-
-      <b>
-        ${Math.round(d.c || 0)}
-        /
-        ${profile.cGoal}
-        g
-      </b>
-
-    </div>
+  $('macroCarbs').textContent =
+    Math.round(d.c);
 
 
-    <div class="row">
+  $('macroFat').textContent =
+    Math.round(d.f);
 
-      Fat
 
-      <b>
-        ${Math.round(d.f || 0)}
-        /
-        ${profile.fGoal}
-        g
-      </b>
+  // Goals
 
-    </div>
+  $('macroProteinGoal').textContent =
+    profile.pGoal;
 
-  `;
+
+  $('macroCarbsGoal').textContent =
+    profile.cGoal;
+
+
+  $('macroFatGoal').textContent =
+    profile.fGoal;
 
 }
 
 
 // ============================================================
-// FOOD
+// FOOD FORM
 // ============================================================
 
-$("foodForm").onsubmit =
+$('foodForm').onsubmit =
   async event => {
 
     event.preventDefault();
@@ -976,22 +903,22 @@ $("foodForm").onsubmit =
     const f = {
 
       name:
-        $("fname").value,
+        $('fname').value,
 
       serving:
-        $("serving").value,
+        $('serving').value,
 
       cal:
-        Number($("fcal").value),
+        Number($('fcal').value),
 
       p:
-        Number($("fp").value),
+        Number($('fp').value),
 
       c:
-        Number($("fc").value),
+        Number($('fc').value),
 
       f:
-        Number($("ff").value)
+        Number($('ff').value)
 
     };
 
@@ -1000,11 +927,11 @@ $("foodForm").onsubmit =
 
       collection(
         db,
-        "users",
+        'users',
         user.uid,
-        "days",
+        'days',
         day(),
-        "foods"
+        'foods'
       ),
 
       f
@@ -1060,21 +987,21 @@ async function food() {
 
         collection(
           db,
-          "users",
+          'users',
           user.uid,
-          "days",
+          'days',
           day(),
-          "foods"
+          'foods'
         ),
 
-        orderBy("__name__")
+        orderBy('__name__')
 
       )
 
     );
 
 
-  $("foodList").innerHTML =
+  $('foodList').innerHTML =
 
     snapshot.docs.map(
       item => {
@@ -1089,32 +1016,24 @@ async function food() {
 
             <span>
 
-              ${f.name}
+              <strong>
+                ${escapeHtml(f.name)}
+              </strong>
 
               <br>
 
               <small>
-
-                ${f.serving || ""}
-
-                ·
-
-                ${f.cal} kcal
-
+                ${escapeHtml(f.serving || '')}
+                · ${f.cal} kcal
                 · P ${f.p}
-
-                C ${f.c}
-
-                F ${f.f}
-
+                · C ${f.c}
+                · F ${f.f}
               </small>
 
             </span>
 
-
             <button
-              data-del="${item.id}"
-            >
+              data-del="${item.id}">
               Delete
             </button>
 
@@ -1123,39 +1042,36 @@ async function food() {
         `;
 
       }
-    ).join("")
+    ).join('')
 
-    ||
-
-    "<p>No food logged.</p>";
+    || '<p>No food logged today.</p>';
 
 
   document
-    .querySelectorAll("[data-del]")
+    .querySelectorAll('[data-del]')
     .forEach(button => {
 
       button.onclick =
         async () => {
 
-          const ref =
+          const reference =
             doc(
               db,
-              "users",
+              'users',
               user.uid,
-              "days",
+              'days',
               day(),
-              "foods",
+              'foods',
               button.dataset.del
             );
 
 
           const snapshot =
-            await getDoc(ref);
+            await getDoc(reference);
 
 
-          if (!snapshot.exists()) {
+          if (!snapshot.exists())
             return;
-          }
 
 
           const f =
@@ -1166,17 +1082,13 @@ async function food() {
             await getDay();
 
 
-          d.cal -=
-            Number(f.cal) || 0;
+          d.cal -= Number(f.cal) || 0;
 
-          d.p -=
-            Number(f.p) || 0;
+          d.p -= Number(f.p) || 0;
 
-          d.c -=
-            Number(f.c) || 0;
+          d.c -= Number(f.c) || 0;
 
-          d.f -=
-            Number(f.f) || 0;
+          d.f -= Number(f.f) || 0;
 
 
           await setDoc(
@@ -1188,7 +1100,9 @@ async function food() {
           );
 
 
-          await deleteDoc(ref);
+          await deleteDoc(
+            reference
+          );
 
 
           await refresh();
@@ -1203,11 +1117,32 @@ async function food() {
 
 
 // ============================================================
-// WORKOUT
+// ESCAPE HTML
+// ============================================================
+
+function escapeHtml(value) {
+
+  return String(value)
+
+    .replaceAll('&', '&amp;')
+
+    .replaceAll('<', '&lt;')
+
+    .replaceAll('>', '&gt;')
+
+    .replaceAll('"', '&quot;')
+
+    .replaceAll("'", '&#039;');
+
+}
+
+
+// ============================================================
+// PPL BUTTONS
 // ============================================================
 
 document
-  .querySelectorAll("[data-ppl]")
+  .querySelectorAll('[data-ppl]')
   .forEach(button => {
 
     button.onclick = () => {
@@ -1215,12 +1150,28 @@ document
       ppl =
         button.dataset.ppl;
 
+
+      document
+        .querySelectorAll('[data-ppl]')
+        .forEach(b => {
+
+          b.classList.toggle(
+            'ppl-active',
+            b === button
+          );
+
+        });
+
     };
 
   });
 
 
-$("exForm").onsubmit =
+// ============================================================
+// EXERCISE FORM
+// ============================================================
+
+$('exForm').onsubmit =
   async event => {
 
     event.preventDefault();
@@ -1230,11 +1181,11 @@ $("exForm").onsubmit =
 
       collection(
         db,
-        "users",
+        'users',
         user.uid,
-        "days",
+        'days',
         day(),
-        "exercises"
+        'exercises'
       ),
 
       {
@@ -1242,16 +1193,16 @@ $("exForm").onsubmit =
         type: ppl,
 
         name:
-          $("ename").value,
+          $('ename').value,
 
         sets:
-          Number($("sets").value),
+          Number($('sets').value),
 
         reps:
-          Number($("reps").value),
+          Number($('reps').value),
 
         weight:
-          Number($("ew").value)
+          Number($('ew').value)
 
       }
 
@@ -1261,12 +1212,23 @@ $("exForm").onsubmit =
     event.target.reset();
 
 
+    $('sets').value = 3;
+
+    $('reps').value = 10;
+
+    $('ew').value = 0;
+
+
     await exercises();
 
   };
 
 
-$("finish").onclick =
+// ============================================================
+// FINISH WORKOUT
+// ============================================================
+
+$('finish').onclick =
   async () => {
 
     await setDoc(
@@ -1286,11 +1248,16 @@ $("finish").onclick =
 
     await refresh();
 
+
+    alert(
+      `${ppl} workout completed!`
+    );
+
   };
 
 
 // ============================================================
-// Exercise List
+// EXERCISES
 // ============================================================
 
 async function exercises() {
@@ -1303,17 +1270,17 @@ async function exercises() {
 
       collection(
         db,
-        "users",
+        'users',
         user.uid,
-        "days",
+        'days',
         day(),
-        "exercises"
+        'exercises'
       )
 
     );
 
 
-  $("exList").innerHTML =
+  $('exList').innerHTML =
 
     snapshot.docs.map(
       item => {
@@ -1328,30 +1295,22 @@ async function exercises() {
 
             <span>
 
-              ${e.name}
+              <strong>
+                ${escapeHtml(e.name)}
+              </strong>
 
               <br>
 
               <small>
-
                 ${e.type}
-
-                ·
-
-                ${e.sets}×${e.reps}
-
-                @
-
-                ${e.weight} kg
-
+                · ${e.sets} × ${e.reps}
+                @ ${e.weight} kg
               </small>
 
             </span>
 
-
             <button
-              data-ex="${item.id}"
-            >
+              data-ex="${item.id}">
               Delete
             </button>
 
@@ -1360,15 +1319,13 @@ async function exercises() {
         `;
 
       }
-    ).join("")
+    ).join('')
 
-    ||
-
-    "<p>No exercises logged.</p>";
+    || '<p>No exercises logged today.</p>';
 
 
   document
-    .querySelectorAll("[data-ex]")
+    .querySelectorAll('[data-ex]')
     .forEach(button => {
 
       button.onclick =
@@ -1378,18 +1335,18 @@ async function exercises() {
 
             doc(
               db,
-              "users",
+              'users',
               user.uid,
-              "days",
+              'days',
               day(),
-              "exercises",
+              'exercises',
               button.dataset.ex
             )
 
           );
 
 
-          await exercises();
+          exercises();
 
         };
 
@@ -1399,27 +1356,27 @@ async function exercises() {
 
 
 // ============================================================
-// WEIGHT
+// WEIGHT TRACKING
 // ============================================================
 
-$("weightForm").onsubmit =
+$('weightForm').onsubmit =
   async event => {
 
     event.preventDefault();
 
 
-    profile.weight =
+    const newWeight =
       Number(
-        $("weightInput").value
+        $('weightInput').value
       );
 
 
-    // Recalculate BMI and macros
+    profile.weight =
+      newWeight;
+
 
     calculateMetrics();
 
-
-    // Save profile
 
     await setDoc(
       userRef(),
@@ -1430,23 +1387,20 @@ $("weightForm").onsubmit =
     );
 
 
-    // Save weight history
-
     await addDoc(
 
       collection(
         db,
-        "users",
+        'users',
         user.uid,
-        "weights"
+        'weights'
       ),
 
       {
 
         date: day(),
 
-        weight:
-          profile.weight
+        weight: newWeight
 
       }
 
@@ -1457,6 +1411,9 @@ $("weightForm").onsubmit =
 
     history();
 
+
+    $('weightInput').value = '';
+
   };
 
 
@@ -1464,7 +1421,7 @@ $("weightForm").onsubmit =
 // STEPS
 // ============================================================
 
-$("stepsForm").onsubmit =
+$('stepsForm').onsubmit =
   async event => {
 
     event.preventDefault();
@@ -1478,7 +1435,7 @@ $("stepsForm").onsubmit =
 
         steps:
           Number(
-            $("stepsInput").value
+            $('stepsInput').value
           )
 
       },
@@ -1511,14 +1468,14 @@ async function history() {
 
         collection(
           db,
-          "users",
+          'users',
           user.uid,
-          "weights"
+          'weights'
         ),
 
         orderBy(
-          "date",
-          "desc"
+          'date',
+          'desc'
         )
 
       )
@@ -1526,7 +1483,7 @@ async function history() {
     );
 
 
-  $("history").innerHTML =
+  $('history').innerHTML =
 
     snapshot.docs.map(
       item => {
@@ -1539,22 +1496,23 @@ async function history() {
 
           <div class="row">
 
-            ${data.date}
+            <span>
+              ${data.date}
+            </span>
 
-            <b>
-              ${data.weight} kg
-            </b>
+            <strong>
+              ${Number(data.weight).toFixed(1)}
+              kg
+            </strong>
 
           </div>
 
         `;
 
       }
-    ).join("")
+    ).join('')
 
-    ||
-
-    "<p>No history.</p>";
+    || '<p>No weight history yet.</p>';
 
 }
 
@@ -1563,13 +1521,13 @@ async function history() {
 // BARCODE SCANNER
 // ============================================================
 
-$("scan").onclick =
+$('scan').onclick =
   async () => {
 
-    if (!("BarcodeDetector" in window)) {
+    if (!('BarcodeDetector' in window)) {
 
       alert(
-        "Barcode scanning is not supported by this browser."
+        'Barcode scanning is not supported by this browser.'
       );
 
       return;
@@ -1583,29 +1541,29 @@ $("scan").onclick =
         await navigator.mediaDevices.getUserMedia({
 
           video: {
-            facingMode: "environment"
+            facingMode: 'environment'
           }
 
         });
 
 
-      $("video").hidden = false;
+      $('video').hidden = false;
 
-      $("video").srcObject =
+      $('video').srcObject =
         stream;
 
 
-      await $("video").play();
+      await $('video').play();
 
 
       const detector =
         new BarcodeDetector({
 
           formats: [
-            "ean_13",
-            "ean_8",
-            "upc_a",
-            "upc_e"
+            'ean_13',
+            'ean_8',
+            'upc_a',
+            'upc_e'
           ]
 
         });
@@ -1614,16 +1572,15 @@ $("scan").onclick =
       const loop =
         async () => {
 
-          if (!stream) {
+          if (!stream)
             return;
-          }
 
 
           try {
 
             const codes =
               await detector.detect(
-                $("video")
+                $('video')
               );
 
 
@@ -1643,8 +1600,8 @@ $("scan").onclick =
 
               stream = null;
 
-              $("video").hidden =
-                true;
+
+              $('video').hidden = true;
 
 
               const response =
@@ -1655,55 +1612,71 @@ $("scan").onclick =
                 );
 
 
-              const data =
+              const json =
                 await response.json();
 
 
-              if (data.status === 1) {
+              if (json.status === 1) {
 
                 const product =
-                  data.product;
+                  json.product;
 
 
-                const n =
+                const nutrients =
                   product.nutriments || {};
 
 
-                $("fname").value =
+                $('fname').value =
                   product.product_name ||
-                  "Scanned food";
+                  'Scanned food';
 
 
-                $("serving").value =
+                $('serving').value =
                   product.serving_size ||
-                  "100 g";
+                  '100 g';
 
 
-                $("fcal").value =
+                $('fcal').value =
                   Math.round(
 
-                    n["energy-kcal_serving"] ??
-                    n["energy-kcal_100g"] ??
+                    nutrients[
+                      'energy-kcal_serving'
+                    ]
+
+                    ??
+
+                    nutrients[
+                      'energy-kcal_100g'
+                    ]
+
+                    ??
+
                     0
 
                   );
 
 
-                $("fp").value =
-                  n.proteins_serving ??
-                  n.proteins_100g ??
+                $('fp').value =
+                  nutrients.proteins_serving
+                  ??
+                  nutrients.proteins_100g
+                  ??
                   0;
 
 
-                $("fc").value =
-                  n.carbohydrates_serving ??
-                  n.carbohydrates_100g ??
+                $('fc').value =
+                  nutrients.carbohydrates_serving
+                  ??
+                  nutrients.carbohydrates_100g
+                  ??
                   0;
 
 
-                $("ff").value =
-                  n.fat_serving ??
-                  n.fat_100g ??
+                $('ff').value =
+                  nutrients.fat_serving
+                  ??
+                  nutrients.fat_100g
+                  ??
                   0;
 
               }
@@ -1711,7 +1684,7 @@ $("scan").onclick =
               else {
 
                 alert(
-                  "Product not found. Enter nutrition manually."
+                  'Product not found. Enter nutrition manually.'
                 );
 
               }
@@ -1729,9 +1702,11 @@ $("scan").onclick =
           catch (error) {
 
             console.error(
-              "Barcode error:",
+              'Barcode error:',
               error
             );
+
+            requestAnimationFrame(loop);
 
           }
 
@@ -1759,12 +1734,11 @@ $("scan").onclick =
 
 const canvas =
   document.getElementById(
-    "constellation"
+    'constellation'
   );
 
-
 const ctx =
-  canvas.getContext("2d");
+  canvas.getContext('2d');
 
 
 let stars = [];
@@ -1786,11 +1760,11 @@ const STAR_COUNT = 110;
 
 const CONNECTION_DISTANCE = 130;
 
-const MOUSE_CONNECTION_DISTANCE = 180;
+const MOUSE_CONNECTION_DISTANCE = 190;
 
 
 // ============================================================
-// Canvas Resize
+// RESIZE
 // ============================================================
 
 function resizeConstellation() {
@@ -1808,11 +1782,11 @@ function resizeConstellation() {
 
 
   canvas.style.width =
-    window.innerWidth + "px";
+    window.innerWidth + 'px';
 
 
   canvas.style.height =
-    window.innerHeight + "px";
+    window.innerHeight + 'px';
 
 
   ctx.setTransform(
@@ -1831,7 +1805,7 @@ function resizeConstellation() {
 
 
 // ============================================================
-// Create Stars
+// CREATE STARS
 // ============================================================
 
 function createStars() {
@@ -1856,12 +1830,12 @@ function createStars() {
         window.innerHeight,
 
       vx:
-        (Math.random() - .5) *
-        .15,
+        (Math.random() - .5)
+        * .15,
 
       vy:
-        (Math.random() - .5) *
-        .15,
+        (Math.random() - .5)
+        * .15,
 
       radius:
         Math.random() * 1.4 + .4,
@@ -1871,13 +1845,10 @@ function createStars() {
 
       twinkle:
         Math.random() *
-        Math.PI *
-        2,
+        Math.PI * 2,
 
       twinkleSpeed:
-        Math.random() *
-        .02 +
-        .005
+        Math.random() * .02 + .005
 
     });
 
@@ -1887,11 +1858,11 @@ function createStars() {
 
 
 // ============================================================
-// Mouse Tracking
+// MOUSE TRACKING
 // ============================================================
 
 window.addEventListener(
-  "mousemove",
+  'mousemove',
   event => {
 
     mouse.x =
@@ -1908,55 +1879,7 @@ window.addEventListener(
 
 
 window.addEventListener(
-  "mouseleave",
-  () => {
-
-    mouse.active =
-      false;
-
-    mouse.x = null;
-
-    mouse.y = null;
-
-  }
-);
-
-
-// ============================================================
-// Touch Tracking
-// ============================================================
-
-window.addEventListener(
-  "touchmove",
-  event => {
-
-    if (!event.touches.length) {
-      return;
-    }
-
-
-    const touch =
-      event.touches[0];
-
-
-    mouse.x =
-      touch.clientX;
-
-    mouse.y =
-      touch.clientY;
-
-    mouse.active =
-      true;
-
-  },
-  {
-    passive: true
-  }
-);
-
-
-window.addEventListener(
-  "touchend",
+  'mouseleave',
   () => {
 
     mouse.active =
@@ -1967,7 +1890,7 @@ window.addEventListener(
 
 
 // ============================================================
-// Draw Constellation
+// CONSTELLATION DRAW
 // ============================================================
 
 function drawConstellation() {
@@ -1990,6 +1913,8 @@ function drawConstellation() {
 
     star.y += star.vy;
 
+
+    // Wrap around
 
     if (
       star.x < -10
@@ -2042,7 +1967,9 @@ function drawConstellation() {
       ) * .15;
 
 
+    // --------------------------------------------------------
     // Glow
+    // --------------------------------------------------------
 
     ctx.beginPath();
 
@@ -2056,16 +1983,23 @@ function drawConstellation() {
 
 
     ctx.fillStyle =
-      `rgba(100,150,255,${Math.max(
-        0,
-        pulse * .08
-      )})`;
+      `rgba(
+        100,
+        150,
+        255,
+        ${Math.max(
+          0,
+          pulse * .08
+        )}
+      )`;
 
 
     ctx.fill();
 
 
+    // --------------------------------------------------------
     // Star
+    // --------------------------------------------------------
 
     ctx.beginPath();
 
@@ -2079,10 +2013,15 @@ function drawConstellation() {
 
 
     ctx.fillStyle =
-      `rgba(180,210,255,${Math.max(
-        0,
-        pulse
-      )})`;
+      `rgba(
+        180,
+        210,
+        255,
+        ${Math.max(
+          0,
+          pulse
+        )}
+      )`;
 
 
     ctx.fill();
@@ -2091,7 +2030,7 @@ function drawConstellation() {
 
 
   // ----------------------------------------------------------
-  // Star-to-star connections
+  // Connect stars to each other
   // ----------------------------------------------------------
 
   for (
@@ -2154,7 +2093,12 @@ function drawConstellation() {
 
 
         ctx.strokeStyle =
-          `rgba(100,150,255,${opacity})`;
+          `rgba(
+            100,
+            150,
+            255,
+            ${opacity}
+          )`;
 
 
         ctx.lineWidth =
@@ -2171,24 +2115,18 @@ function drawConstellation() {
 
 
   // ----------------------------------------------------------
-  // Mouse-to-star connections
+  // Mouse constellation
   // ----------------------------------------------------------
 
-  if (
-    mouse.active &&
-    mouse.x !== null &&
-    mouse.y !== null
-  ) {
+  if (mouse.active) {
 
     for (const star of stars) {
 
       const dx =
-        star.x -
-        mouse.x;
+        star.x - mouse.x;
 
       const dy =
-        star.y -
-        mouse.y;
+        star.y - mouse.y;
 
 
       const distance =
@@ -2208,7 +2146,7 @@ function drawConstellation() {
             1 -
             distance /
             MOUSE_CONNECTION_DISTANCE
-          ) * .45;
+          ) * .55;
 
 
         ctx.beginPath();
@@ -2225,60 +2163,43 @@ function drawConstellation() {
 
 
         ctx.strokeStyle =
-          `rgba(100,150,255,${opacity})`;
+          `rgba(
+            100,
+            170,
+            255,
+            ${opacity}
+          )`;
 
 
         ctx.lineWidth =
-          .8;
+          1;
 
 
         ctx.stroke();
 
+
+        // Slight mouse glow
+
+        ctx.beginPath();
+
+        ctx.arc(
+          mouse.x,
+          mouse.y,
+          2.5,
+          0,
+          Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+          'rgba(180,220,255,.75)';
+
+
+        ctx.fill();
+
       }
 
     }
-
-
-    // Small glow around mouse
-
-    const gradient =
-      ctx.createRadialGradient(
-        mouse.x,
-        mouse.y,
-        0,
-        mouse.x,
-        mouse.y,
-        100
-      );
-
-
-    gradient.addColorStop(
-      0,
-      "rgba(80,130,255,.08)"
-    );
-
-
-    gradient.addColorStop(
-      1,
-      "rgba(80,130,255,0)"
-    );
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-      mouse.x,
-      mouse.y,
-      100,
-      0,
-      Math.PI * 2
-    );
-
-
-    ctx.fillStyle =
-      gradient;
-
-    ctx.fill();
 
   }
 
@@ -2292,11 +2213,11 @@ function drawConstellation() {
 
 
 // ============================================================
-// Start constellation
+// CONSTELLATION START
 // ============================================================
 
 window.addEventListener(
-  "resize",
+  'resize',
   resizeConstellation
 );
 
