@@ -104,8 +104,19 @@ $('date').textContent =
 // DATE HELPERS
 // ============================================================
 
-const day = () =>
-  new Date().toISOString().slice(0, 10);
+// ============================================================
+// LOCAL DATE (Philippines friendly)
+// ============================================================
+
+function day() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const date = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${date}`;
+}
 
 
 const userRef = () =>
@@ -986,109 +997,80 @@ async function refresh() {
 
   calculateMetrics();
 
+  const d = await getDay();
 
-  const d =
-    await getDay();
+  console.log("Today's data:", d);
 
+  // -----------------------
+  // Calories Eaten
+  // -----------------------
 
-  // ----------------------------------------------------------
-  // FOOD CALORIES
-  // ----------------------------------------------------------
+  $("cal").textContent = Math.round(d.cal);
+  $("calGoal").textContent = profile.calGoal;
 
-  $('cal').textContent =
-    Math.round(
-      d.cal
-    );
-
-
-  $('calGoal').textContent =
-    profile.calGoal;
-
-
-  const caloriePercent =
+  const percent =
     profile.calGoal > 0
-      ? (
-          d.cal /
-          profile.calGoal
-        ) * 100
+      ? (d.cal / profile.calGoal) * 100
       : 0;
 
+  $("calBar").style.width =
+    Math.min(100, percent) + "%";
 
-  $('calBar').style.width =
-    Math.min(
-      100,
-      caloriePercent
-    ) + '%';
+  $("calRemaining").textContent =
+    `${Math.max(0, profile.calGoal - d.cal)} kcal remaining`;
 
+  // -----------------------
+  // Calories Burned
+  // -----------------------
 
-  const remaining =
-    Math.max(
-      0,
-      profile.calGoal -
-      d.cal
-    );
+  const burned =
+    (Number(d.workoutCalories) || 0) +
+    (Number(d.stepsCalories) || 0);
 
+  if ($("burned"))
+    $("burned").textContent = burned;
 
-  $('calRemaining').textContent =
-    `${Math.round(remaining)} kcal remaining`;
+  if ($("burnWorkout"))
+    $("burnWorkout").textContent =
+      `${Number(d.workoutCalories || 0)} kcal`;
 
+  if ($("burnSteps"))
+    $("burnSteps").textContent =
+      `${Number(d.stepsCalories || 0)} kcal`;
 
-  // ----------------------------------------------------------
-  // WEIGHT
-  // ----------------------------------------------------------
+  // -----------------------
+  // Weight
+  // -----------------------
 
-  $('weightDash').textContent =
-    Number(
-      profile.weight
-    ).toFixed(1);
+  $("weightDash").textContent =
+    Number(profile.weight).toFixed(1);
 
+  // -----------------------
+  // Steps
+  // -----------------------
 
-  // ----------------------------------------------------------
-  // STEPS
-  // ----------------------------------------------------------
+  $("stepsDash").textContent =
+    Number(d.steps || 0).toLocaleString();
 
-  $('stepsDash').textContent =
-    Number(
-      d.steps
-    ).toLocaleString();
+  // -----------------------
+  // Workout
+  // -----------------------
 
+  $("workoutDash").textContent =
+    d.workout || "Rest";
 
-  // ----------------------------------------------------------
-  // WORKOUT
-  // ----------------------------------------------------------
+  // -----------------------
+  // Macros
+  // -----------------------
 
-  $('workoutDash').textContent =
-    d.workout ||
-    'Rest';
+  $("macroProtein").textContent = Math.round(d.p || 0);
+  $("macroCarbs").textContent = Math.round(d.c || 0);
+  $("macroFat").textContent = Math.round(d.f || 0);
 
-
-  // ----------------------------------------------------------
-  // MACROS
-  // ----------------------------------------------------------
-
-  $('macroProtein').textContent =
-    Math.round(d.p);
-
-
-  $('macroCarbs').textContent =
-    Math.round(d.c);
-
-
-  $('macroFat').textContent =
-    Math.round(d.f);
-
-
-  $('macroProteinGoal').textContent =
-    profile.pGoal;
-
-
-  $('macroCarbsGoal').textContent =
-    profile.cGoal;
-
-
-  $('macroFatGoal').textContent =
-    profile.fGoal;
-
+  $("macroProteinGoal").textContent = profile.pGoal;
+  $("macroCarbsGoal").textContent = profile.cGoal;
+  $("macroFatGoal").textContent = profile.fGoal;
+}
 
   // ----------------------------------------------------------
   // CALORIES BURNED
@@ -1777,64 +1759,30 @@ $('weightForm').onsubmit =
 // STEPS
 // ============================================================
 
-$('stepsForm').onsubmit =
-  async event => {
+$("stepsForm").onsubmit = async (e) => {
 
-    event.preventDefault();
+  e.preventDefault();
 
+  const steps = Number($("stepsInput").value);
 
-    const steps =
-      Number(
-        $('stepsInput').value
-      );
+  // Approx. 0.04 kcal per step
+  const stepsCalories = Math.round(steps * 0.04);
 
+  await setDoc(
+    dayRef(),
+    {
+      steps,
+      stepsCalories
+    },
+    { merge: true }
+  );
 
-    const stepsCalories =
-      calculateStepCalories(
-        steps
-      );
+  $("stepsInput").value = "";
 
+  await refresh();
 
-    const d =
-      await getDay();
-
-
-    const totalBurned =
-      calculateTotalBurned(
-        d.workoutCalories,
-        stepsCalories
-      );
-
-
-    await setDoc(
-
-      dayRef(),
-
-      {
-
-        steps,
-
-        stepsCalories,
-
-        caloriesBurned:
-          totalBurned
-
-      },
-
-      {
-        merge: true
-      }
-
-    );
-
-
-    await refresh();
-
-
-    $('stepsInput').value =
-      '';
-
-  };
+  alert("Steps saved!");
+};
 
 
 // ============================================================
