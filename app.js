@@ -38,11 +38,10 @@ const db = getFirestore(app);
 
 
 // ============================================================
-// HELPERS
+// HELPER
 // ============================================================
 
-const $ = id =>
-  document.getElementById(id);
+const $ = id => document.getElementById(id);
 
 
 // ============================================================
@@ -89,46 +88,65 @@ let profile = {
 // DATE
 // ============================================================
 
-$('date').textContent =
-  new Date().toLocaleDateString(
-    undefined,
-    {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }
-  );
+if ($('date')) {
 
+  $('date').textContent =
+    new Date().toLocaleDateString(
+      undefined,
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }
+    );
 
-// ============================================================
-// DATE HELPERS
-// ============================================================
-
-// ============================================================
-// LOCAL DATE (Philippines friendly)
-// ============================================================
-
-function day() {
-  const now = new Date();
-
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const date = String(now.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${date}`;
 }
 
 
-const userRef = () =>
-  doc(
+// ============================================================
+// LOCAL DATE
+// ============================================================
+
+function day() {
+
+  const now = new Date();
+
+  const year =
+    now.getFullYear();
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(2, '0');
+
+  const date =
+    String(
+      now.getDate()
+    ).padStart(2, '0');
+
+  return `${year}-${month}-${date}`;
+
+}
+
+
+// ============================================================
+// FIRESTORE REFERENCES
+// ============================================================
+
+function userRef() {
+
+  return doc(
     db,
     'users',
     user.uid
   );
 
+}
 
-const dayRef = () =>
-  doc(
+
+function dayRef() {
+
+  return doc(
     db,
     'users',
     user.uid,
@@ -136,21 +154,116 @@ const dayRef = () =>
     day()
   );
 
+}
+
+
+function foodCollection() {
+
+  return collection(
+    db,
+    'users',
+    user.uid,
+    'days',
+    day(),
+    'foods'
+  );
+
+}
+
+
+function exerciseCollection() {
+
+  return collection(
+    db,
+    'users',
+    user.uid,
+    'days',
+    day(),
+    'exercises'
+  );
+
+}
+
 
 // ============================================================
-// GET TODAY
+// GET TODAY'S DATA
 // ============================================================
 
 async function getDay() {
 
+  if (!user) {
+
+    return {
+
+      cal: 0,
+
+      p: 0,
+
+      c: 0,
+
+      f: 0,
+
+      steps: 0,
+
+      workout: 'Rest',
+
+      workoutCalories: 0,
+
+      stepsCalories: 0,
+
+      caloriesBurned: 0
+
+    };
+
+  }
+
+
   const snapshot =
-    await getDoc(dayRef());
+    await getDoc(
+      dayRef()
+    );
+
+
+  if (!snapshot.exists()) {
+
+    console.log(
+      'No day document found:',
+      day()
+    );
+
+    return {
+
+      cal: 0,
+
+      p: 0,
+
+      c: 0,
+
+      f: 0,
+
+      steps: 0,
+
+      workout: 'Rest',
+
+      workoutCalories: 0,
+
+      stepsCalories: 0,
+
+      caloriesBurned: 0
+
+    };
+
+  }
 
 
   const data =
-    snapshot.exists()
-      ? snapshot.data()
-      : {};
+    snapshot.data();
+
+
+  console.log(
+    "Raw Firestore today's data:",
+    data
+  );
 
 
   return {
@@ -188,7 +301,7 @@ async function getDay() {
 
 
 // ============================================================
-// CALORIES BURNED CALCULATIONS
+// STEP CALORIE CALCULATION
 // ============================================================
 
 function calculateStepCalories(steps) {
@@ -196,10 +309,13 @@ function calculateStepCalories(steps) {
   const weight =
     Number(profile.weight) || 0;
 
+  const stepCount =
+    Number(steps) || 0;
+
 
   if (
-    !weight ||
-    !steps
+    weight <= 0 ||
+    stepCount <= 0
   ) {
 
     return 0;
@@ -208,30 +324,28 @@ function calculateStepCalories(steps) {
 
 
   /*
-    Approximate walking calories.
+    Approximation:
 
-    Average walking:
-    ~0.04 kcal per kg per step
+    kcal per step =
+    body weight × 0.0004
 
     Example:
 
-    73 kg × 10,000 × 0.04
-    = approximately 292 kcal
+    73 kg × 10,000 × 0.0004
+    = 292 kcal
   */
 
-  const calories =
-    steps *
+  return Math.round(
+    stepCount *
     weight *
-    0.0004;
-
-
-  return Math.round(calories);
+    0.0004
+  );
 
 }
 
 
 // ============================================================
-// WORKOUT CALORIES
+// WORKOUT CALORIE CALCULATION
 // ============================================================
 
 function calculateWorkoutCalories(type) {
@@ -239,21 +353,6 @@ function calculateWorkoutCalories(type) {
   const weight =
     Number(profile.weight) || 73;
 
-
-  /*
-    Estimated calories for a
-    moderate 60-minute resistance
-    training session.
-
-    MET values:
-
-    Push = 5.0
-    Pull = 5.0
-    Legs = 6.0
-
-    kcal =
-    MET × body weight × hours
-  */
 
   let met = 5;
 
@@ -265,22 +364,25 @@ function calculateWorkoutCalories(type) {
   }
 
 
+  /*
+    Assumes approximately
+    60 minutes of resistance training.
+  */
+
   const durationHours = 1;
 
 
-  const calories =
+  return Math.round(
     met *
     weight *
-    durationHours;
-
-
-  return Math.round(calories);
+    durationHours
+  );
 
 }
 
 
 // ============================================================
-// TOTAL BURNED
+// TOTAL CALORIES BURNED
 // ============================================================
 
 function calculateTotalBurned(
@@ -289,15 +391,18 @@ function calculateTotalBurned(
 ) {
 
   return Math.round(
-    Number(workoutCalories || 0) +
-    Number(stepsCalories || 0)
+
+    (Number(workoutCalories) || 0) +
+
+    (Number(stepsCalories) || 0)
+
   );
 
 }
 
 
 // ============================================================
-// BMI + MACRO CALCULATOR
+// BMI + MACROS
 // ============================================================
 
 function calculateMetrics() {
@@ -318,14 +423,14 @@ function calculateMetrics() {
     !weight
   ) {
 
-    return;
+    return null;
 
   }
 
 
-  // ----------------------------------------------------------
-  // Mifflin-St Jeor
-  // ----------------------------------------------------------
+  // ==========================================================
+  // BMR
+  // ==========================================================
 
   const bmr =
     profile.sex === 'female'
@@ -353,9 +458,9 @@ function calculateMetrics() {
     );
 
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // MACROS
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const protein =
     Math.round(
@@ -399,9 +504,9 @@ function calculateMetrics() {
     fat;
 
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // BMI
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const bmi =
     weight /
@@ -457,9 +562,9 @@ function calculateMetrics() {
   }
 
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // DASHBOARD BMI
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if ($('bmiValue')) {
 
@@ -480,9 +585,9 @@ function calculateMetrics() {
   }
 
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // SETTINGS BMI
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if ($('settingsBmi')) {
 
@@ -503,9 +608,9 @@ function calculateMetrics() {
   }
 
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // SETTINGS CALCULATIONS
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if ($('settingsCalories')) {
 
@@ -539,14 +644,14 @@ function calculateMetrics() {
   }
 
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // DASHBOARD GOALS
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if ($('calGoal')) {
 
     $('calGoal').textContent =
-      calories;
+      calories.toLocaleString();
 
   }
 
@@ -617,8 +722,11 @@ function show(id) {
     .forEach(button => {
 
       button.classList.toggle(
+
         'nav-active',
+
         button.dataset.page === id
+
       );
 
     });
@@ -644,6 +752,13 @@ function show(id) {
 
   }
 
+
+  if (id === 'dash') {
+
+    refresh();
+
+  }
+
 }
 
 
@@ -666,88 +781,127 @@ document
 // AUTH MODE
 // ============================================================
 
-$('toggle').onclick = () => {
+if ($('toggle')) {
 
-  signup =
-    !signup;
+  $('toggle').onclick = () => {
 
-
-  $('authTitle').textContent =
-    signup
-      ? 'Create account'
-      : 'Sign in';
+    signup =
+      !signup;
 
 
-  $('toggle').textContent =
-    signup
-      ? 'Back to sign in'
-      : 'Create account';
+    $('authTitle').textContent =
+      signup
+        ? 'Create account'
+        : 'Sign in';
 
 
-  $('authMsg').textContent =
-    '';
+    $('toggle').textContent =
+      signup
+        ? 'Back to sign in'
+        : 'Create account';
 
-};
+
+    $('authMsg').textContent =
+      '';
+
+  };
+
+}
 
 
 // ============================================================
 // AUTH FORM
 // ============================================================
 
-$('authForm').onsubmit =
-  async event => {
+if ($('authForm')) {
 
-    event.preventDefault();
+  $('authForm').onsubmit =
+    async event => {
 
-    $('authMsg').textContent =
-      '';
+      event.preventDefault();
 
 
-    try {
+      if ($('authMsg')) {
 
-      if (signup) {
+        $('authMsg').textContent =
+          '';
 
-        const credentials =
-          await createUserWithEmailAndPassword(
-            auth,
-            $('email').value,
-            $('password').value
+      }
+
+
+      try {
+
+        const email =
+          $('email').value.trim();
+
+        const password =
+          $('password').value;
+
+
+        if (signup) {
+
+          const credentials =
+            await createUserWithEmailAndPassword(
+
+              auth,
+
+              email,
+
+              password
+
+            );
+
+
+          user =
+            credentials.user;
+
+
+          await setDoc(
+
+            userRef(),
+
+            profile
+
           );
 
+        }
 
-        user =
-          credentials.user;
+        else {
 
+          await signInWithEmailAndPassword(
 
-        await setDoc(
-          userRef(),
-          profile
-        );
+            auth,
 
-      }
+            email,
 
-      else {
+            password
 
-        await signInWithEmailAndPassword(
-          auth,
-          $('email').value,
-          $('password').value
-        );
+          );
+
+        }
 
       }
 
-    }
+      catch (error) {
 
-    catch (error) {
+        console.error(
+          'Authentication error:',
+          error
+        );
 
-      console.error(error);
 
-      $('authMsg').textContent =
-        error.message;
+        if ($('authMsg')) {
 
-    }
+          $('authMsg').textContent =
+            error.message;
 
-  };
+        }
+
+      }
+
+    };
+
+}
 
 
 // ============================================================
@@ -755,7 +909,9 @@ $('authForm').onsubmit =
 // ============================================================
 
 onAuthStateChanged(
+
   auth,
+
   async currentUser => {
 
     user =
@@ -764,31 +920,59 @@ onAuthStateChanged(
 
     if (!currentUser) {
 
-      $('auth').hidden =
-        false;
+      if ($('auth')) {
 
-      $('app').hidden =
-        true;
+        $('auth').hidden =
+          false;
 
-      $('logout').hidden =
-        true;
+      }
+
+      if ($('app')) {
+
+        $('app').hidden =
+          true;
+
+      }
+
+      if ($('logout')) {
+
+        $('logout').hidden =
+          true;
+
+      }
 
       return;
 
     }
 
 
-    $('auth').hidden =
-      true;
+    if ($('auth')) {
 
-    $('app').hidden =
-      false;
+      $('auth').hidden =
+        true;
 
-    $('logout').hidden =
-      false;
+    }
+
+    if ($('app')) {
+
+      $('app').hidden =
+        false;
+
+    }
+
+    if ($('logout')) {
+
+      $('logout').hidden =
+        false;
+
+    }
 
 
     try {
+
+      // ======================================================
+      // LOAD PROFILE
+      // ======================================================
 
       const snapshot =
         await getDoc(
@@ -811,21 +995,41 @@ onAuthStateChanged(
       else {
 
         await setDoc(
+
           userRef(),
+
           profile
+
         );
 
       }
 
 
-      fill();
+      console.log(
+        'Profile loaded:',
+        profile
+      );
 
+
+      // ======================================================
+      // UPDATE UI
+      // ======================================================
+
+      fill();
 
       calculateMetrics();
 
 
+      // ======================================================
+      // REFRESH DASHBOARD
+      // ======================================================
+
       await refresh();
 
+
+      // ======================================================
+      // SHOW DASHBOARD
+      // ======================================================
 
       show('dash');
 
@@ -841,6 +1045,7 @@ onAuthStateChanged(
     }
 
   }
+
 );
 
 
@@ -848,8 +1053,29 @@ onAuthStateChanged(
 // LOGOUT
 // ============================================================
 
-$('logout').onclick =
-  () => signOut(auth);
+if ($('logout')) {
+
+  $('logout').onclick =
+    async () => {
+
+      try {
+
+        await signOut(auth);
+
+      }
+
+      catch (error) {
+
+        console.error(
+          'Logout error:',
+          error
+        );
+
+      }
+
+    };
+
+}
 
 
 // ============================================================
@@ -858,24 +1084,44 @@ $('logout').onclick =
 
 function fill() {
 
-  $('age').value =
-    profile.age;
+  if ($('age')) {
+
+    $('age').value =
+      profile.age;
+
+  }
 
 
-  $('sex').value =
-    profile.sex || 'male';
+  if ($('sex')) {
+
+    $('sex').value =
+      profile.sex || 'male';
+
+  }
 
 
-  $('height').value =
-    profile.height;
+  if ($('height')) {
+
+    $('height').value =
+      profile.height;
+
+  }
 
 
-  $('weight').value =
-    profile.weight;
+  if ($('weight')) {
+
+    $('weight').value =
+      profile.weight;
+
+  }
 
 
-  $('goalSteps').value =
-    profile.stepGoal;
+  if ($('goalSteps')) {
+
+    $('goalSteps').value =
+      profile.stepGoal;
+
+  }
 
 
   calculateMetrics();
@@ -894,6 +1140,13 @@ function fill() {
   'weight'
 ]
 .forEach(id => {
+
+  if (!$(id)) {
+
+    return;
+
+  }
+
 
   $(id).addEventListener(
     'input',
@@ -933,60 +1186,130 @@ function fill() {
 // SETTINGS SAVE
 // ============================================================
 
-$('settingsForm').onsubmit =
-  async event => {
+if ($('settingsForm')) {
 
-    event.preventDefault();
+  $('settingsForm').onsubmit =
+    async event => {
 
-
-    profile.age =
-      Number(
-        $('age').value
-      );
+      event.preventDefault();
 
 
-    profile.sex =
-      $('sex').value;
+      try {
+
+        profile.age =
+          Number(
+            $('age').value
+          );
 
 
-    profile.height =
-      Number(
-        $('height').value
-      );
+        profile.sex =
+          $('sex').value;
 
 
-    profile.weight =
-      Number(
-        $('weight').value
-      );
+        profile.height =
+          Number(
+            $('height').value
+          );
 
 
-    profile.stepGoal =
-      Number(
-        $('goalSteps').value
-      );
+        profile.weight =
+          Number(
+            $('weight').value
+          );
 
 
-    calculateMetrics();
+        profile.stepGoal =
+          Number(
+            $('goalSteps').value
+          );
 
 
-    await setDoc(
-      userRef(),
-      profile,
-      {
-        merge: true
+        calculateMetrics();
+
+
+        await setDoc(
+
+          userRef(),
+
+          profile,
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        // Recalculate today's
+        // step calories using new weight
+
+        const d =
+          await getDay();
+
+
+        const stepsCalories =
+          calculateStepCalories(
+            d.steps
+          );
+
+
+        const totalBurned =
+          calculateTotalBurned(
+
+            d.workoutCalories,
+
+            stepsCalories
+
+          );
+
+
+        await setDoc(
+
+          dayRef(),
+
+          {
+
+            stepsCalories,
+
+            caloriesBurned:
+              totalBurned
+
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        await refresh();
+
+
+        alert(
+          'Profile saved successfully.'
+        );
+
       }
-    );
+
+      catch (error) {
+
+        console.error(
+          'Settings save error:',
+          error
+        );
 
 
-    await refresh();
+        alert(
+          'Could not save your profile: ' +
+          error.message
+        );
 
+      }
 
-    alert(
-      'Profile saved successfully.'
-    );
+    };
 
-  };
+}
 
 
 // ============================================================
@@ -995,209 +1318,494 @@ $('settingsForm').onsubmit =
 
 async function refresh() {
 
-  calculateMetrics();
+  if (!user) {
 
-  const d = await getDay();
+    return;
 
-  console.log("Today's data:", d);
-
-  // -----------------------
-  // Calories Eaten
-  // -----------------------
-
-  $("cal").textContent = Math.round(d.cal);
-  $("calGoal").textContent = profile.calGoal;
-
-  const percent =
-    profile.calGoal > 0
-      ? (d.cal / profile.calGoal) * 100
-      : 0;
-
-  $("calBar").style.width =
-    Math.min(100, percent) + "%";
-
-  $("calRemaining").textContent =
-    `${Math.max(0, profile.calGoal - d.cal)} kcal remaining`;
-
-  // -----------------------
-  // Calories Burned
-  // -----------------------
-
-  const burned =
-    (Number(d.workoutCalories) || 0) +
-    (Number(d.stepsCalories) || 0);
-
-  if ($("burned"))
-    $("burned").textContent = burned;
-
-  if ($("burnWorkout"))
-    $("burnWorkout").textContent =
-      `${Number(d.workoutCalories || 0)} kcal`;
-
-  if ($("burnSteps"))
-    $("burnSteps").textContent =
-      `${Number(d.stepsCalories || 0)} kcal`;
-
-  // -----------------------
-  // Weight
-  // -----------------------
-
-  $("weightDash").textContent =
-    Number(profile.weight).toFixed(1);
-
-  // -----------------------
-  // Steps
-  // -----------------------
-
-  $("stepsDash").textContent =
-    Number(d.steps || 0).toLocaleString();
-
-  // -----------------------
-  // Workout
-  // -----------------------
-
-  $("workoutDash").textContent =
-    d.workout || "Rest";
-
-  // -----------------------
-  // Macros
-  // -----------------------
-
-  $("macroProtein").textContent = Math.round(d.p || 0);
-  $("macroCarbs").textContent = Math.round(d.c || 0);
-  $("macroFat").textContent = Math.round(d.f || 0);
-
-  $("macroProteinGoal").textContent = profile.pGoal;
-  $("macroCarbsGoal").textContent = profile.cGoal;
-  $("macroFatGoal").textContent = profile.fGoal;
-}
-
-  // ----------------------------------------------------------
-  // CALORIES BURNED
-  // ----------------------------------------------------------
-
-  const workoutCalories =
-    Number(
-      d.workoutCalories
-    ) || 0;
+  }
 
 
-  const stepsCalories =
-    Number(
-      d.stepsCalories
-    ) || 0;
+  try {
 
-
-  const totalBurned =
-    calculateTotalBurned(
-      workoutCalories,
-      stepsCalories
-    );
-
-
-  $('caloriesBurnedDash').textContent =
-    `${totalBurned.toLocaleString()} kcal`;
-
-
-  $('workoutCaloriesDash').textContent =
-    `${workoutCalories.toLocaleString()} kcal`;
-
-
-  $('stepsCaloriesDash').textContent =
-    `${stepsCalories.toLocaleString()} kcal`;
-
-
-  $('totalCaloriesBurnedDash').textContent =
-    `${totalBurned.toLocaleString()} kcal`;
-
-
-// ============================================================
-// FOOD FORM
-// ============================================================
-
-$('foodForm').onsubmit =
-  async event => {
-
-    event.preventDefault();
-
-
-    const f = {
-
-      name:
-        $('fname').value,
-
-      serving:
-        $('serving').value,
-
-      cal:
-        Number(
-          $('fcal').value
-        ),
-
-      p:
-        Number(
-          $('fp').value
-        ),
-
-      c:
-        Number(
-          $('fc').value
-        ),
-
-      f:
-        Number(
-          $('ff').value
-        )
-
-    };
-
-
-    await addDoc(
-
-      collection(
-        db,
-        'users',
-        user.uid,
-        'days',
-        day(),
-        'foods'
-      ),
-
-      f
-
-    );
+    calculateMetrics();
 
 
     const d =
       await getDay();
 
 
-    d.cal += f.cal;
-
-    d.p += f.p;
-
-    d.c += f.c;
-
-    d.f += f.f;
-
-
-    await setDoc(
-      dayRef(),
-      d,
-      {
-        merge: true
-      }
+    console.log(
+      "Today's Firestore data:",
+      d
     );
 
 
-    event.target.reset();
+    // ========================================================
+    // CALORIES EATEN
+    // ========================================================
+
+    const caloriesEaten =
+      Number(d.cal) || 0;
 
 
-    await refresh();
+    const calorieGoal =
+      Number(profile.calGoal) || 0;
 
-    food();
 
-  };
+    if ($('cal')) {
+
+      $('cal').textContent =
+        caloriesEaten.toLocaleString();
+
+    }
+
+
+    if ($('calGoal')) {
+
+      $('calGoal').textContent =
+        calorieGoal.toLocaleString();
+
+    }
+
+
+    const caloriePercent =
+      calorieGoal > 0
+
+        ? (
+            caloriesEaten /
+            calorieGoal
+          ) * 100
+
+        : 0;
+
+
+    if ($('calBar')) {
+
+      $('calBar').style.width =
+        Math.min(
+          100,
+          caloriePercent
+        ) + '%';
+
+    }
+
+
+    if ($('calRemaining')) {
+
+      $('calRemaining').textContent =
+        `${Math.max(
+          0,
+          calorieGoal - caloriesEaten
+        ).toLocaleString()} kcal remaining`;
+
+    }
+
+
+    // ========================================================
+    // STEPS
+    // ========================================================
+
+    const steps =
+      Number(d.steps) || 0;
+
+
+    if ($('stepsDash')) {
+
+      $('stepsDash').textContent =
+        steps.toLocaleString();
+
+    }
+
+
+    // ========================================================
+    // STEP GOAL
+    // ========================================================
+
+    if ($('stepGoalDash')) {
+
+      $('stepGoalDash').textContent =
+        Number(
+          profile.stepGoal || 10000
+        ).toLocaleString();
+
+    }
+
+
+    // ========================================================
+    // STEP PROGRESS
+    // ========================================================
+
+    if ($('stepsBar')) {
+
+      const goal =
+        Number(
+          profile.stepGoal || 10000
+        );
+
+
+      const stepPercent =
+        goal > 0
+          ? (steps / goal) * 100
+          : 0;
+
+
+      $('stepsBar').style.width =
+        Math.min(
+          100,
+          stepPercent
+        ) + '%';
+
+    }
+
+
+    // ========================================================
+    // STEP CALORIES
+    // ========================================================
+
+    let stepsCalories =
+      Number(d.stepsCalories) || 0;
+
+
+    /*
+      If Firestore has steps but doesn't
+      have a calorie value, calculate it.
+    */
+
+    if (
+      steps > 0 &&
+      stepsCalories <= 0
+    ) {
+
+      stepsCalories =
+        calculateStepCalories(
+          steps
+        );
+
+
+      await setDoc(
+
+        dayRef(),
+
+        {
+
+          stepsCalories
+
+        },
+
+        {
+          merge: true
+        }
+
+      );
+
+    }
+
+
+    // ========================================================
+    // WORKOUT
+    // ========================================================
+
+    const workout =
+      d.workout || 'Rest';
+
+
+    const workoutCalories =
+      Number(
+        d.workoutCalories
+      ) || 0;
+
+
+    if ($('workoutDash')) {
+
+      $('workoutDash').textContent =
+        workout;
+
+    }
+
+
+    // ========================================================
+    // TOTAL CALORIES BURNED
+    // ========================================================
+
+    const totalBurned =
+      calculateTotalBurned(
+
+        workoutCalories,
+
+        stepsCalories
+
+      );
+
+
+    if ($('burned')) {
+
+      $('burned').textContent =
+        totalBurned.toLocaleString();
+
+    }
+
+
+    if ($('burnWorkout')) {
+
+      $('burnWorkout').textContent =
+        `${workoutCalories.toLocaleString()} kcal`;
+
+    }
+
+
+    if ($('burnSteps')) {
+
+      $('burnSteps').textContent =
+        `${stepsCalories.toLocaleString()} kcal`;
+
+    }
+
+
+    if ($('caloriesBurnedDash')) {
+
+      $('caloriesBurnedDash').textContent =
+        `${totalBurned.toLocaleString()} kcal`;
+
+    }
+
+
+    if ($('workoutCaloriesDash')) {
+
+      $('workoutCaloriesDash').textContent =
+        `${workoutCalories.toLocaleString()} kcal`;
+
+    }
+
+
+    if ($('stepsCaloriesDash')) {
+
+      $('stepsCaloriesDash').textContent =
+        `${stepsCalories.toLocaleString()} kcal`;
+
+    }
+
+
+    if ($('totalCaloriesBurnedDash')) {
+
+      $('totalCaloriesBurnedDash').textContent =
+        `${totalBurned.toLocaleString()} kcal`;
+
+    }
+
+
+    // ========================================================
+    // WEIGHT
+    // ========================================================
+
+    if ($('weightDash')) {
+
+      $('weightDash').textContent =
+        Number(
+          profile.weight || 0
+        ).toFixed(1);
+
+    }
+
+
+    // ========================================================
+    // MACROS
+    // ========================================================
+
+    if ($('macroProtein')) {
+
+      $('macroProtein').textContent =
+        Math.round(
+          Number(d.p) || 0
+        );
+
+    }
+
+
+    if ($('macroCarbs')) {
+
+      $('macroCarbs').textContent =
+        Math.round(
+          Number(d.c) || 0
+        );
+
+    }
+
+
+    if ($('macroFat')) {
+
+      $('macroFat').textContent =
+        Math.round(
+          Number(d.f) || 0
+        );
+
+    }
+
+
+    if ($('macroProteinGoal')) {
+
+      $('macroProteinGoal').textContent =
+        profile.pGoal;
+
+    }
+
+
+    if ($('macroCarbsGoal')) {
+
+      $('macroCarbsGoal').textContent =
+        profile.cGoal;
+
+    }
+
+
+    if ($('macroFatGoal')) {
+
+      $('macroFatGoal').textContent =
+        profile.fGoal;
+
+    }
+
+
+    console.log(
+      'Dashboard updated:',
+      {
+        steps,
+        stepsCalories,
+        workout,
+        workoutCalories,
+        totalBurned
+      }
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'Dashboard refresh error:',
+      error
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// FOOD FORM
+// ============================================================
+
+if ($('foodForm')) {
+
+  $('foodForm').onsubmit =
+    async event => {
+
+      event.preventDefault();
+
+
+      try {
+
+        const f = {
+
+          name:
+            $('fname').value.trim(),
+
+          serving:
+            $('serving').value.trim(),
+
+          cal:
+            Number(
+              $('fcal').value
+            ) || 0,
+
+          p:
+            Number(
+              $('fp').value
+            ) || 0,
+
+          c:
+            Number(
+              $('fc').value
+            ) || 0,
+
+          f:
+            Number(
+              $('ff').value
+            ) || 0
+
+        };
+
+
+        await addDoc(
+
+          foodCollection(),
+
+          f
+
+        );
+
+
+        const d =
+          await getDay();
+
+
+        await setDoc(
+
+          dayRef(),
+
+          {
+
+            cal:
+              (Number(d.cal) || 0) +
+              f.cal,
+
+            p:
+              (Number(d.p) || 0) +
+              f.p,
+
+            c:
+              (Number(d.c) || 0) +
+              f.c,
+
+            f:
+              (Number(d.f) || 0) +
+              f.f
+
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        event.target.reset();
+
+
+        await refresh();
+
+        await food();
+
+      }
+
+      catch (error) {
+
+        console.error(
+          'Food save error:',
+          error
+        );
+
+
+        alert(
+          'Could not save food: ' +
+          error.message
+        );
+
+      }
+
+    };
+
+}
 
 
 // ============================================================
@@ -1206,149 +1814,230 @@ $('foodForm').onsubmit =
 
 async function food() {
 
-  if (!user)
+  if (!user) {
+
     return;
 
-
-  const snapshot =
-    await getDocs(
-
-      query(
-
-        collection(
-          db,
-          'users',
-          user.uid,
-          'days',
-          day(),
-          'foods'
-        ),
-
-        orderBy('__name__')
-
-      )
-
-    );
+  }
 
 
-  $('foodList').innerHTML =
+  try {
 
-    snapshot.docs.map(
-      item => {
+    const snapshot =
+      await getDocs(
 
-        const f =
-          item.data();
+        query(
 
+          foodCollection(),
 
-        return `
+          orderBy(
+            '__name__'
+          )
 
-          <div class="row">
+        )
 
-            <span>
-
-              <strong>
-                ${escapeHtml(f.name)}
-              </strong>
-
-              <br>
-
-              <small>
-                ${escapeHtml(f.serving || '')}
-                · ${f.cal} kcal
-                · P ${f.p}
-                · C ${f.c}
-                · F ${f.f}
-              </small>
-
-            </span>
-
-            <button
-              data-del="${item.id}">
-              Delete
-            </button>
-
-          </div>
-
-        `;
-
-      }
-    ).join('')
-
-    ||
-    '<p>No food logged today.</p>';
+      );
 
 
-  document
-    .querySelectorAll('[data-del]')
-    .forEach(button => {
+    if (!$('foodList')) {
 
-      button.onclick =
-        async () => {
+      return;
 
-          const reference =
-            doc(
-              db,
-              'users',
-              user.uid,
-              'days',
-              day(),
-              'foods',
-              button.dataset.del
-            );
+    }
 
 
-          const snapshot =
-            await getDoc(
-              reference
-            );
+    $('foodList').innerHTML =
 
-
-          if (!snapshot.exists())
-            return;
-
+      snapshot.docs.map(
+        item => {
 
           const f =
-            snapshot.data();
+            item.data();
 
 
-          const d =
-            await getDay();
+          return `
+
+            <div class="row">
+
+              <span>
+
+                <strong>
+                  ${escapeHtml(
+                    f.name || 'Food'
+                  )}
+                </strong>
+
+                <br>
+
+                <small>
+                  ${escapeHtml(
+                    f.serving || ''
+                  )}
+
+                  · ${Number(
+                    f.cal || 0
+                  )} kcal
+
+                  · P ${Number(
+                    f.p || 0
+                  )}
+
+                  · C ${Number(
+                    f.c || 0
+                  )}
+
+                  · F ${Number(
+                    f.f || 0
+                  )}
+                </small>
+
+              </span>
+
+              <button
+                data-del="${item.id}">
+                Delete
+              </button>
+
+            </div>
+
+          `;
+
+        }
+
+      ).join('')
+
+      ||
+
+      '<p>No food logged today.</p>';
 
 
-          d.cal -=
-            Number(f.cal) || 0;
+    document
+      .querySelectorAll('[data-del]')
+      .forEach(button => {
 
-          d.p -=
-            Number(f.p) || 0;
+        button.onclick =
+          async () => {
 
-          d.c -=
-            Number(f.c) || 0;
+            try {
 
-          d.f -=
-            Number(f.f) || 0;
+              const reference =
+                doc(
+
+                  db,
+
+                  'users',
+
+                  user.uid,
+
+                  'days',
+
+                  day(),
+
+                  'foods',
+
+                  button.dataset.del
+
+                );
 
 
-          await setDoc(
-            dayRef(),
-            d,
-            {
-              merge: true
+              const snapshot =
+                await getDoc(
+                  reference
+                );
+
+
+              if (!snapshot.exists()) {
+
+                return;
+
+              }
+
+
+              const f =
+                snapshot.data();
+
+
+              const d =
+                await getDay();
+
+
+              await setDoc(
+
+                dayRef(),
+
+                {
+
+                  cal:
+                    Math.max(
+                      0,
+                      (Number(d.cal) || 0) -
+                      (Number(f.cal) || 0)
+                    ),
+
+                  p:
+                    Math.max(
+                      0,
+                      (Number(d.p) || 0) -
+                      (Number(f.p) || 0)
+                    ),
+
+                  c:
+                    Math.max(
+                      0,
+                      (Number(d.c) || 0) -
+                      (Number(f.c) || 0)
+                    ),
+
+                  f:
+                    Math.max(
+                      0,
+                      (Number(d.f) || 0) -
+                      (Number(f.f) || 0)
+                    )
+
+                },
+
+                {
+                  merge: true
+                }
+
+              );
+
+
+              await deleteDoc(
+                reference
+              );
+
+
+              await refresh();
+
+              await food();
+
             }
-          );
 
+            catch (error) {
 
-          await deleteDoc(
-            reference
-          );
+              console.error(
+                'Food delete error:',
+                error
+              );
 
+            }
 
-          await refresh();
+          };
 
-          food();
+      });
 
-        };
+  }
 
-    });
+  catch (error) {
+
+    console.error(
+      'Food loading error:',
+      error
+    );
+
+  }
 
 }
 
@@ -1423,125 +2112,187 @@ document
 // EXERCISE FORM
 // ============================================================
 
-$('exForm').onsubmit =
-  async event => {
+if ($('exForm')) {
 
-    event.preventDefault();
+  $('exForm').onsubmit =
+    async event => {
+
+      event.preventDefault();
 
 
-    await addDoc(
+      try {
 
-      collection(
-        db,
-        'users',
-        user.uid,
-        'days',
-        day(),
-        'exercises'
-      ),
+        await addDoc(
 
-      {
+          exerciseCollection(),
 
-        type:
-          ppl,
+          {
 
-        name:
-          $('ename').value,
+            type:
+              ppl,
 
-        sets:
-          Number(
-            $('sets').value
-          ),
+            name:
+              $('ename').value.trim(),
 
-        reps:
-          Number(
-            $('reps').value
-          ),
+            sets:
+              Number(
+                $('sets').value
+              ) || 0,
 
-        weight:
-          Number(
-            $('ew').value
-          )
+            reps:
+              Number(
+                $('reps').value
+              ) || 0,
+
+            weight:
+              Number(
+                $('ew').value
+              ) || 0
+
+          }
+
+        );
+
+
+        event.target.reset();
+
+
+        if ($('sets')) {
+
+          $('sets').value =
+            3;
+
+        }
+
+
+        if ($('reps')) {
+
+          $('reps').value =
+            10;
+
+        }
+
+
+        if ($('ew')) {
+
+          $('ew').value =
+            0;
+
+        }
+
+
+        await exercises();
 
       }
 
-    );
+      catch (error) {
+
+        console.error(
+          'Exercise save error:',
+          error
+        );
 
 
-    event.target.reset();
+        alert(
+          'Could not save exercise: ' +
+          error.message
+        );
 
+      }
 
-    $('sets').value =
-      3;
+    };
 
-    $('reps').value =
-      10;
-
-    $('ew').value =
-      0;
-
-
-    await exercises();
-
-  };
+}
 
 
 // ============================================================
 // FINISH WORKOUT
 // ============================================================
 
-$('finish').onclick =
-  async () => {
+if ($('finish')) {
 
-    const workoutCalories =
-      calculateWorkoutCalories(
-        ppl
-      );
+  $('finish').onclick =
+    async () => {
 
+      try {
 
-    const d =
-      await getDay();
-
-
-    const totalBurned =
-      calculateTotalBurned(
-        workoutCalories,
-        d.stepsCalories
-      );
+        const workoutCalories =
+          calculateWorkoutCalories(
+            ppl
+          );
 
 
-    await setDoc(
+        const d =
+          await getDay();
 
-      dayRef(),
 
-      {
+        const totalBurned =
+          calculateTotalBurned(
 
-        workout:
-          ppl,
+            workoutCalories,
 
-        workoutCalories:
-          workoutCalories,
+            d.stepsCalories
 
-        caloriesBurned:
-          totalBurned
+          );
 
-      },
 
-      {
-        merge: true
+        await setDoc(
+
+          dayRef(),
+
+          {
+
+            workout:
+              ppl,
+
+            workoutCalories:
+              workoutCalories,
+
+            caloriesBurned:
+              totalBurned
+
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        await refresh();
+
+
+        alert(
+
+          `${ppl} workout completed!\n\n` +
+
+          `Estimated calories burned: ` +
+
+          `${workoutCalories} kcal`
+
+        );
+
       }
 
-    );
+      catch (error) {
+
+        console.error(
+          'Workout completion error:',
+          error
+        );
 
 
-    await refresh();
+        alert(
+          'Could not finish workout: ' +
+          error.message
+        );
 
+      }
 
-    alert(
-      `${ppl} workout completed!\n\nEstimated calories burned: ${workoutCalories} kcal`
-    );
+    };
 
-  };
+}
 
 
 // ============================================================
@@ -1550,97 +2301,145 @@ $('finish').onclick =
 
 async function exercises() {
 
-  if (!user)
+  if (!user || !$('exList')) {
+
     return;
 
+  }
 
-  const snapshot =
-    await getDocs(
 
-      collection(
-        db,
-        'users',
-        user.uid,
-        'days',
-        day(),
-        'exercises'
-      )
+  try {
 
+    const snapshot =
+      await getDocs(
+
+        exerciseCollection()
+
+      );
+
+
+    $('exList').innerHTML =
+
+      snapshot.docs.map(
+        item => {
+
+          const e =
+            item.data();
+
+
+          return `
+
+            <div class="row">
+
+              <span>
+
+                <strong>
+                  ${escapeHtml(
+                    e.name || 'Exercise'
+                  )}
+                </strong>
+
+                <br>
+
+                <small>
+
+                  ${escapeHtml(
+                    e.type || ''
+                  )}
+
+                  · ${Number(
+                    e.sets || 0
+                  )}
+
+                  × ${Number(
+                    e.reps || 0
+                  )}
+
+                  @ ${Number(
+                    e.weight || 0
+                  )} kg
+
+                </small>
+
+              </span>
+
+              <button
+                data-ex="${item.id}">
+                Delete
+              </button>
+
+            </div>
+
+          `;
+
+        }
+
+      ).join('')
+
+      ||
+
+      '<p>No exercises logged today.</p>';
+
+
+    document
+      .querySelectorAll('[data-ex]')
+      .forEach(button => {
+
+        button.onclick =
+          async () => {
+
+            try {
+
+              await deleteDoc(
+
+                doc(
+
+                  db,
+
+                  'users',
+
+                  user.uid,
+
+                  'days',
+
+                  day(),
+
+                  'exercises',
+
+                  button.dataset.ex
+
+                )
+
+              );
+
+
+              await exercises();
+
+            }
+
+            catch (error) {
+
+              console.error(
+                'Exercise delete error:',
+                error
+              );
+
+            }
+
+          };
+
+      });
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'Exercise loading error:',
+      error
     );
 
-
-  $('exList').innerHTML =
-
-    snapshot.docs.map(
-      item => {
-
-        const e =
-          item.data();
-
-
-        return `
-
-          <div class="row">
-
-            <span>
-
-              <strong>
-                ${escapeHtml(e.name)}
-              </strong>
-
-              <br>
-
-              <small>
-                ${e.type}
-                · ${e.sets} × ${e.reps}
-                @ ${e.weight} kg
-              </small>
-
-            </span>
-
-            <button
-              data-ex="${item.id}">
-              Delete
-            </button>
-
-          </div>
-
-        `;
-
-      }
-    ).join('')
-
-    ||
-    '<p>No exercises logged today.</p>';
-
-
-  document
-    .querySelectorAll('[data-ex]')
-    .forEach(button => {
-
-      button.onclick =
-        async () => {
-
-          await deleteDoc(
-
-            doc(
-              db,
-              'users',
-              user.uid,
-              'days',
-              day(),
-              'exercises',
-              button.dataset.ex
-            )
-
-          );
-
-
-          exercises();
-
-        };
-
-    });
+  }
 
 }
 
@@ -1649,138 +2448,281 @@ async function exercises() {
 // WEIGHT TRACKING
 // ============================================================
 
-$('weightForm').onsubmit =
-  async event => {
+if ($('weightForm')) {
 
-    event.preventDefault();
+  $('weightForm').onsubmit =
+    async event => {
 
-
-    const newWeight =
-      Number(
-        $('weightInput').value
-      );
+      event.preventDefault();
 
 
-    profile.weight =
-      newWeight;
+      try {
+
+        const newWeight =
+          Number(
+            $('weightInput').value
+          );
 
 
-    calculateMetrics();
+        if (
+          !newWeight ||
+          newWeight <= 0
+        ) {
+
+          alert(
+            'Please enter a valid weight.'
+          );
+
+          return;
+
+        }
 
 
-    await setDoc(
-      userRef(),
-      profile,
-      {
-        merge: true
+        profile.weight =
+          newWeight;
+
+
+        calculateMetrics();
+
+
+        await setDoc(
+
+          userRef(),
+
+          profile,
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        const d =
+          await getDay();
+
+
+        const stepsCalories =
+          calculateStepCalories(
+            d.steps
+          );
+
+
+        const totalBurned =
+          calculateTotalBurned(
+
+            d.workoutCalories,
+
+            stepsCalories
+
+          );
+
+
+        await setDoc(
+
+          dayRef(),
+
+          {
+
+            stepsCalories,
+
+            caloriesBurned:
+              totalBurned
+
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        await addDoc(
+
+          collection(
+
+            db,
+
+            'users',
+
+            user.uid,
+
+            'weights'
+
+          ),
+
+          {
+
+            date:
+              day(),
+
+            weight:
+              newWeight
+
+          }
+
+        );
+
+
+        await refresh();
+
+        await history();
+
+
+        $('weightInput').value =
+          '';
+
       }
-    );
+
+      catch (error) {
+
+        console.error(
+          'Weight save error:',
+          error
+        );
 
 
-    /*
-      Recalculate today's
-      walking calories because
-      they depend on body weight.
-    */
-
-    const d =
-      await getDay();
-
-
-    const stepsCalories =
-      calculateStepCalories(
-        d.steps
-      );
-
-
-    const totalBurned =
-      calculateTotalBurned(
-        d.workoutCalories,
-        stepsCalories
-      );
-
-
-    await setDoc(
-
-      dayRef(),
-
-      {
-
-        stepsCalories,
-
-        caloriesBurned:
-          totalBurned
-
-      },
-
-      {
-        merge: true
-      }
-
-    );
-
-
-    await addDoc(
-
-      collection(
-        db,
-        'users',
-        user.uid,
-        'weights'
-      ),
-
-      {
-
-        date:
-          day(),
-
-        weight:
-          newWeight
+        alert(
+          'Could not save weight: ' +
+          error.message
+        );
 
       }
 
-    );
+    };
 
-
-    await refresh();
-
-    history();
-
-
-    $('weightInput').value =
-      '';
-
-  };
+}
 
 
 // ============================================================
 // STEPS
 // ============================================================
 
-$("stepsForm").onsubmit = async (e) => {
+if ($('stepsForm')) {
 
-  e.preventDefault();
+  $('stepsForm').onsubmit =
+    async event => {
 
-  const steps = Number($("stepsInput").value);
+      event.preventDefault();
 
-  // Approx. 0.04 kcal per step
-  const stepsCalories = Math.round(steps * 0.04);
 
-  await setDoc(
-    dayRef(),
-    {
-      steps,
-      stepsCalories
-    },
-    { merge: true }
-  );
+      if (!user) {
 
-  $("stepsInput").value = "";
+        alert(
+          'Please sign in first.'
+        );
 
-  await refresh();
+        return;
 
-  alert("Steps saved!");
-};
+      }
+
+
+      try {
+
+        const steps =
+          Number(
+            $('stepsInput').value
+          ) || 0;
+
+
+        if (steps < 0) {
+
+          alert(
+            'Steps cannot be negative.'
+          );
+
+          return;
+
+        }
+
+
+        // Calculate calories from current body weight
+
+        const stepsCalories =
+          calculateStepCalories(
+            steps
+          );
+
+
+        // Get existing workout calories
+
+        const d =
+          await getDay();
+
+
+        const totalBurned =
+          calculateTotalBurned(
+
+            d.workoutCalories,
+
+            stepsCalories
+
+          );
+
+
+        // Save steps
+
+        await setDoc(
+
+          dayRef(),
+
+          {
+
+            steps:
+              Math.round(steps),
+
+            stepsCalories,
+
+            caloriesBurned:
+              totalBurned
+
+          },
+
+          {
+            merge: true
+          }
+
+        );
+
+
+        $('stepsInput').value =
+          '';
+
+
+        await refresh();
+
+
+        alert(
+
+          `${steps.toLocaleString()} steps saved!\n\n` +
+
+          `Estimated calories burned: ` +
+
+          `${stepsCalories} kcal`
+
+        );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          'Steps save error:',
+          error
+        );
+
+
+        alert(
+          'Could not save steps: ' +
+          error.message
+        );
+
+      }
+
+    };
+
+}
 
 
 // ============================================================
@@ -1789,65 +2731,93 @@ $("stepsForm").onsubmit = async (e) => {
 
 async function history() {
 
-  if (!user)
+  if (!user || !$('history')) {
+
     return;
 
+  }
 
-  const snapshot =
-    await getDocs(
 
-      query(
+  try {
 
-        collection(
-          db,
-          'users',
-          user.uid,
-          'weights'
-        ),
+    const snapshot =
+      await getDocs(
 
-        orderBy(
-          'date',
-          'desc'
+        query(
+
+          collection(
+
+            db,
+
+            'users',
+
+            user.uid,
+
+            'weights'
+
+          ),
+
+          orderBy(
+            'date',
+            'desc'
+          )
+
         )
 
-      )
+      );
 
+
+    $('history').innerHTML =
+
+      snapshot.docs.map(
+        item => {
+
+          const data =
+            item.data();
+
+
+          return `
+
+            <div class="row">
+
+              <span>
+                ${escapeHtml(
+                  data.date || ''
+                )}
+              </span>
+
+              <strong>
+
+                ${Number(
+                  data.weight || 0
+                ).toFixed(1)}
+
+                kg
+
+              </strong>
+
+            </div>
+
+          `;
+
+        }
+
+      ).join('')
+
+      ||
+
+      '<p>No weight history yet.</p>';
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'Weight history error:',
+      error
     );
 
-
-  $('history').innerHTML =
-
-    snapshot.docs.map(
-      item => {
-
-        const data =
-          item.data();
-
-
-        return `
-
-          <div class="row">
-
-            <span>
-              ${data.date}
-            </span>
-
-            <strong>
-              ${Number(
-                data.weight
-              ).toFixed(1)}
-              kg
-            </strong>
-
-          </div>
-
-        `;
-
-      }
-    ).join('')
-
-    ||
-    '<p>No weight history yet.</p>';
+  }
 
 }
 
@@ -1856,186 +2826,230 @@ async function history() {
 // BARCODE SCANNER
 // ============================================================
 
-$('scan').onclick =
-  async () => {
+if ($('scan')) {
 
-    if (
-      !('BarcodeDetector' in window)
-    ) {
+  $('scan').onclick =
+    async () => {
 
-      alert(
-        'Barcode scanning is not supported by this browser.'
-      );
+      if (
+        !('BarcodeDetector' in window)
+      ) {
 
-      return;
+        alert(
+          'Barcode scanning is not supported by this browser.'
+        );
 
-    }
+        return;
 
-
-    try {
-
-      stream =
-        await navigator.mediaDevices.getUserMedia({
-
-          video: {
-            facingMode:
-              'environment'
-          }
-
-        });
+      }
 
 
-      $('video').hidden =
-        false;
+      try {
+
+        stream =
+          await navigator.mediaDevices.getUserMedia({
+
+            video: {
+
+              facingMode:
+                'environment'
+
+            }
+
+          });
 
 
-      $('video').srcObject =
-        stream;
+        $('video').hidden =
+          false;
 
 
-      await $('video').play();
+        $('video').srcObject =
+          stream;
 
 
-      const detector =
-        new BarcodeDetector({
-
-          formats: [
-            'ean_13',
-            'ean_8',
-            'upc_a',
-            'upc_e'
-          ]
-
-        });
+        await $('video').play();
 
 
-      const loop =
-        async () => {
+        const detector =
+          new BarcodeDetector({
 
-          if (!stream)
-            return;
+            formats: [
 
+              'ean_13',
 
-          try {
+              'ean_8',
 
-            const codes =
-              await detector.detect(
-                $('video')
-              );
+              'upc_a',
 
+              'upc_e'
 
-            if (codes.length) {
+            ]
 
-              const code =
-                codes[0].rawValue;
+          });
 
 
-              stream
-                .getTracks()
-                .forEach(
-                  track =>
-                    track.stop()
+        const loop =
+          async () => {
+
+            if (!stream) {
+
+              return;
+
+            }
+
+
+            try {
+
+              const codes =
+                await detector.detect(
+                  $('video')
                 );
 
 
-              stream =
-                null;
+              if (codes.length) {
+
+                const code =
+                  codes[0].rawValue;
 
 
-              $('video').hidden =
-                true;
+                stream
+                  .getTracks()
+                  .forEach(
+                    track =>
+                      track.stop()
+                  );
 
 
-              const response =
-                await fetch(
-
-                  `https://world.openfoodfacts.org/api/v2/product/${code}.json`
-
-                );
+                stream =
+                  null;
 
 
-              const json =
-                await response.json();
+                $('video').hidden =
+                  true;
 
 
-              if (
-                json.status === 1
-              ) {
+                const response =
+                  await fetch(
 
-                const product =
-                  json.product;
-
-
-                const nutrients =
-                  product.nutriments || {};
-
-
-                $('fname').value =
-                  product.product_name ||
-                  'Scanned food';
-
-
-                $('serving').value =
-                  product.serving_size ||
-                  '100 g';
-
-
-                $('fcal').value =
-                  Math.round(
-
-                    nutrients[
-                      'energy-kcal_serving'
-                    ]
-
-                    ??
-
-                    nutrients[
-                      'energy-kcal_100g'
-                    ]
-
-                    ??
-
-                    0
+                    `https://world.openfoodfacts.org/api/v2/product/${code}.json`
 
                   );
 
 
-                $('fp').value =
-                  nutrients.proteins_serving
-                  ??
-                  nutrients.proteins_100g
-                  ??
-                  0;
+                const json =
+                  await response.json();
 
 
-                $('fc').value =
-                  nutrients.carbohydrates_serving
-                  ??
-                  nutrients.carbohydrates_100g
-                  ??
-                  0;
+                if (
+                  json.status === 1
+                ) {
+
+                  const product =
+                    json.product;
 
 
-                $('ff').value =
-                  nutrients.fat_serving
-                  ??
-                  nutrients.fat_100g
-                  ??
-                  0;
+                  const nutrients =
+                    product.nutriments ||
+                    {};
+
+
+                  $('fname').value =
+                    product.product_name ||
+                    'Scanned food';
+
+
+                  $('serving').value =
+                    product.serving_size ||
+                    '100 g';
+
+
+                  $('fcal').value =
+                    Math.round(
+
+                      nutrients[
+                        'energy-kcal_serving'
+                      ]
+
+                      ??
+
+                      nutrients[
+                        'energy-kcal_100g'
+                      ]
+
+                      ??
+
+                      0
+
+                    );
+
+
+                  $('fp').value =
+
+                    nutrients.proteins_serving
+
+                    ??
+
+                    nutrients.proteins_100g
+
+                    ??
+
+                    0;
+
+
+                  $('fc').value =
+
+                    nutrients.carbohydrates_serving
+
+                    ??
+
+                    nutrients.carbohydrates_100g
+
+                    ??
+
+                    0;
+
+
+                  $('ff').value =
+
+                    nutrients.fat_serving
+
+                    ??
+
+                    nutrients.fat_100g
+
+                    ??
+
+                    0;
+
+                }
+
+                else {
+
+                  alert(
+                    'Product not found. Enter nutrition manually.'
+                  );
+
+                }
 
               }
 
               else {
 
-                alert(
-                  'Product not found. Enter nutrition manually.'
+                requestAnimationFrame(
+                  loop
                 );
 
               }
 
             }
 
-            else {
+            catch (error) {
+
+              console.error(
+                'Barcode detection error:',
+                error
+              );
+
 
               requestAnimationFrame(
                 loop
@@ -2043,37 +3057,30 @@ $('scan').onclick =
 
             }
 
-          }
-
-          catch (error) {
-
-            console.error(
-              'Barcode error:',
-              error
-            );
-
-            requestAnimationFrame(
-              loop
-            );
-
-          }
-
-        };
+          };
 
 
-      loop();
+        loop();
 
-    }
+      }
 
-    catch (error) {
+      catch (error) {
 
-      alert(
-        error.message
-      );
+        console.error(
+          'Camera error:',
+          error
+        );
 
-    }
 
-  };
+        alert(
+          error.message
+        );
+
+      }
+
+    };
+
+}
 
 
 // ============================================================
@@ -2086,522 +3093,577 @@ const canvas =
   );
 
 
-const ctx =
-  canvas.getContext(
-    '2d'
-  );
+if (canvas) {
 
+  const ctx =
+    canvas.getContext(
+      '2d'
+    );
 
-let stars = [];
 
-let animationFrame;
+  let stars = [];
 
+  let animationFrame;
 
-let mouse = {
 
-  x: null,
+  let mouse = {
 
-  y: null,
+    x: null,
 
-  active: false
+    y: null,
 
-};
+    active: false
 
+  };
 
-const STAR_COUNT =
-  110;
 
+  const STAR_COUNT =
+    110;
 
-const CONNECTION_DISTANCE =
-  130;
 
+  const CONNECTION_DISTANCE =
+    130;
 
-const MOUSE_CONNECTION_DISTANCE =
-  190;
 
+  const MOUSE_CONNECTION_DISTANCE =
+    190;
 
-// ============================================================
-// RESIZE
-// ============================================================
 
-function resizeConstellation() {
+  // ==========================================================
+  // RESIZE
+  // ==========================================================
 
-  const dpr =
-    window.devicePixelRatio || 1;
+  function resizeConstellation() {
 
+    const dpr =
+      window.devicePixelRatio || 1;
 
-  canvas.width =
-    window.innerWidth *
-    dpr;
 
+    canvas.width =
+      window.innerWidth *
+      dpr;
 
-  canvas.height =
-    window.innerHeight *
-    dpr;
 
+    canvas.height =
+      window.innerHeight *
+      dpr;
 
-  canvas.style.width =
-    window.innerWidth +
-    'px';
 
-
-  canvas.style.height =
-    window.innerHeight +
-    'px';
-
-
-  ctx.setTransform(
-    dpr,
-    0,
-    0,
-    dpr,
-    0,
-    0
-  );
-
-
-  createStars();
-
-}
-
-
-// ============================================================
-// CREATE STARS
-// ============================================================
-
-function createStars() {
-
-  stars = [];
-
-
-  for (
-    let i = 0;
-    i < STAR_COUNT;
-    i++
-  ) {
-
-    stars.push({
-
-      x:
-        Math.random() *
-        window.innerWidth,
-
-      y:
-        Math.random() *
-        window.innerHeight,
-
-      vx:
-        (
-          Math.random() -
-          .5
-        ) * .15,
-
-      vy:
-        (
-          Math.random() -
-          .5
-        ) * .15,
-
-      radius:
-        Math.random() *
-        1.4 +
-        .4,
-
-      opacity:
-        Math.random() *
-        .6 +
-        .25,
-
-      twinkle:
-        Math.random() *
-        Math.PI *
-        2,
-
-      twinkleSpeed:
-        Math.random() *
-        .02 +
-        .005
-
-    });
-
-  }
-
-}
-
-
-// ============================================================
-// MOUSE TRACKING
-// ============================================================
-
-window.addEventListener(
-  'mousemove',
-  event => {
-
-    mouse.x =
-      event.clientX;
-
-    mouse.y =
-      event.clientY;
-
-    mouse.active =
-      true;
-
-  }
-);
-
-
-window.addEventListener(
-  'mouseleave',
-  () => {
-
-    mouse.active =
-      false;
-
-  }
-);
-
-
-// ============================================================
-// CONSTELLATION DRAW
-// ============================================================
-
-function drawConstellation() {
-
-  ctx.clearRect(
-    0,
-    0,
-    window.innerWidth,
-    window.innerHeight
-  );
-
-
-  // ----------------------------------------------------------
-  // MOVE STARS
-  // ----------------------------------------------------------
-
-  for (const star of stars) {
-
-    star.x +=
-      star.vx;
-
-    star.y +=
-      star.vy;
-
-
-    if (
-      star.x < -10
-    ) {
-
-      star.x =
-        window.innerWidth +
-        10;
-
-    }
-
-
-    if (
-      star.x >
+    canvas.style.width =
       window.innerWidth +
-      10
-    ) {
-
-      star.x =
-        -10;
-
-    }
+      'px';
 
 
-    if (
-      star.y < -10
-    ) {
-
-      star.y =
-        window.innerHeight +
-        10;
-
-    }
-
-
-    if (
-      star.y >
+    canvas.style.height =
       window.innerHeight +
-      10
-    ) {
-
-      star.y =
-        -10;
-
-    }
+      'px';
 
 
-    star.twinkle +=
-      star.twinkleSpeed;
+    ctx.setTransform(
 
+      dpr,
 
-    const pulse =
-      star.opacity +
-      Math.sin(
-        star.twinkle
-      ) * .15;
-
-
-    // --------------------------------------------------------
-    // GLOW
-    // --------------------------------------------------------
-
-    ctx.beginPath();
-
-    ctx.arc(
-      star.x,
-      star.y,
-      star.radius * 4,
       0,
-      Math.PI * 2
+
+      0,
+
+      dpr,
+
+      0,
+
+      0
+
     );
 
 
-    ctx.fillStyle =
-      `rgba(
-        100,
-        150,
-        255,
-        ${Math.max(
-          0,
-          pulse * .08
-        )}
-      )`;
-
-
-    ctx.fill();
-
-
-    // --------------------------------------------------------
-    // STAR
-    // --------------------------------------------------------
-
-    ctx.beginPath();
-
-    ctx.arc(
-      star.x,
-      star.y,
-      star.radius,
-      0,
-      Math.PI * 2
-    );
-
-
-    ctx.fillStyle =
-      `rgba(
-        180,
-        210,
-        255,
-        ${Math.max(
-          0,
-          pulse
-        )}
-      )`;
-
-
-    ctx.fill();
+    createStars();
 
   }
 
 
-  // ----------------------------------------------------------
-  // CONNECT STARS
-  // ----------------------------------------------------------
+  // ==========================================================
+  // CREATE STARS
+  // ==========================================================
 
-  for (
-    let i = 0;
-    i < stars.length;
-    i++
-  ) {
+  function createStars() {
+
+    stars = [];
+
 
     for (
-      let j = i + 1;
-      j < stars.length;
-      j++
+      let i = 0;
+      i < STAR_COUNT;
+      i++
     ) {
 
-      const a =
-        stars[i];
+      stars.push({
 
-      const b =
-        stars[j];
+        x:
+          Math.random() *
+          window.innerWidth,
 
+        y:
+          Math.random() *
+          window.innerHeight,
 
-      const dx =
-        a.x -
-        b.x;
-
-      const dy =
-        a.y -
-        b.y;
-
-
-      const distance =
-        Math.sqrt(
-          dx * dx +
-          dy * dy
-        );
-
-
-      if (
-        distance <
-        CONNECTION_DISTANCE
-      ) {
-
-        const opacity =
+        vx:
           (
-            1 -
-            distance /
-            CONNECTION_DISTANCE
-          ) * .25;
+            Math.random() -
+            0.5
+          ) * 0.15,
 
+        vy:
+          (
+            Math.random() -
+            0.5
+          ) * 0.15,
 
-        ctx.beginPath();
+        radius:
+          Math.random() *
+          1.4 +
+          0.4,
 
-        ctx.moveTo(
-          a.x,
-          a.y
-        );
+        opacity:
+          Math.random() *
+          0.6 +
+          0.25,
 
-        ctx.lineTo(
-          b.x,
-          b.y
-        );
+        twinkle:
+          Math.random() *
+          Math.PI *
+          2,
 
+        twinkleSpeed:
+          Math.random() *
+          0.02 +
+          0.005
 
-        ctx.strokeStyle =
-          `rgba(
-            100,
-            150,
-            255,
-            ${opacity}
-          )`;
-
-
-        ctx.lineWidth =
-          .6;
-
-
-        ctx.stroke();
-
-      }
+      });
 
     }
 
   }
 
 
-  // ----------------------------------------------------------
-  // MOUSE CONSTELLATION
-  // ----------------------------------------------------------
+  // ==========================================================
+  // MOUSE
+  // ==========================================================
 
-  if (mouse.active) {
+  window.addEventListener(
+    'mousemove',
+    event => {
+
+      mouse.x =
+        event.clientX;
+
+      mouse.y =
+        event.clientY;
+
+      mouse.active =
+        true;
+
+    }
+  );
+
+
+  window.addEventListener(
+    'mouseleave',
+    () => {
+
+      mouse.active =
+        false;
+
+    }
+  );
+
+
+  // ==========================================================
+  // DRAW CONSTELLATION
+  // ==========================================================
+
+  function drawConstellation() {
+
+    ctx.clearRect(
+
+      0,
+
+      0,
+
+      window.innerWidth,
+
+      window.innerHeight
+
+    );
+
+
+    // ========================================================
+    // MOVE STARS
+    // ========================================================
 
     for (const star of stars) {
 
-      const dx =
-        star.x -
-        mouse.x;
+      star.x +=
+        star.vx;
 
-      const dy =
-        star.y -
-        mouse.y;
-
-
-      const distance =
-        Math.sqrt(
-          dx * dx +
-          dy * dy
-        );
+      star.y +=
+        star.vy;
 
 
       if (
-        distance <
-        MOUSE_CONNECTION_DISTANCE
+        star.x < -10
       ) {
 
-        const opacity =
-          (
-            1 -
-            distance /
-            MOUSE_CONNECTION_DISTANCE
-          ) * .55;
+        star.x =
+          window.innerWidth +
+          10;
+
+      }
 
 
-        ctx.beginPath();
+      if (
+        star.x >
+        window.innerWidth + 10
+      ) {
 
-        ctx.moveTo(
-          star.x,
-          star.y
-        );
+        star.x =
+          -10;
 
-        ctx.lineTo(
-          mouse.x,
-          mouse.y
-        );
+      }
 
 
-        ctx.strokeStyle =
-          `rgba(
-            100,
-            170,
-            255,
-            ${opacity}
-          )`;
+      if (
+        star.y < -10
+      ) {
+
+        star.y =
+          window.innerHeight +
+          10;
+
+      }
 
 
-        ctx.lineWidth =
-          1;
+      if (
+        star.y >
+        window.innerHeight + 10
+      ) {
+
+        star.y =
+          -10;
+
+      }
 
 
-        ctx.stroke();
+      star.twinkle +=
+        star.twinkleSpeed;
 
 
-        ctx.beginPath();
-
-        ctx.arc(
-          mouse.x,
-          mouse.y,
-          2.5,
-          0,
-          Math.PI * 2
-        );
+      const pulse =
+        star.opacity +
+        Math.sin(
+          star.twinkle
+        ) * 0.15;
 
 
-        ctx.fillStyle =
-          'rgba(180,220,255,.75)';
+      // ======================================================
+      // GLOW
+      // ======================================================
+
+      ctx.beginPath();
 
 
-        ctx.fill();
+      ctx.arc(
+
+        star.x,
+
+        star.y,
+
+        star.radius * 4,
+
+        0,
+
+        Math.PI * 2
+
+      );
+
+
+      ctx.fillStyle =
+        `rgba(
+          100,
+          150,
+          255,
+          ${Math.max(
+            0,
+            pulse * 0.08
+          )}
+        )`;
+
+
+      ctx.fill();
+
+
+      // ======================================================
+      // STAR
+      // ======================================================
+
+      ctx.beginPath();
+
+
+      ctx.arc(
+
+        star.x,
+
+        star.y,
+
+        star.radius,
+
+        0,
+
+        Math.PI * 2
+
+      );
+
+
+      ctx.fillStyle =
+        `rgba(
+          180,
+          210,
+          255,
+          ${Math.max(
+            0,
+            pulse
+          )}
+        )`;
+
+
+      ctx.fill();
+
+    }
+
+
+    // ========================================================
+    // CONNECT STARS
+    // ========================================================
+
+    for (
+      let i = 0;
+      i < stars.length;
+      i++
+    ) {
+
+      for (
+        let j = i + 1;
+        j < stars.length;
+        j++
+      ) {
+
+        const a =
+          stars[i];
+
+        const b =
+          stars[j];
+
+
+        const dx =
+          a.x -
+          b.x;
+
+        const dy =
+          a.y -
+          b.y;
+
+
+        const distance =
+          Math.sqrt(
+
+            dx * dx +
+            dy * dy
+
+          );
+
+
+        if (
+          distance <
+          CONNECTION_DISTANCE
+        ) {
+
+          const opacity =
+            (
+              1 -
+              distance /
+              CONNECTION_DISTANCE
+            ) * 0.25;
+
+
+          ctx.beginPath();
+
+
+          ctx.moveTo(
+
+            a.x,
+
+            a.y
+
+          );
+
+
+          ctx.lineTo(
+
+            b.x,
+
+            b.y
+
+          );
+
+
+          ctx.strokeStyle =
+            `rgba(
+              100,
+              150,
+              255,
+              ${opacity}
+            )`;
+
+
+          ctx.lineWidth =
+            0.6;
+
+
+          ctx.stroke();
+
+        }
 
       }
 
     }
 
+
+    // ========================================================
+    // MOUSE CONNECTION
+    // ========================================================
+
+    if (mouse.active) {
+
+      for (const star of stars) {
+
+        const dx =
+          star.x -
+          mouse.x;
+
+        const dy =
+          star.y -
+          mouse.y;
+
+
+        const distance =
+          Math.sqrt(
+
+            dx * dx +
+            dy * dy
+
+          );
+
+
+        if (
+          distance <
+          MOUSE_CONNECTION_DISTANCE
+        ) {
+
+          const opacity =
+            (
+              1 -
+              distance /
+              MOUSE_CONNECTION_DISTANCE
+            ) * 0.55;
+
+
+          ctx.beginPath();
+
+
+          ctx.moveTo(
+
+            star.x,
+
+            star.y
+
+          );
+
+
+          ctx.lineTo(
+
+            mouse.x,
+
+            mouse.y
+
+          );
+
+
+          ctx.strokeStyle =
+            `rgba(
+              100,
+              170,
+              255,
+              ${opacity}
+            )`;
+
+
+          ctx.lineWidth =
+            1;
+
+
+          ctx.stroke();
+
+
+          ctx.beginPath();
+
+
+          ctx.arc(
+
+            mouse.x,
+
+            mouse.y,
+
+            2.5,
+
+            0,
+
+            Math.PI * 2
+
+          );
+
+
+          ctx.fillStyle =
+            'rgba(180,220,255,.75)';
+
+
+          ctx.fill();
+
+        }
+
+      }
+
+    }
+
+
+    animationFrame =
+      requestAnimationFrame(
+        drawConstellation
+      );
+
   }
 
 
-  animationFrame =
-    requestAnimationFrame(
-      drawConstellation
-    );
+  // ==========================================================
+  // START CONSTELLATION
+  // ==========================================================
+
+  window.addEventListener(
+    'resize',
+    resizeConstellation
+  );
+
+
+  resizeConstellation();
+
+  drawConstellation();
 
 }
-
-
-// ============================================================
-// CONSTELLATION START
-// ============================================================
-
-window.addEventListener(
-  'resize',
-  resizeConstellation
-);
-
-
-resizeConstellation();
-
-drawConstellation();
