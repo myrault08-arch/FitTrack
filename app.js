@@ -1,4 +1,7 @@
-```javascript
+// ============================================================
+// FITTRACK - app.js
+// ============================================================
+
 import {
   initializeApp
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
@@ -19,7 +22,6 @@ import {
   collection,
   addDoc,
   getDocs,
-  getDocsFromCache,
   query,
   orderBy,
   deleteDoc
@@ -33,9 +35,7 @@ import { firebaseConfig } from './firebase-config.js';
 // ============================================================
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
-
 const db = getFirestore(app);
 
 
@@ -51,11 +51,8 @@ const $ = id => document.getElementById(id);
 // ============================================================
 
 let user = null;
-
 let signup = false;
-
 let ppl = 'Push';
-
 let stream = null;
 
 
@@ -64,26 +61,50 @@ let stream = null;
 // ============================================================
 
 let profile = {
-
   age: 31,
-
   sex: 'male',
-
   height: 170,
-
   weight: 73,
 
   calGoal: 2546,
-
   pGoal: 146,
-
   cGoal: 341,
-
   fGoal: 58,
 
   stepGoal: 10000
-
 };
+
+
+// ============================================================
+// DATE
+//
+// Firestore structure:
+//
+// users
+//   └── UID
+//       └── healthdata
+//           ├── 2026-08-20
+//           ├── 2026-08-21
+//           └── 2026-08-22
+//
+// ============================================================
+
+function day() {
+
+  const now = new Date();
+
+  const year = now.getFullYear();
+
+  const month = String(
+    now.getMonth() + 1
+  ).padStart(2, '0');
+
+  const date = String(
+    now.getDate()
+  ).padStart(2, '0');
+
+  return `${year}-${month}-${date}`;
+}
 
 
 // ============================================================
@@ -106,43 +127,7 @@ if ($('date')) {
 
 
 // ============================================================
-// LOCAL DATE
-//
-// YYYY-MM-DD
-//
-// Example:
-//
-// 2026-08-22
-//
-// FIRESTORE:
-//
-// users/{uid}/healthdata/2026-08-22
-// ============================================================
-
-function day() {
-
-  const now = new Date();
-
-  const year =
-    now.getFullYear();
-
-  const month =
-    String(
-      now.getMonth() + 1
-    ).padStart(2, '0');
-
-  const date =
-    String(
-      now.getDate()
-    ).padStart(2, '0');
-
-  return `${year}-${month}-${date}`;
-
-}
-
-
-// ============================================================
-// FIRESTORE USER REFERENCE
+// USER REFERENCE
 // ============================================================
 
 function userRef() {
@@ -156,25 +141,37 @@ function userRef() {
     'users',
     user.uid
   );
-
 }
 
 
 // ============================================================
-// FIRESTORE DAILY HEALTHDATA
+// HEALTHDATA COLLECTION
 //
-// IMPORTANT:
-//
-// ACTUAL DATABASE:
-//
-// users
-//   └── {uid}
-//       └── healthdata
-//           └── YYYY-MM-DD
-//
+// users/{uid}/healthdata
 // ============================================================
 
-function dayRef() {
+function healthdataCollection() {
+
+  if (!user) {
+    throw new Error('No authenticated user.');
+  }
+
+  return collection(
+    db,
+    'users',
+    user.uid,
+    'healthdata'
+  );
+}
+
+
+// ============================================================
+// TODAY HEALTHDATA DOCUMENT
+//
+// users/{uid}/healthdata/{YYYY-MM-DD}
+// ============================================================
+
+function dayRef(dateValue = day()) {
 
   if (!user) {
     throw new Error('No authenticated user.');
@@ -185,9 +182,8 @@ function dayRef() {
     'users',
     user.uid,
     'healthdata',
-    day()
+    dateValue
   );
-
 }
 
 
@@ -198,10 +194,6 @@ function dayRef() {
 // ============================================================
 
 function foodCollection() {
-
-  if (!user) {
-    throw new Error('No authenticated user.');
-  }
 
   return collection(
     db,
@@ -222,10 +214,6 @@ function foodCollection() {
 // ============================================================
 
 function exerciseCollection() {
-
-  if (!user) {
-    throw new Error('No authenticated user.');
-  }
 
   return collection(
     db,
@@ -265,7 +253,9 @@ function emptyDay() {
 
     caloriesBurned: 0,
 
-    activeCalories: 0
+    activeCalories: 0,
+
+    weight: 0
 
   };
 
@@ -273,115 +263,102 @@ function emptyDay() {
 
 
 // ============================================================
-// GET TODAY'S HEALTH DATA
+// GET TODAY
 // ============================================================
 
 async function getDay() {
 
   if (!user) {
-
     return emptyDay();
-
   }
 
-  const currentDay =
-    day();
+  const today = day();
 
   console.log(
-    '========================================'
+    'Reading:',
+    `users/${user.uid}/healthdata/${today}`
   );
 
-  console.log(
-    'READING HEALTHDATA'
-  );
+  try {
 
-  console.log(
-    `users/${user.uid}/healthdata/${currentDay}`
-  );
+    const snapshot =
+      await getDoc(
+        dayRef(today)
+      );
 
-  console.log(
-    '========================================'
-  );
+    if (!snapshot.exists()) {
 
+      console.log(
+        'No healthdata document for today.'
+      );
 
-  const snapshot =
-    await getDoc(
-      dayRef()
-    );
+      return emptyDay();
 
+    }
 
-  if (!snapshot.exists()) {
+    const data =
+      snapshot.data();
 
     console.log(
-      'Healthdata document does not exist:',
-      currentDay
+      'Today healthdata:',
+      data
+    );
+
+    return {
+
+      cal:
+        Number(data.cal) || 0,
+
+      p:
+        Number(data.p) || 0,
+
+      c:
+        Number(data.c) || 0,
+
+      f:
+        Number(data.f) || 0,
+
+      steps:
+        Number(data.steps) || 0,
+
+      workout:
+        data.workout || 'Rest',
+
+      workoutCalories:
+        Number(data.workoutCalories) || 0,
+
+      stepsCalories:
+        Number(data.stepsCalories) || 0,
+
+      caloriesBurned:
+        Number(data.caloriesBurned) || 0,
+
+      activeCalories:
+        Number(data.activeCalories) || 0,
+
+      weight:
+        Number(data.weight) || 0
+
+    };
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'getDay error:',
+      error
     );
 
     return emptyDay();
 
   }
-
-
-  const data =
-    snapshot.data();
-
-
-  console.log(
-    'HEALTHDATA FROM FIRESTORE:',
-    data
-  );
-
-
-  /*
-    IMPORTANT:
-
-    Number() converts Firebase numeric
-    values into normal JavaScript numbers.
-
-    We also support activeCalories in
-    case the Android health tracker
-    writes that field.
-  */
-
-  return {
-
-    cal:
-      Number(data.cal) || 0,
-
-    p:
-      Number(data.p) || 0,
-
-    c:
-      Number(data.c) || 0,
-
-    f:
-      Number(data.f) || 0,
-
-    steps:
-      Number(data.steps) || 0,
-
-    workout:
-      data.workout || 'Rest',
-
-    workoutCalories:
-      Number(data.workoutCalories) || 0,
-
-    stepsCalories:
-      Number(data.stepsCalories) || 0,
-
-    caloriesBurned:
-      Number(data.caloriesBurned) || 0,
-
-    activeCalories:
-      Number(data.activeCalories) || 0
-
-  };
 
 }
 
 
 // ============================================================
-// CALCULATE STEP CALORIES
+// STEP CALORIES
 // ============================================================
 
 function calculateStepCalories(steps) {
@@ -392,23 +369,12 @@ function calculateStepCalories(steps) {
   const stepCount =
     Number(steps) || 0;
 
-
   if (
     weight <= 0 ||
     stepCount <= 0
   ) {
-
     return 0;
-
   }
-
-
-  /*
-    Approximation:
-
-    73 kg × 10,000 steps × 0.0004
-    ≈ 292 kcal
-  */
 
   return Math.round(
     stepCount *
@@ -420,7 +386,7 @@ function calculateStepCalories(steps) {
 
 
 // ============================================================
-// CALCULATE WORKOUT CALORIES
+// WORKOUT CALORIES
 // ============================================================
 
 function calculateWorkoutCalories(type) {
@@ -428,27 +394,21 @@ function calculateWorkoutCalories(type) {
   const weight =
     Number(profile.weight) || 73;
 
-
   let met = 5;
 
-
   if (type === 'Legs') {
-
     met = 6;
-
   }
 
-
   return Math.round(
-    met *
-    weight
+    met * weight
   );
 
 }
 
 
 // ============================================================
-// TOTAL CALORIES BURNED
+// TOTAL BURNED
 // ============================================================
 
 function calculateTotalBurned(
@@ -457,11 +417,8 @@ function calculateTotalBurned(
 ) {
 
   return Math.round(
-
     (Number(workoutCalories) || 0) +
-
     (Number(stepsCalories) || 0)
-
   );
 
 }
@@ -481,7 +438,6 @@ function calculateMetrics() {
 
   const weight =
     Number(profile.weight);
-
 
   if (
     !age ||
@@ -531,12 +487,10 @@ function calculateMetrics() {
       weight * 2
     );
 
-
   const fat =
     Math.round(
       weight * 0.8
     );
-
 
   const carbCalories =
     calories -
@@ -544,7 +498,6 @@ function calculateMetrics() {
       protein * 4 +
       fat * 9
     );
-
 
   const carbs =
     Math.max(
@@ -555,17 +508,10 @@ function calculateMetrics() {
     );
 
 
-  profile.calGoal =
-    calories;
-
-  profile.pGoal =
-    protein;
-
-  profile.cGoal =
-    carbs;
-
-  profile.fGoal =
-    fat;
+  profile.calGoal = calories;
+  profile.pGoal = protein;
+  profile.cGoal = carbs;
+  profile.fGoal = fat;
 
 
   // ==========================================================
@@ -581,14 +527,12 @@ function calculateMetrics() {
 
 
   let status = '';
-
   let color = '';
 
 
   if (bmi < 18.5) {
 
     status = 'Underweight';
-
     color = 'under';
 
   }
@@ -596,7 +540,6 @@ function calculateMetrics() {
   else if (bmi < 25) {
 
     status = 'Normal';
-
     color = 'normal';
 
   }
@@ -604,7 +547,6 @@ function calculateMetrics() {
   else if (bmi < 30) {
 
     status = 'Overweight';
-
     color = 'over';
 
   }
@@ -612,7 +554,6 @@ function calculateMetrics() {
   else {
 
     status = 'Obese';
-
     color = 'obese';
 
   }
@@ -623,12 +564,9 @@ function calculateMetrics() {
   // ==========================================================
 
   if ($('bmiValue')) {
-
     $('bmiValue').textContent =
       bmi.toFixed(1);
-
   }
-
 
   if ($('bmiStatus')) {
 
@@ -652,7 +590,6 @@ function calculateMetrics() {
 
   }
 
-
   if ($('settingsBmiStatus')) {
 
     $('settingsBmiStatus').textContent =
@@ -665,7 +602,7 @@ function calculateMetrics() {
 
 
   // ==========================================================
-  // SETTINGS CALORIES
+  // SETTINGS CALCULATIONS
   // ==========================================================
 
   if ($('settingsCalories')) {
@@ -675,7 +612,6 @@ function calculateMetrics() {
 
   }
 
-
   if ($('settingsProtein')) {
 
     $('settingsProtein').textContent =
@@ -683,14 +619,12 @@ function calculateMetrics() {
 
   }
 
-
   if ($('settingsCarbs')) {
 
     $('settingsCarbs').textContent =
       carbs;
 
   }
-
 
   if ($('settingsFat')) {
 
@@ -711,7 +645,6 @@ function calculateMetrics() {
 
   }
 
-
   if ($('macroProteinGoal')) {
 
     $('macroProteinGoal').textContent =
@@ -719,14 +652,12 @@ function calculateMetrics() {
 
   }
 
-
   if ($('macroCarbsGoal')) {
 
     $('macroCarbsGoal').textContent =
       carbs;
 
   }
-
 
   if ($('macroFatGoal')) {
 
@@ -737,21 +668,13 @@ function calculateMetrics() {
 
 
   return {
-
     bmr,
-
     calories,
-
     protein,
-
     carbs,
-
     fat,
-
     bmi,
-
     status
-
   };
 
 }
@@ -785,38 +708,27 @@ function show(id) {
     });
 
 
-  if (id === 'food') {
-
-    food();
-
+  if (id === 'dash') {
+    refresh();
   }
 
+  if (id === 'food') {
+    food();
+  }
 
   if (id === 'workout') {
-
     exercises();
-
   }
-
 
   if (id === 'progress') {
-
     history();
-
-  }
-
-
-  if (id === 'dash') {
-
-    refresh();
-
   }
 
 }
 
 
 // ============================================================
-// NAVIGATION BUTTONS
+// NAV BUTTONS
 // ============================================================
 
 document
@@ -835,7 +747,7 @@ document
 
 
 // ============================================================
-// AUTH MODE
+// AUTH TOGGLE
 // ============================================================
 
 if ($('toggle')) {
@@ -845,18 +757,15 @@ if ($('toggle')) {
     signup =
       !signup;
 
-
     $('authTitle').textContent =
       signup
         ? 'Create account'
         : 'Sign in';
 
-
     $('toggle').textContent =
       signup
         ? 'Back to sign in'
         : 'Create account';
-
 
     $('authMsg').textContent =
       '';
@@ -877,15 +786,6 @@ if ($('authForm')) {
 
       event.preventDefault();
 
-
-      if ($('authMsg')) {
-
-        $('authMsg').textContent =
-          '';
-
-      }
-
-
       try {
 
         const email =
@@ -899,26 +799,17 @@ if ($('authForm')) {
 
           const credentials =
             await createUserWithEmailAndPassword(
-
               auth,
-
               email,
-
               password
-
             );
-
 
           user =
             credentials.user;
 
-
           await setDoc(
-
             userRef(),
-
             profile
-
           );
 
         }
@@ -926,13 +817,9 @@ if ($('authForm')) {
         else {
 
           await signInWithEmailAndPassword(
-
             auth,
-
             email,
-
             password
-
           );
 
         }
@@ -945,7 +832,6 @@ if ($('authForm')) {
           'Authentication error:',
           error
         );
-
 
         if ($('authMsg')) {
 
@@ -966,9 +852,7 @@ if ($('authForm')) {
 // ============================================================
 
 onAuthStateChanged(
-
   auth,
-
   async currentUser => {
 
     user =
@@ -978,24 +862,15 @@ onAuthStateChanged(
     if (!currentUser) {
 
       if ($('auth')) {
-
-        $('auth').hidden =
-          false;
-
+        $('auth').hidden = false;
       }
 
       if ($('app')) {
-
-        $('app').hidden =
-          true;
-
+        $('app').hidden = true;
       }
 
       if ($('logout')) {
-
-        $('logout').hidden =
-          true;
-
+        $('logout').hidden = true;
       }
 
       return;
@@ -1004,24 +879,15 @@ onAuthStateChanged(
 
 
     if ($('auth')) {
-
-      $('auth').hidden =
-        true;
-
+      $('auth').hidden = true;
     }
 
     if ($('app')) {
-
-      $('app').hidden =
-        false;
-
+      $('app').hidden = false;
     }
 
     if ($('logout')) {
-
-      $('logout').hidden =
-        false;
-
+      $('logout').hidden = false;
     }
 
 
@@ -1040,11 +906,8 @@ onAuthStateChanged(
       if (snapshot.exists()) {
 
         profile = {
-
           ...profile,
-
           ...snapshot.data()
-
         };
 
       }
@@ -1052,41 +915,23 @@ onAuthStateChanged(
       else {
 
         await setDoc(
-
           userRef(),
-
           profile
-
         );
 
       }
 
 
       console.log(
-        'PROFILE LOADED:',
+        'PROFILE:',
         profile
       );
 
 
-      // ======================================================
-      // UPDATE SETTINGS
-      // ======================================================
-
       fill();
-
       calculateMetrics();
 
-
-      // ======================================================
-      // LOAD TODAY
-      // ======================================================
-
       await refresh();
-
-
-      // ======================================================
-      // SHOW DASHBOARD
-      // ======================================================
 
       show('dash');
 
@@ -1102,7 +947,6 @@ onAuthStateChanged(
     }
 
   }
-
 );
 
 
@@ -1142,44 +986,29 @@ if ($('logout')) {
 function fill() {
 
   if ($('age')) {
-
     $('age').value =
       profile.age;
-
   }
-
 
   if ($('sex')) {
-
     $('sex').value =
       profile.sex || 'male';
-
   }
-
 
   if ($('height')) {
-
     $('height').value =
       profile.height;
-
   }
-
 
   if ($('weight')) {
-
     $('weight').value =
       profile.weight;
-
   }
-
 
   if ($('goalSteps')) {
-
     $('goalSteps').value =
       profile.stepGoal || 10000;
-
   }
-
 
   calculateMetrics();
 
@@ -1199,37 +1028,24 @@ function fill() {
 .forEach(id => {
 
   if (!$(id)) {
-
     return;
-
   }
-
 
   $(id).addEventListener(
     'input',
     () => {
 
       profile.age =
-        Number(
-          $('age').value
-        );
-
+        Number($('age').value);
 
       profile.sex =
         $('sex').value;
 
-
       profile.height =
-        Number(
-          $('height').value
-        );
-
+        Number($('height').value);
 
       profile.weight =
-        Number(
-          $('weight').value
-        );
-
+        Number($('weight').value);
 
       calculateMetrics();
 
@@ -1250,100 +1066,70 @@ if ($('settingsForm')) {
 
       event.preventDefault();
 
-
       try {
 
         profile.age =
-          Number(
-            $('age').value
-          );
-
+          Number($('age').value);
 
         profile.sex =
           $('sex').value;
 
-
         profile.height =
-          Number(
-            $('height').value
-          );
-
+          Number($('height').value);
 
         profile.weight =
-          Number(
-            $('weight').value
-          );
-
+          Number($('weight').value);
 
         profile.stepGoal =
-          Number(
-            $('goalSteps').value
-          ) || 10000;
+          Number($('goalSteps').value) ||
+          10000;
 
 
         calculateMetrics();
 
 
         await setDoc(
-
           userRef(),
-
           profile,
-
           {
             merge: true
           }
-
         );
 
 
-        /*
-          Recalculate today's step calories
-          using the updated body weight.
-        */
+        // Recalculate today's walking calories.
 
         const d =
           await getDay();
-
 
         const stepsCalories =
           calculateStepCalories(
             d.steps
           );
 
-
         const totalBurned =
           calculateTotalBurned(
-
             d.workoutCalories,
-
             stepsCalories
-
           );
 
 
         await setDoc(
-
           dayRef(),
-
           {
-
             stepsCalories,
-
             caloriesBurned:
-              totalBurned
-
+              totalBurned,
+            weight:
+              profile.weight
           },
-
           {
             merge: true
           }
-
         );
 
 
         await refresh();
-
 
         alert(
           'Profile saved successfully.'
@@ -1357,7 +1143,6 @@ if ($('settingsForm')) {
           'Settings save error:',
           error
         );
-
 
         alert(
           'Could not save your profile: ' +
@@ -1378,9 +1163,7 @@ if ($('settingsForm')) {
 async function refresh() {
 
   if (!user) {
-
     return;
-
   }
 
 
@@ -1391,11 +1174,11 @@ async function refresh() {
     );
 
     console.log(
-      'FITTRACK DASHBOARD REFRESH'
+      'FITTRACK DASHBOARD'
     );
 
     console.log(
-      'USER UID:',
+      'USER:',
       user.uid
     );
 
@@ -1405,7 +1188,7 @@ async function refresh() {
     );
 
     console.log(
-      'HEALTHDATA PATH:',
+      'PATH:',
       `users/${user.uid}/healthdata/${day()}`
     );
 
@@ -1418,7 +1201,7 @@ async function refresh() {
 
 
     // ========================================================
-    // GET HEALTHDATA
+    // GET TODAY'S HEALTHDATA
     // ========================================================
 
     const d =
@@ -1426,18 +1209,17 @@ async function refresh() {
 
 
     console.log(
-      'DAILY HEALTHDATA:',
+      'TODAY DATA:',
       d
     );
 
 
     // ========================================================
-    // CALORIES EATEN
+    // CALORIES
     // ========================================================
 
-    const caloriesEaten =
+    const calories =
       Number(d.cal) || 0;
-
 
     const calorieGoal =
       Number(profile.calGoal) || 0;
@@ -1446,10 +1228,9 @@ async function refresh() {
     if ($('cal')) {
 
       $('cal').textContent =
-        caloriesEaten.toLocaleString();
+        calories.toLocaleString();
 
     }
-
 
     if ($('calGoal')) {
 
@@ -1461,12 +1242,7 @@ async function refresh() {
 
     const caloriePercent =
       calorieGoal > 0
-
-        ? (
-            caloriesEaten /
-            calorieGoal
-          ) * 100
-
+        ? (calories / calorieGoal) * 100
         : 0;
 
 
@@ -1486,7 +1262,7 @@ async function refresh() {
       $('calRemaining').textContent =
         `${Math.max(
           0,
-          calorieGoal - caloriesEaten
+          calorieGoal - calories
         ).toLocaleString()} kcal remaining`;
 
     }
@@ -1495,9 +1271,15 @@ async function refresh() {
     // ========================================================
     // STEPS
     //
-    // THIS NOW READS:
+    // IMPORTANT:
     //
-    // users/{uid}/healthdata/{date}
+    // READS:
+    //
+    // users/{uid}/healthdata/{TODAY}
+    //
+    // FIELD:
+    //
+    // steps
     //
     // ========================================================
 
@@ -1506,21 +1288,13 @@ async function refresh() {
 
 
     console.log(
-      '========================================'
-    );
-
-    console.log(
-      'STEPS FROM HEALTHDATA:',
+      'STEPS FIELD FROM FIRESTORE:',
       d.steps
     );
 
     console.log(
-      'STEPS USED BY DASHBOARD:',
+      'STEPS DISPLAYED:',
       steps
-    );
-
-    console.log(
-      '========================================'
     );
 
 
@@ -1537,9 +1311,7 @@ async function refresh() {
     // ========================================================
 
     const stepGoal =
-      Number(
-        profile.stepGoal
-      ) || 10000;
+      Number(profile.stepGoal) || 10000;
 
 
     if ($('stepGoalDash')) {
@@ -1550,27 +1322,17 @@ async function refresh() {
     }
 
 
-    // ========================================================
-    // STEP PROGRESS BAR
-    // ========================================================
-
     if ($('stepsBar')) {
 
-      const stepPercent =
+      const percentage =
         stepGoal > 0
-
-          ? (
-              steps /
-              stepGoal
-            ) * 100
-
+          ? (steps / stepGoal) * 100
           : 0;
-
 
       $('stepsBar').style.width =
         Math.min(
           100,
-          stepPercent
+          percentage
         ) + '%';
 
     }
@@ -1581,23 +1343,7 @@ async function refresh() {
     // ========================================================
 
     let stepsCalories =
-      Number(
-        d.stepsCalories
-      ) || 0;
-
-
-    /*
-      If Android supplies activeCalories,
-      use that only for display when available.
-
-      Otherwise use FitTrack's estimated
-      walking calories.
-    */
-
-    const androidActiveCalories =
-      Number(
-        d.activeCalories
-      ) || 0;
+      Number(d.stepsCalories) || 0;
 
 
     if (
@@ -1611,25 +1357,14 @@ async function refresh() {
         );
 
 
-      /*
-        Only write our calculated value if
-        one does not already exist.
-      */
-
       await setDoc(
-
         dayRef(),
-
         {
-
           stepsCalories
-
         },
-
         {
           merge: true
         }
-
       );
 
     }
@@ -1658,41 +1393,14 @@ async function refresh() {
 
 
     // ========================================================
-    // TOTAL CALORIES BURNED
+    // TOTAL BURNED
     // ========================================================
 
     const totalBurned =
       calculateTotalBurned(
-
         workoutCalories,
-
         stepsCalories
-
       );
-
-
-    if ($('burned')) {
-
-      $('burned').textContent =
-        totalBurned.toLocaleString();
-
-    }
-
-
-    if ($('burnWorkout')) {
-
-      $('burnWorkout').textContent =
-        `${workoutCalories.toLocaleString()} kcal`;
-
-    }
-
-
-    if ($('burnSteps')) {
-
-      $('burnSteps').textContent =
-        `${stepsCalories.toLocaleString()} kcal`;
-
-    }
 
 
     if ($('caloriesBurnedDash')) {
@@ -1731,11 +1439,17 @@ async function refresh() {
     // WEIGHT
     // ========================================================
 
+    const todayWeight =
+      Number(d.weight) || 0;
+
+
     if ($('weightDash')) {
 
       $('weightDash').textContent =
-        Number(
-          profile.weight || 0
+        (
+          todayWeight > 0
+            ? todayWeight
+            : profile.weight
         ).toFixed(1);
 
     }
@@ -1754,7 +1468,6 @@ async function refresh() {
 
     }
 
-
     if ($('macroCarbs')) {
 
       $('macroCarbs').textContent =
@@ -1763,7 +1476,6 @@ async function refresh() {
         );
 
     }
-
 
     if ($('macroFat')) {
 
@@ -1776,50 +1488,31 @@ async function refresh() {
 
 
     if ($('macroProteinGoal')) {
-
       $('macroProteinGoal').textContent =
         profile.pGoal;
-
     }
-
 
     if ($('macroCarbsGoal')) {
-
       $('macroCarbsGoal').textContent =
         profile.cGoal;
-
     }
 
-
     if ($('macroFatGoal')) {
-
       $('macroFatGoal').textContent =
         profile.fGoal;
-
     }
 
 
     console.log(
-      'FINAL DASHBOARD:',
+      'FINAL DASHBOARD DATA:',
       {
-
-        date:
-          day(),
-
+        date: day(),
         steps,
-
         stepGoal,
-
-        stepsCalories,
-
-        androidActiveCalories,
-
         workout,
-
         workoutCalories,
-
+        stepsCalories,
         totalBurned
-
       }
     );
 
@@ -1848,7 +1541,6 @@ if ($('foodForm')) {
 
       event.preventDefault();
 
-
       try {
 
         const f = {
@@ -1860,34 +1552,23 @@ if ($('foodForm')) {
             $('serving').value.trim(),
 
           cal:
-            Number(
-              $('fcal').value
-            ) || 0,
+            Number($('fcal').value) || 0,
 
           p:
-            Number(
-              $('fp').value
-            ) || 0,
+            Number($('fp').value) || 0,
 
           c:
-            Number(
-              $('fc').value
-            ) || 0,
+            Number($('fc').value) || 0,
 
           f:
-            Number(
-              $('ff').value
-            ) || 0
+            Number($('ff').value) || 0
 
         };
 
 
         await addDoc(
-
           foodCollection(),
-
           f
-
         );
 
 
@@ -1896,9 +1577,7 @@ if ($('foodForm')) {
 
 
         await setDoc(
-
           dayRef(),
-
           {
 
             cal:
@@ -1918,19 +1597,15 @@ if ($('foodForm')) {
               f.f
 
           },
-
           {
             merge: true
           }
-
         );
 
 
         event.target.reset();
 
-
         await refresh();
-
         await food();
 
       }
@@ -1941,7 +1616,6 @@ if ($('foodForm')) {
           'Food save error:',
           error
         );
-
 
         alert(
           'Could not save food: ' +
@@ -1962,9 +1636,7 @@ if ($('foodForm')) {
 async function food() {
 
   if (!user || !$('foodList')) {
-
     return;
-
   }
 
 
@@ -1972,24 +1644,16 @@ async function food() {
 
     const snapshot =
       await getDocs(
-
         query(
-
           foodCollection(),
-
-          orderBy(
-            '__name__'
-          )
-
+          orderBy('__name__')
         )
-
       );
 
 
     $('foodList').innerHTML =
-
-      snapshot.docs.map(
-        item => {
+      snapshot.docs
+        .map(item => {
 
           const f =
             item.data();
@@ -2015,21 +1679,13 @@ async function food() {
                     f.serving || ''
                   )}
 
-                  · ${Number(
-                    f.cal || 0
-                  )} kcal
+                  · ${Number(f.cal || 0)} kcal
 
-                  · P ${Number(
-                    f.p || 0
-                  )}
+                  · P ${Number(f.p || 0)}
 
-                  · C ${Number(
-                    f.c || 0
-                  )}
+                  · C ${Number(f.c || 0)}
 
-                  · F ${Number(
-                    f.f || 0
-                  )}
+                  · F ${Number(f.f || 0)}
 
                 </small>
 
@@ -2044,12 +1700,8 @@ async function food() {
 
           `;
 
-        }
-
-      ).join('')
-
-      ||
-
+        })
+        .join('') ||
       '<p>No food logged today.</p>';
 
 
@@ -2064,21 +1716,13 @@ async function food() {
 
               const reference =
                 doc(
-
                   db,
-
                   'users',
-
                   user.uid,
-
                   'healthdata',
-
                   day(),
-
                   'foods',
-
                   button.dataset.del
-
                 );
 
 
@@ -2089,24 +1733,19 @@ async function food() {
 
 
               if (!snapshot.exists()) {
-
                 return;
-
               }
 
 
               const f =
                 snapshot.data();
 
-
               const d =
                 await getDay();
 
 
               await setDoc(
-
                 dayRef(),
-
                 {
 
                   cal:
@@ -2138,11 +1777,9 @@ async function food() {
                     )
 
                 },
-
                 {
                   merge: true
                 }
-
               );
 
 
@@ -2152,7 +1789,6 @@ async function food() {
 
 
               await refresh();
-
               await food();
 
             }
@@ -2191,31 +1827,11 @@ async function food() {
 function escapeHtml(value) {
 
   return String(value)
-
-    .replaceAll(
-      '&',
-      '&amp;'
-    )
-
-    .replaceAll(
-      '<',
-      '&lt;'
-    )
-
-    .replaceAll(
-      '>',
-      '&gt;'
-    )
-
-    .replaceAll(
-      '"',
-      '&quot;'
-    )
-
-    .replaceAll(
-      "'",
-      '&#039;'
-    );
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 
 }
 
@@ -2261,13 +1877,10 @@ if ($('exForm')) {
 
       event.preventDefault();
 
-
       try {
 
         await addDoc(
-
           exerciseCollection(),
-
           {
 
             type:
@@ -2277,50 +1890,23 @@ if ($('exForm')) {
               $('ename').value.trim(),
 
             sets:
-              Number(
-                $('sets').value
-              ) || 0,
+              Number($('sets').value) || 0,
 
             reps:
-              Number(
-                $('reps').value
-              ) || 0,
+              Number($('reps').value) || 0,
 
             weight:
-              Number(
-                $('ew').value
-              ) || 0
+              Number($('ew').value) || 0
 
           }
-
         );
 
 
         event.target.reset();
 
-
-        if ($('sets')) {
-
-          $('sets').value =
-            3;
-
-        }
-
-
-        if ($('reps')) {
-
-          $('reps').value =
-            10;
-
-        }
-
-
-        if ($('ew')) {
-
-          $('ew').value =
-            0;
-
-        }
+        $('sets').value = 3;
+        $('reps').value = 10;
+        $('ew').value = 0;
 
 
         await exercises();
@@ -2333,7 +1919,6 @@ if ($('exForm')) {
           'Exercise save error:',
           error
         );
-
 
         alert(
           'Could not save exercise: ' +
@@ -2368,20 +1953,24 @@ if ($('finish')) {
           await getDay();
 
 
+        const stepsCalories =
+          Number(
+            d.stepsCalories
+          ) ||
+          calculateStepCalories(
+            d.steps
+          );
+
+
         const totalBurned =
           calculateTotalBurned(
-
             workoutCalories,
-
-            d.stepsCalories
-
+            stepsCalories
           );
 
 
         await setDoc(
-
           dayRef(),
-
           {
 
             workout:
@@ -2389,15 +1978,15 @@ if ($('finish')) {
 
             workoutCalories,
 
+            stepsCalories,
+
             caloriesBurned:
               totalBurned
 
           },
-
           {
             merge: true
           }
-
         );
 
 
@@ -2405,13 +1994,9 @@ if ($('finish')) {
 
 
         alert(
-
           `${ppl} workout completed!\n\n` +
-
           `Estimated calories burned: ` +
-
           `${workoutCalories} kcal`
-
         );
 
       }
@@ -2422,7 +2007,6 @@ if ($('finish')) {
           'Workout completion error:',
           error
         );
-
 
         alert(
           'Could not finish workout: ' +
@@ -2437,15 +2021,13 @@ if ($('finish')) {
 
 
 // ============================================================
-// EXERCISES
+// EXERCISES LIST
 // ============================================================
 
 async function exercises() {
 
   if (!user || !$('exList')) {
-
     return;
-
   }
 
 
@@ -2453,16 +2035,13 @@ async function exercises() {
 
     const snapshot =
       await getDocs(
-
         exerciseCollection()
-
       );
 
 
     $('exList').innerHTML =
-
-      snapshot.docs.map(
-        item => {
+      snapshot.docs
+        .map(item => {
 
           const e =
             item.data();
@@ -2488,17 +2067,11 @@ async function exercises() {
                     e.type || ''
                   )}
 
-                  · ${Number(
-                    e.sets || 0
-                  )}
+                  · ${Number(e.sets || 0)}
 
-                  × ${Number(
-                    e.reps || 0
-                  )}
+                  × ${Number(e.reps || 0)}
 
-                  @ ${Number(
-                    e.weight || 0
-                  )} kg
+                  @ ${Number(e.weight || 0)} kg
 
                 </small>
 
@@ -2513,12 +2086,8 @@ async function exercises() {
 
           `;
 
-        }
-
-      ).join('')
-
-      ||
-
+        })
+        .join('') ||
       '<p>No exercises logged today.</p>';
 
 
@@ -2532,25 +2101,15 @@ async function exercises() {
             try {
 
               await deleteDoc(
-
                 doc(
-
                   db,
-
                   'users',
-
                   user.uid,
-
                   'healthdata',
-
                   day(),
-
                   'exercises',
-
                   button.dataset.ex
-
                 )
-
               );
 
 
@@ -2596,7 +2155,6 @@ if ($('weightForm')) {
 
       event.preventDefault();
 
-
       try {
 
         const newWeight =
@@ -2627,15 +2185,11 @@ if ($('weightForm')) {
 
 
         await setDoc(
-
           userRef(),
-
           profile,
-
           {
             merge: true
           }
-
         );
 
 
@@ -2651,57 +2205,41 @@ if ($('weightForm')) {
 
         const totalBurned =
           calculateTotalBurned(
-
             d.workoutCalories,
-
             stepsCalories
-
           );
 
 
+        // Save today's weight inside healthdata.
+
         await setDoc(
-
           dayRef(),
-
           {
+
+            weight:
+              newWeight,
 
             stepsCalories,
 
             caloriesBurned:
-              totalBurned,
-
-            weight:
-              newWeight
+              totalBurned
 
           },
-
           {
             merge: true
           }
-
         );
 
 
-        /*
-          Keep the existing weight collection
-          for compatibility with previous
-          FitTrack data.
-        */
+        // Keep old weights collection.
 
         await addDoc(
-
           collection(
-
             db,
-
             'users',
-
             user.uid,
-
             'weights'
-
           ),
-
           {
 
             date:
@@ -2711,12 +2249,10 @@ if ($('weightForm')) {
               newWeight
 
           }
-
         );
 
 
         await refresh();
-
         await history();
 
 
@@ -2732,7 +2268,6 @@ if ($('weightForm')) {
           error
         );
 
-
         alert(
           'Could not save weight: ' +
           error.message
@@ -2747,6 +2282,17 @@ if ($('weightForm')) {
 
 // ============================================================
 // MANUAL STEPS
+//
+// THIS IS THE IMPORTANT PART.
+//
+// SAVE:
+//
+// users/{uid}/healthdata/{YYYY-MM-DD}
+//
+// FIELD:
+//
+// steps
+//
 // ============================================================
 
 if ($('stepsForm')) {
@@ -2773,13 +2319,16 @@ if ($('stepsForm')) {
         const steps =
           Number(
             $('stepsInput').value
-          ) || 0;
+          );
 
 
-        if (steps < 0) {
+        if (
+          !Number.isFinite(steps) ||
+          steps < 0
+        ) {
 
           alert(
-            'Steps cannot be negative.'
+            'Please enter a valid number of steps.'
           );
 
           return;
@@ -2788,14 +2337,8 @@ if ($('stepsForm')) {
 
 
         const roundedSteps =
-          Math.round(
-            steps
-          );
+          Math.round(steps);
 
-
-        // ====================================================
-        // CALCULATE STEP CALORIES
-        // ====================================================
 
         const stepsCalories =
           calculateStepCalories(
@@ -2803,34 +2346,29 @@ if ($('stepsForm')) {
           );
 
 
-        // ====================================================
-        // GET CURRENT HEALTH DATA
-        // ====================================================
-
-        const d =
+        const current =
           await getDay();
+
+
+        const workoutCalories =
+          Number(
+            current.workoutCalories
+          ) || 0;
 
 
         const totalBurned =
           calculateTotalBurned(
-
-            d.workoutCalories,
-
+            workoutCalories,
             stepsCalories
-
           );
 
 
         // ====================================================
-        // SAVE
-        //
-        // users/{uid}/healthdata/{date}
+        // WRITE TO TODAY'S HEALTHDATA DOCUMENT
         // ====================================================
 
         await setDoc(
-
           dayRef(),
-
           {
 
             steps:
@@ -2839,23 +2377,20 @@ if ($('stepsForm')) {
             stepsCalories,
 
             caloriesBurned:
-              totalBurned
+              totalBurned,
+
+            weight:
+              Number(profile.weight) || 0
 
           },
-
           {
             merge: true
           }
-
         );
 
 
         console.log(
-          '========================================'
-        );
-
-        console.log(
-          'STEPS SUCCESSFULLY SAVED'
+          'STEPS SAVED'
         );
 
         console.log(
@@ -2868,35 +2403,22 @@ if ($('stepsForm')) {
           roundedSteps
         );
 
-        console.log(
-          'STEP CALORIES:',
-          stepsCalories
-        );
-
-        console.log(
-          '========================================'
-        );
-
 
         $('stepsInput').value =
           '';
 
 
         // ====================================================
-        // REFRESH DASHBOARD
+        // FORCE DASHBOARD REFRESH
         // ====================================================
 
         await refresh();
 
 
         alert(
-
           `${roundedSteps.toLocaleString()} steps saved!\n\n` +
-
           `Estimated calories burned: ` +
-
           `${stepsCalories} kcal`
-
         );
 
       }
@@ -2907,7 +2429,6 @@ if ($('stepsForm')) {
           'Steps save error:',
           error
         );
-
 
         alert(
           'Could not save steps: ' +
@@ -2924,63 +2445,47 @@ if ($('stepsForm')) {
 // ============================================================
 // PROGRESS HISTORY
 //
-// READS ALL:
+// READS:
 //
-// users/{uid}/healthdata/{YYYY-MM-DD}
+// users/{uid}/healthdata/*
 //
-// Instead of only today's document.
+// NOT:
 //
+// users/{uid}/healthdata/{today}
+//
+//
+//
+// This means every daily document is displayed.
 // ============================================================
 
 async function history() {
 
   if (!user || !$('history')) {
-
     return;
-
   }
 
 
   try {
 
     console.log(
-      'Loading healthdata history...'
+      'Loading ALL healthdata documents...'
     );
-
-
-    const healthdataCollection =
-      collection(
-
-        db,
-
-        'users',
-
-        user.uid,
-
-        'healthdata'
-
-      );
 
 
     const snapshot =
       await getDocs(
-
         query(
-
-          healthdataCollection,
-
+          healthdataCollection(),
           orderBy(
             '__name__',
             'desc'
           )
-
         )
-
       );
 
 
     console.log(
-      'Healthdata history documents:',
+      'Healthdata documents found:',
       snapshot.size
     );
 
@@ -2997,21 +2502,27 @@ async function history() {
             item.id;
 
 
-          const weight =
-            Number(
-              data.weight
-            ) || 0;
-
-
           const steps =
             Number(
               data.steps
             ) || 0;
 
 
+          const weight =
+            Number(
+              data.weight
+            ) || 0;
+
+
           const workout =
             data.workout ||
             'Rest';
+
+
+          const calories =
+            Number(
+              data.cal
+            ) || 0;
 
 
           return `
@@ -3033,6 +2544,9 @@ async function history() {
 
                   · ${escapeHtml(workout)}
 
+                  · ${calories.toLocaleString()}
+                  kcal
+
                 </small>
 
               </span>
@@ -3041,7 +2555,7 @@ async function history() {
 
                 ${
                   weight > 0
-                    ? weight.toFixed(1) + ' kg'
+                    ? `${weight.toFixed(1)} kg`
                     : '--'
                 }
 
@@ -3055,11 +2569,7 @@ async function history() {
 
 
     $('history').innerHTML =
-
-      rows.join('')
-
-      ||
-
+      rows.join('') ||
       '<p>No progress history yet.</p>';
 
   }
@@ -3067,7 +2577,7 @@ async function history() {
   catch (error) {
 
     console.error(
-      'Healthdata history error:',
+      'Progress history error:',
       error
     );
 
@@ -3106,53 +2616,37 @@ if ($('scan')) {
 
         stream =
           await navigator.mediaDevices.getUserMedia({
-
             video: {
-
-              facingMode:
-                'environment'
-
+              facingMode: 'environment'
             }
-
           });
 
 
         $('video').hidden =
           false;
 
-
         $('video').srcObject =
           stream;
-
 
         await $('video').play();
 
 
         const detector =
           new BarcodeDetector({
-
             formats: [
-
               'ean_13',
-
               'ean_8',
-
               'upc_a',
-
               'upc_e'
-
             ]
-
           });
 
 
-        const loop =
+        const scanLoop =
           async () => {
 
             if (!stream) {
-
               return;
-
             }
 
 
@@ -3172,10 +2666,9 @@ if ($('scan')) {
 
                 stream
                   .getTracks()
-                  .forEach(
-                    track =>
-                      track.stop()
-                  );
+                  .forEach(track => {
+                    track.stop();
+                  });
 
 
                 stream =
@@ -3188,9 +2681,7 @@ if ($('scan')) {
 
                 const response =
                   await fetch(
-
                     `https://world.openfoodfacts.org/api/v2/product/${code}.json`
-
                   );
 
 
@@ -3205,10 +2696,8 @@ if ($('scan')) {
                   const product =
                     json.product;
 
-
                   const nutrients =
-                    product.nutriments ||
-                    {};
+                    product.nutriments || {};
 
 
                   $('fname').value =
@@ -3223,60 +2712,39 @@ if ($('scan')) {
 
                   $('fcal').value =
                     Math.round(
-
                       nutrients[
                         'energy-kcal_serving'
                       ]
-
                       ??
-
                       nutrients[
                         'energy-kcal_100g'
                       ]
-
                       ??
-
                       0
-
                     );
 
 
                   $('fp').value =
-
                     nutrients.proteins_serving
-
                     ??
-
                     nutrients.proteins_100g
-
                     ??
-
                     0;
 
 
                   $('fc').value =
-
                     nutrients.carbohydrates_serving
-
                     ??
-
                     nutrients.carbohydrates_100g
-
                     ??
-
                     0;
 
 
                   $('ff').value =
-
                     nutrients.fat_serving
-
                     ??
-
                     nutrients.fat_100g
-
                     ??
-
                     0;
 
                 }
@@ -3294,7 +2762,7 @@ if ($('scan')) {
               else {
 
                 requestAnimationFrame(
-                  loop
+                  scanLoop
                 );
 
               }
@@ -3308,9 +2776,8 @@ if ($('scan')) {
                 error
               );
 
-
               requestAnimationFrame(
-                loop
+                scanLoop
               );
 
             }
@@ -3318,7 +2785,7 @@ if ($('scan')) {
           };
 
 
-        loop();
+        scanLoop();
 
       }
 
@@ -3328,7 +2795,6 @@ if ($('scan')) {
           'Camera error:',
           error
         );
-
 
         alert(
           error.message
@@ -3346,93 +2812,33 @@ if ($('scan')) {
 // ============================================================
 
 const canvas =
-  document.getElementById(
-    'constellation'
-  );
+  $('constellation');
 
 
 if (canvas) {
 
   const ctx =
-    canvas.getContext(
-      '2d'
-    );
+    canvas.getContext('2d');
 
 
   let stars = [];
 
-  let animationFrame;
-
 
   let mouse = {
-
     x: null,
-
     y: null,
-
     active: false
-
   };
 
 
   const STAR_COUNT =
     110;
 
-
   const CONNECTION_DISTANCE =
     130;
 
-
   const MOUSE_CONNECTION_DISTANCE =
     190;
-
-
-  function resizeConstellation() {
-
-    const dpr =
-      window.devicePixelRatio || 1;
-
-
-    canvas.width =
-      window.innerWidth *
-      dpr;
-
-
-    canvas.height =
-      window.innerHeight *
-      dpr;
-
-
-    canvas.style.width =
-      window.innerWidth +
-      'px';
-
-
-    canvas.style.height =
-      window.innerHeight +
-      'px';
-
-
-    ctx.setTransform(
-
-      dpr,
-
-      0,
-
-      0,
-
-      dpr,
-
-      0,
-
-      0
-
-    );
-
-
-    createStars();
-
-  }
 
 
   function createStars() {
@@ -3458,25 +2864,19 @@ if (canvas) {
 
         vx:
           (
-            Math.random() -
-            0.5
+            Math.random() - 0.5
           ) * 0.15,
 
         vy:
           (
-            Math.random() -
-            0.5
+            Math.random() - 0.5
           ) * 0.15,
 
         radius:
-          Math.random() *
-          1.4 +
-          0.4,
+          Math.random() * 1.4 + 0.4,
 
         opacity:
-          Math.random() *
-          0.6 +
-          0.25,
+          Math.random() * 0.6 + 0.25,
 
         twinkle:
           Math.random() *
@@ -3484,13 +2884,46 @@ if (canvas) {
           2,
 
         twinkleSpeed:
-          Math.random() *
-          0.02 +
-          0.005
+          Math.random() * 0.02 + 0.005
 
       });
 
     }
+
+  }
+
+
+  function resizeConstellation() {
+
+    const dpr =
+      window.devicePixelRatio || 1;
+
+
+    canvas.width =
+      window.innerWidth * dpr;
+
+    canvas.height =
+      window.innerHeight * dpr;
+
+
+    canvas.style.width =
+      `${window.innerWidth}px`;
+
+    canvas.style.height =
+      `${window.innerHeight}px`;
+
+
+    ctx.setTransform(
+      dpr,
+      0,
+      0,
+      dpr,
+      0,
+      0
+    );
+
+
+    createStars();
 
   }
 
@@ -3526,68 +2959,45 @@ if (canvas) {
   function drawConstellation() {
 
     ctx.clearRect(
-
       0,
-
       0,
-
       window.innerWidth,
-
       window.innerHeight
-
     );
 
 
+    // ========================================================
+    // STARS
+    // ========================================================
+
     for (const star of stars) {
 
-      star.x +=
-        star.vx;
-
-      star.y +=
-        star.vy;
+      star.x += star.vx;
+      star.y += star.vy;
 
 
-      if (
-        star.x < -10
-      ) {
-
+      if (star.x < -10) {
         star.x =
-          window.innerWidth +
-          10;
-
+          window.innerWidth + 10;
       }
-
 
       if (
         star.x >
         window.innerWidth + 10
       ) {
-
-        star.x =
-          -10;
-
+        star.x = -10;
       }
 
-
-      if (
-        star.y < -10
-      ) {
-
+      if (star.y < -10) {
         star.y =
-          window.innerHeight +
-          10;
-
+          window.innerHeight + 10;
       }
-
 
       if (
         star.y >
         window.innerHeight + 10
       ) {
-
-        star.y =
-          -10;
-
+        star.y = -10;
       }
 
 
@@ -3605,31 +3015,19 @@ if (canvas) {
       ctx.beginPath();
 
       ctx.arc(
-
         star.x,
-
         star.y,
-
         star.radius * 4,
-
         0,
-
         Math.PI * 2
-
       );
 
 
       ctx.fillStyle =
-        `rgba(
-          100,
-          150,
-          255,
-          ${Math.max(
-            0,
-            pulse * 0.08
-          )}
-        )`;
-
+        `rgba(100,150,255,${Math.max(
+          0,
+          pulse * 0.08
+        )})`;
 
       ctx.fill();
 
@@ -3637,31 +3035,19 @@ if (canvas) {
       ctx.beginPath();
 
       ctx.arc(
-
         star.x,
-
         star.y,
-
         star.radius,
-
         0,
-
         Math.PI * 2
-
       );
 
 
       ctx.fillStyle =
-        `rgba(
-          180,
-          210,
-          255,
-          ${Math.max(
-            0,
-            pulse
-          )}
-        )`;
-
+        `rgba(180,210,255,${Math.max(
+          0,
+          pulse
+        )})`;
 
       ctx.fill();
 
@@ -3692,20 +3078,16 @@ if (canvas) {
 
 
         const dx =
-          a.x -
-          b.x;
+          a.x - b.x;
 
         const dy =
-          a.y -
-          b.y;
+          a.y - b.y;
 
 
         const distance =
           Math.sqrt(
-
             dx * dx +
             dy * dy
-
           );
 
 
@@ -3724,12 +3106,10 @@ if (canvas) {
 
           ctx.beginPath();
 
-
           ctx.moveTo(
             a.x,
             a.y
           );
-
 
           ctx.lineTo(
             b.x,
@@ -3738,17 +3118,10 @@ if (canvas) {
 
 
           ctx.strokeStyle =
-            `rgba(
-              100,
-              150,
-              255,
-              ${opacity}
-            )`;
-
+            `rgba(100,150,255,${opacity})`;
 
           ctx.lineWidth =
             0.6;
-
 
           ctx.stroke();
 
@@ -3768,20 +3141,16 @@ if (canvas) {
       for (const star of stars) {
 
         const dx =
-          star.x -
-          mouse.x;
+          star.x - mouse.x;
 
         const dy =
-          star.y -
-          mouse.y;
+          star.y - mouse.y;
 
 
         const distance =
           Math.sqrt(
-
             dx * dx +
             dy * dy
-
           );
 
 
@@ -3800,12 +3169,10 @@ if (canvas) {
 
           ctx.beginPath();
 
-
           ctx.moveTo(
             star.x,
             star.y
           );
-
 
           ctx.lineTo(
             mouse.x,
@@ -3814,17 +3181,10 @@ if (canvas) {
 
 
           ctx.strokeStyle =
-            `rgba(
-              100,
-              170,
-              255,
-              ${opacity}
-            )`;
-
+            `rgba(100,170,255,${opacity})`;
 
           ctx.lineWidth =
             1;
-
 
           ctx.stroke();
 
@@ -3835,10 +3195,9 @@ if (canvas) {
     }
 
 
-    animationFrame =
-      requestAnimationFrame(
-        drawConstellation
-      );
+    requestAnimationFrame(
+      drawConstellation
+    );
 
   }
 
@@ -3854,4 +3213,3 @@ if (canvas) {
   drawConstellation();
 
 }
-```
