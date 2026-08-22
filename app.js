@@ -1,3 +1,28 @@
+// ============================================================
+// FITTRACK - app.js
+// ============================================================
+//
+// FIRESTORE STRUCTURE:
+//
+// users/{uid}
+// users/{uid}/healthData/{YYYY-MM-DD}
+// users/{uid}/healthData/{YYYY-MM-DD}/foods/{foodId}
+// users/{uid}/healthData/{YYYY-MM-DD}/exercises/{exerciseId}
+//
+// IMPORTANT:
+// Firestore collection name is:
+//
+//     healthData
+//
+// The capital "D" is intentional.
+// Firestore paths are case-sensitive.
+// ============================================================
+
+
+// ============================================================
+// FIREBASE IMPORTS
+// ============================================================
+
 import {
   initializeApp
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
@@ -23,29 +48,35 @@ import {
   deleteDoc
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
-import { firebaseConfig } from './firebase-config.js';
+import {
+  firebaseConfig
+} from './firebase-config.js';
 
 
 // ============================================================
-// FIREBASE
+// FIREBASE INITIALIZATION
 // ============================================================
 
-const app = initializeApp(firebaseConfig);
+const app =
+  initializeApp(firebaseConfig);
 
-const auth = getAuth(app);
+const auth =
+  getAuth(app);
 
-const db = getFirestore(app);
+const db =
+  getFirestore(app);
 
 
 // ============================================================
 // HELPER
 // ============================================================
 
-const $ = id => document.getElementById(id);
+const $ = id =>
+  document.getElementById(id);
 
 
 // ============================================================
-// STATE
+// APPLICATION STATE
 // ============================================================
 
 let user = null;
@@ -104,25 +135,21 @@ if ($('date')) {
 
 
 // ============================================================
-// LOCAL DATE
+// CURRENT DAY
+//
+// Returns:
 //
 // YYYY-MM-DD
 //
 // Example:
 //
 // 2026-08-22
-//
-// FIRESTORE:
-//
-// users/{uid}/healthData/2026-08-22
-//
-// IMPORTANT:
-// The collection is healthData with a CAPITAL D.
 // ============================================================
 
 function day() {
 
-  const now = new Date();
+  const now =
+    new Date();
 
   const year =
     now.getFullYear();
@@ -143,7 +170,9 @@ function day() {
 
 
 // ============================================================
-// FIRESTORE USER REFERENCE
+// USER DOCUMENT
+//
+// users/{uid}
 // ============================================================
 
 function userRef() {
@@ -166,13 +195,12 @@ function userRef() {
 
 
 // ============================================================
-// FIRESTORE DAILY HEALTH DATA
-//
-// CORRECT PATH:
+// DAILY HEALTH DATA DOCUMENT
 //
 // users/{uid}/healthData/{YYYY-MM-DD}
 //
-// NOTE THE CAPITAL "D" IN healthData.
+// IMPORTANT:
+// healthData has a capital D.
 // ============================================================
 
 function dayRef() {
@@ -191,6 +219,34 @@ function dayRef() {
     user.uid,
     'healthData',
     day()
+  );
+
+}
+
+
+// ============================================================
+// HEALTH DATA COLLECTION
+//
+// users/{uid}/healthData
+//
+// Used by Progress History.
+// ============================================================
+
+function healthDataCollection() {
+
+  if (!user) {
+
+    throw new Error(
+      'No authenticated user.'
+    );
+
+  }
+
+  return collection(
+    db,
+    'users',
+    user.uid,
+    'healthData'
   );
 
 }
@@ -253,7 +309,7 @@ function exerciseCollection() {
 
 
 // ============================================================
-// EMPTY DAY
+// EMPTY DAILY DATA
 // ============================================================
 
 function emptyDay() {
@@ -270,6 +326,8 @@ function emptyDay() {
 
     steps: 0,
 
+    weight: 0,
+
     workout: 'Rest',
 
     workoutCalories: 0,
@@ -278,9 +336,7 @@ function emptyDay() {
 
     caloriesBurned: 0,
 
-    activeCalories: 0,
-
-    weight: 0
+    activeCalories: 0
 
   };
 
@@ -289,10 +345,6 @@ function emptyDay() {
 
 // ============================================================
 // GET TODAY'S HEALTH DATA
-//
-// READS:
-//
-// users/{uid}/healthData/{YYYY-MM-DD}
 // ============================================================
 
 async function getDay() {
@@ -313,7 +365,7 @@ async function getDay() {
   );
 
   console.log(
-    'READING FIRESTORE HEALTH DATA'
+    'READING TODAY HEALTH DATA'
   );
 
   console.log(
@@ -334,7 +386,7 @@ async function getDay() {
   if (!snapshot.exists()) {
 
     console.log(
-      'HealthData document does not exist:',
+      'No healthData document for:',
       currentDay
     );
 
@@ -348,14 +400,8 @@ async function getDay() {
 
 
   console.log(
-    'HEALTH DATA FROM FIRESTORE:',
+    'HEALTH DATA:',
     data
-  );
-
-
-  console.log(
-    'STEPS FROM FIRESTORE:',
-    data.steps
   );
 
 
@@ -376,6 +422,9 @@ async function getDay() {
     steps:
       Number(data.steps) || 0,
 
+    weight:
+      Number(data.weight) || 0,
+
     workout:
       data.workout || 'Rest',
 
@@ -389,10 +438,7 @@ async function getDay() {
       Number(data.caloriesBurned) || 0,
 
     activeCalories:
-      Number(data.activeCalories) || 0,
-
-    weight:
-      Number(data.weight) || 0
+      Number(data.activeCalories) || 0
 
   };
 
@@ -400,7 +446,7 @@ async function getDay() {
 
 
 // ============================================================
-// CALCULATE STEP CALORIES
+// STEP CALORIES
 // ============================================================
 
 function calculateStepCalories(steps) {
@@ -432,7 +478,7 @@ function calculateStepCalories(steps) {
 
 
 // ============================================================
-// CALCULATE WORKOUT CALORIES
+// WORKOUT CALORIES
 // ============================================================
 
 function calculateWorkoutCalories(type) {
@@ -452,8 +498,7 @@ function calculateWorkoutCalories(type) {
 
 
   return Math.round(
-    met *
-    weight
+    met * weight
   );
 
 }
@@ -480,7 +525,7 @@ function calculateTotalBurned(
 
 
 // ============================================================
-// BMI + MACROS
+// BMI / CALORIES / MACROS
 // ============================================================
 
 function calculateMetrics() {
@@ -528,6 +573,10 @@ function calculateMetrics() {
         );
 
 
+  // ==========================================================
+  // DAILY CALORIES
+  // ==========================================================
+
   const calories =
     Math.round(
       bmr * 1.55
@@ -535,7 +584,7 @@ function calculateMetrics() {
 
 
   // ==========================================================
-  // MACROS
+  // PROTEIN
   // ==========================================================
 
   const protein =
@@ -544,11 +593,19 @@ function calculateMetrics() {
     );
 
 
+  // ==========================================================
+  // FAT
+  // ==========================================================
+
   const fat =
     Math.round(
       weight * 0.8
     );
 
+
+  // ==========================================================
+  // CARBOHYDRATES
+  // ==========================================================
 
   const carbCalories =
     calories -
@@ -677,7 +734,7 @@ function calculateMetrics() {
 
 
   // ==========================================================
-  // SETTINGS CALORIES
+  // SETTINGS TARGETS
   // ==========================================================
 
   if ($('settingsCalories')) {
@@ -713,7 +770,7 @@ function calculateMetrics() {
 
 
   // ==========================================================
-  // DASHBOARD GOALS
+  // DASHBOARD TARGETS
   // ==========================================================
 
   if ($('calGoal')) {
@@ -847,7 +904,7 @@ document
 
 
 // ============================================================
-// AUTH MODE
+// AUTH TOGGLE
 // ============================================================
 
 if ($('toggle')) {
@@ -1071,16 +1128,8 @@ onAuthStateChanged(
       calculateMetrics();
 
 
-      // ======================================================
-      // LOAD TODAY
-      // ======================================================
-
       await refresh();
 
-
-      // ======================================================
-      // SHOW DASHBOARD
-      // ======================================================
 
       show('dash');
 
@@ -1203,26 +1252,42 @@ function fill() {
     'input',
     () => {
 
-      profile.age =
-        Number(
-          $('age').value
-        );
+      if ($('age')) {
+
+        profile.age =
+          Number(
+            $('age').value
+          );
+
+      }
 
 
-      profile.sex =
-        $('sex').value;
+      if ($('sex')) {
+
+        profile.sex =
+          $('sex').value;
+
+      }
 
 
-      profile.height =
-        Number(
-          $('height').value
-        );
+      if ($('height')) {
+
+        profile.height =
+          Number(
+            $('height').value
+          );
+
+      }
 
 
-      profile.weight =
-        Number(
-          $('weight').value
-        );
+      if ($('weight')) {
+
+        profile.weight =
+          Number(
+            $('weight').value
+          );
+
+      }
 
 
       calculateMetrics();
@@ -1287,6 +1352,10 @@ if ($('settingsForm')) {
         );
 
 
+        // ====================================================
+        // UPDATE TODAY'S STEP CALORIES
+        // ====================================================
+
         const d =
           await getDay();
 
@@ -1305,15 +1374,25 @@ if ($('settingsForm')) {
 
 
         await setDoc(
+
           dayRef(),
+
           {
+
             stepsCalories,
+
             caloriesBurned:
-              totalBurned
+              totalBurned,
+
+            weight:
+              profile.weight
+
           },
+
           {
             merge: true
           }
+
         );
 
 
@@ -1348,10 +1427,6 @@ if ($('settingsForm')) {
 
 // ============================================================
 // DASHBOARD REFRESH
-//
-// READS:
-//
-// users/{uid}/healthData/{YYYY-MM-DD}
 // ============================================================
 
 async function refresh() {
@@ -1374,17 +1449,17 @@ async function refresh() {
     );
 
     console.log(
-      'USER UID:',
+      'UID:',
       user.uid
     );
 
     console.log(
-      'TODAY:',
+      'DATE:',
       day()
     );
 
     console.log(
-      'HEALTHDATA PATH:',
+      'PATH:',
       `users/${user.uid}/healthData/${day()}`
     );
 
@@ -1396,22 +1471,12 @@ async function refresh() {
     calculateMetrics();
 
 
-    // ========================================================
-    // GET HEALTH DATA
-    // ========================================================
-
     const d =
       await getDay();
 
 
-    console.log(
-      'DAILY HEALTH DATA:',
-      d
-    );
-
-
     // ========================================================
-    // CALORIES EATEN
+    // CALORIES
     // ========================================================
 
     const caloriesEaten =
@@ -1473,6 +1538,10 @@ async function refresh() {
 
     // ========================================================
     // STEPS
+    //
+    // READS:
+    //
+    // users/{uid}/healthData/{date}
     // ========================================================
 
     const steps =
@@ -1480,35 +1549,14 @@ async function refresh() {
 
 
     console.log(
-      '========================================'
-    );
-
-    console.log(
-      'STEPS DEBUG'
-    );
-
-    console.log(
-      'Firestore collection:',
-      'healthData'
-    );
-
-    console.log(
-      'Firestore document:',
-      day()
-    );
-
-    console.log(
-      'Raw d.steps:',
+      'STEPS FROM FIRESTORE:',
       d.steps
     );
 
-    console.log(
-      'Dashboard steps:',
-      steps
-    );
 
     console.log(
-      '========================================'
+      'STEPS DISPLAYED:',
+      steps
     );
 
 
@@ -1521,7 +1569,7 @@ async function refresh() {
 
 
     // ========================================================
-    // OPTIONAL STEP GOAL
+    // STEP GOAL
     // ========================================================
 
     const stepGoal =
@@ -1538,14 +1586,20 @@ async function refresh() {
     }
 
 
+    // ========================================================
+    // STEP BAR
+    // ========================================================
+
     if ($('stepsBar')) {
 
       const stepPercent =
         stepGoal > 0
+
           ? (
               steps /
               stepGoal
             ) * 100
+
           : 0;
 
 
@@ -1580,13 +1634,19 @@ async function refresh() {
 
 
       await setDoc(
+
         dayRef(),
+
         {
+
           stepsCalories
+
         },
+
         {
           merge: true
         }
+
       );
 
     }
@@ -1615,7 +1675,7 @@ async function refresh() {
 
 
     // ========================================================
-    // TOTAL CALORIES BURNED
+    // TOTAL BURNED
     // ========================================================
 
     const totalBurned =
@@ -1623,30 +1683,6 @@ async function refresh() {
         workoutCalories,
         stepsCalories
       );
-
-
-    if ($('burned')) {
-
-      $('burned').textContent =
-        totalBurned.toLocaleString();
-
-    }
-
-
-    if ($('burnWorkout')) {
-
-      $('burnWorkout').textContent =
-        `${workoutCalories.toLocaleString()} kcal`;
-
-    }
-
-
-    if ($('burnSteps')) {
-
-      $('burnSteps').textContent =
-        `${stepsCalories.toLocaleString()} kcal`;
-
-    }
 
 
     if ($('caloriesBurnedDash')) {
@@ -1685,14 +1721,18 @@ async function refresh() {
     // WEIGHT
     // ========================================================
 
-    const displayWeight =
-      Number(
-        d.weight
-      ) ||
-      Number(
-        profile.weight
-      ) ||
-      0;
+    let displayWeight =
+      Number(profile.weight) || 0;
+
+
+    if (
+      Number(d.weight) > 0
+    ) {
+
+      displayWeight =
+        Number(d.weight);
+
+    }
 
 
     if ($('weightDash')) {
@@ -1764,13 +1804,22 @@ async function refresh() {
     console.log(
       'FINAL DASHBOARD DATA:',
       {
-        date: day(),
+
+        date:
+          day(),
+
         steps,
-        weight: displayWeight,
-        workout,
-        workoutCalories,
+
+        stepGoal,
+
         stepsCalories,
+
+        workout,
+
+        workoutCalories,
+
         totalBurned
+
       }
     );
 
@@ -1844,7 +1893,9 @@ if ($('foodForm')) {
 
 
         await setDoc(
+
           dayRef(),
+
           {
 
             cal:
@@ -1864,9 +1915,11 @@ if ($('foodForm')) {
               f.f
 
           },
+
           {
             merge: true
           }
+
         );
 
 
@@ -1905,7 +1958,10 @@ if ($('foodForm')) {
 
 async function food() {
 
-  if (!user || !$('foodList')) {
+  if (
+    !user ||
+    !$('foodList')
+  ) {
 
     return;
 
@@ -1916,75 +1972,72 @@ async function food() {
 
     const snapshot =
       await getDocs(
-
         query(
           foodCollection(),
           orderBy('__name__')
         )
-
       );
 
 
     $('foodList').innerHTML =
 
-      snapshot.docs
-        .map(item => {
+      snapshot.docs.map(item => {
 
-          const f =
-            item.data();
+        const f =
+          item.data();
 
 
-          return `
+        return `
 
-            <div class="row">
+          <div class="row">
 
-              <span>
+            <span>
 
-                <strong>
-                  ${escapeHtml(
-                    f.name || 'Food'
-                  )}
-                </strong>
+              <strong>
+                ${escapeHtml(
+                  f.name || 'Food'
+                )}
+              </strong>
 
-                <br>
+              <br>
 
-                <small>
+              <small>
 
-                  ${escapeHtml(
-                    f.serving || ''
-                  )}
+                ${escapeHtml(
+                  f.serving || ''
+                )}
 
-                  · ${Number(
-                    f.cal || 0
-                  )} kcal
+                · ${Number(
+                  f.cal || 0
+                )} kcal
 
-                  · P ${Number(
-                    f.p || 0
-                  )}
+                · P ${Number(
+                  f.p || 0
+                )}
 
-                  · C ${Number(
-                    f.c || 0
-                  )}
+                · C ${Number(
+                  f.c || 0
+                )}
 
-                  · F ${Number(
-                    f.f || 0
-                  )}
+                · F ${Number(
+                  f.f || 0
+                )}
 
-                </small>
+              </small>
 
-              </span>
+            </span>
 
-              <button
-                data-del="${item.id}">
-                Delete
-              </button>
 
-            </div>
+            <button
+              data-del="${item.id}">
+              Delete
+            </button>
 
-          `;
+          </div>
 
-        })
-        .join('')
+        `;
+
+      }).join('')
 
       ||
 
@@ -2002,13 +2055,21 @@ async function food() {
 
               const reference =
                 doc(
+
                   db,
+
                   'users',
+
                   user.uid,
+
                   'healthData',
+
                   day(),
+
                   'foods',
+
                   button.dataset.del
+
                 );
 
 
@@ -2034,7 +2095,9 @@ async function food() {
 
 
               await setDoc(
+
                 dayRef(),
+
                 {
 
                   cal:
@@ -2066,9 +2129,11 @@ async function food() {
                     )
 
                 },
+
                 {
                   merge: true
                 }
+
               );
 
 
@@ -2111,7 +2176,7 @@ async function food() {
 
 
 // ============================================================
-// ESCAPE HTML
+// HTML ESCAPE
 // ============================================================
 
 function escapeHtml(value) {
@@ -2191,7 +2256,9 @@ if ($('exForm')) {
       try {
 
         await addDoc(
+
           exerciseCollection(),
+
           {
 
             type:
@@ -2216,6 +2283,7 @@ if ($('exForm')) {
               ) || 0
 
           }
+
         );
 
 
@@ -2224,21 +2292,24 @@ if ($('exForm')) {
 
         if ($('sets')) {
 
-          $('sets').value = 3;
+          $('sets').value =
+            3;
 
         }
 
 
         if ($('reps')) {
 
-          $('reps').value = 10;
+          $('reps').value =
+            10;
 
         }
 
 
         if ($('ew')) {
 
-          $('ew').value = 0;
+          $('ew').value =
+            0;
 
         }
 
@@ -2288,15 +2359,23 @@ if ($('finish')) {
           await getDay();
 
 
+        const stepsCalories =
+          Number(
+            d.stepsCalories
+          ) || 0;
+
+
         const totalBurned =
           calculateTotalBurned(
             workoutCalories,
-            d.stepsCalories
+            stepsCalories
           );
 
 
         await setDoc(
+
           dayRef(),
+
           {
 
             workout:
@@ -2308,9 +2387,11 @@ if ($('finish')) {
               totalBurned
 
           },
+
           {
             merge: true
           }
+
         );
 
 
@@ -2350,12 +2431,15 @@ if ($('finish')) {
 
 
 // ============================================================
-// EXERCISES
+// EXERCISE LIST
 // ============================================================
 
 async function exercises() {
 
-  if (!user || !$('exList')) {
+  if (
+    !user ||
+    !$('exList')
+  ) {
 
     return;
 
@@ -2372,60 +2456,59 @@ async function exercises() {
 
     $('exList').innerHTML =
 
-      snapshot.docs
-        .map(item => {
+      snapshot.docs.map(item => {
 
-          const e =
-            item.data();
+        const e =
+          item.data();
 
 
-          return `
+        return `
 
-            <div class="row">
+          <div class="row">
 
-              <span>
+            <span>
 
-                <strong>
-                  ${escapeHtml(
-                    e.name || 'Exercise'
-                  )}
-                </strong>
+              <strong>
+                ${escapeHtml(
+                  e.name || 'Exercise'
+                )}
+              </strong>
 
-                <br>
+              <br>
 
-                <small>
+              <small>
 
-                  ${escapeHtml(
-                    e.type || ''
-                  )}
+                ${escapeHtml(
+                  e.type || ''
+                )}
 
-                  · ${Number(
-                    e.sets || 0
-                  )}
+                · ${Number(
+                  e.sets || 0
+                )}
 
-                  × ${Number(
-                    e.reps || 0
-                  )}
+                × ${Number(
+                  e.reps || 0
+                )}
 
-                  @ ${Number(
-                    e.weight || 0
-                  )} kg
+                @ ${Number(
+                  e.weight || 0
+                )} kg
 
-                </small>
+              </small>
 
-              </span>
+            </span>
 
-              <button
-                data-ex="${item.id}">
-                Delete
-              </button>
 
-            </div>
+            <button
+              data-ex="${item.id}">
+              Delete
+            </button>
 
-          `;
+          </div>
 
-        })
-        .join('')
+        `;
+
+      }).join('')
 
       ||
 
@@ -2444,13 +2527,21 @@ async function exercises() {
               await deleteDoc(
 
                 doc(
+
                   db,
+
                   'users',
+
                   user.uid,
+
                   'healthData',
+
                   day(),
+
                   'exercises',
+
                   button.dataset.ex
+
                 )
 
               );
@@ -2529,11 +2620,15 @@ if ($('weightForm')) {
 
 
         await setDoc(
+
           userRef(),
+
           profile,
+
           {
             merge: true
           }
+
         );
 
 
@@ -2549,37 +2644,59 @@ if ($('weightForm')) {
 
         const totalBurned =
           calculateTotalBurned(
+
             d.workoutCalories,
+
             stepsCalories
+
           );
 
 
+        // ====================================================
+        // SAVE WEIGHT INTO TODAY'S HEALTH DATA
+        // ====================================================
+
         await setDoc(
+
           dayRef(),
+
           {
+
+            weight:
+              newWeight,
 
             stepsCalories,
 
             caloriesBurned:
-              totalBurned,
-
-            weight:
-              newWeight
+              totalBurned
 
           },
+
           {
             merge: true
           }
+
         );
 
+
+        // ====================================================
+        // OLD WEIGHT COLLECTION
+        //
+        // Kept for compatibility.
+        // ====================================================
 
         await addDoc(
 
           collection(
+
             db,
+
             'users',
+
             user.uid,
+
             'weights'
+
           ),
 
           {
@@ -2627,13 +2744,6 @@ if ($('weightForm')) {
 
 // ============================================================
 // MANUAL STEPS
-//
-// SAVES TO:
-//
-// users/{uid}/healthData/{YYYY-MM-DD}
-//
-// IMPORTANT:
-// healthData uses CAPITAL D.
 // ============================================================
 
 if ($('stepsForm')) {
@@ -2681,7 +2791,7 @@ if ($('stepsForm')) {
 
 
         // ====================================================
-        // STEP CALORIES
+        // CALCULATE WALKING CALORIES
         // ====================================================
 
         const stepsCalories =
@@ -2691,7 +2801,7 @@ if ($('stepsForm')) {
 
 
         // ====================================================
-        // GET CURRENT DATA
+        // GET CURRENT DAILY DATA
         // ====================================================
 
         const d =
@@ -2700,19 +2810,24 @@ if ($('stepsForm')) {
 
         const totalBurned =
           calculateTotalBurned(
+
             d.workoutCalories,
+
             stepsCalories
+
           );
 
 
         // ====================================================
-        // SAVE TO CORRECT COLLECTION
+        // SAVE
         //
         // users/{uid}/healthData/{date}
         // ====================================================
 
         await setDoc(
+
           dayRef(),
+
           {
 
             steps:
@@ -2724,9 +2839,11 @@ if ($('stepsForm')) {
               totalBurned
 
           },
+
           {
             merge: true
           }
+
         );
 
 
@@ -2735,12 +2852,7 @@ if ($('stepsForm')) {
         );
 
         console.log(
-          'STEPS SUCCESSFULLY SAVED'
-        );
-
-        console.log(
-          'COLLECTION:',
-          'healthData'
+          'STEPS SAVED'
         );
 
         console.log(
@@ -2805,18 +2917,25 @@ if ($('stepsForm')) {
 // ============================================================
 // PROGRESS HISTORY
 //
-// READS ALL DAILY DOCUMENTS:
+// IMPORTANT:
+//
+// READS:
 //
 // users/{uid}/healthData/{YYYY-MM-DD}
 //
-// NOT:
+// NO orderBy()
+// NO composite index required.
 //
-// users/{uid}/healthdata
+// The documents are sorted locally using
+// their YYYY-MM-DD document IDs.
 // ============================================================
 
 async function history() {
 
-  if (!user || !$('history')) {
+  if (
+    !user ||
+    !$('history')
+  ) {
 
     return;
 
@@ -2826,107 +2945,226 @@ async function history() {
   try {
 
     console.log(
-      'Loading healthData history...'
+      '========================================'
+    );
+
+    console.log(
+      'LOADING HEALTH DATA HISTORY'
+    );
+
+    console.log(
+      `users/${user.uid}/healthData`
+    );
+
+    console.log(
+      '========================================'
     );
 
 
-    const healthDataCollection =
-      collection(
-        db,
-        'users',
-        user.uid,
-        'healthData'
-      );
-
+    // ========================================================
+    // GET ALL HEALTH DATA DOCUMENTS
+    //
+    // IMPORTANT:
+    // Do NOT use orderBy('__name__', 'desc').
+    //
+    // This avoids the Firestore index error.
+    // ========================================================
 
     const snapshot =
       await getDocs(
-
-        query(
-          healthDataCollection,
-          orderBy(
-            '__name__',
-            'desc'
-          )
-        )
-
+        healthDataCollection()
       );
 
 
     console.log(
-      'healthData history documents:',
+      'HEALTH DATA DOCUMENT COUNT:',
       snapshot.size
     );
 
 
+    // ========================================================
+    // CONVERT TO ARRAY
+    // ========================================================
+
+    const records =
+      snapshot.docs.map(item => {
+
+        return {
+
+          date:
+            item.id,
+
+          data:
+            item.data()
+
+        };
+
+      });
+
+
+    // ========================================================
+    // SORT NEWEST FIRST
+    //
+    // YYYY-MM-DD sorts correctly as a string.
+    // ========================================================
+
+    records.sort(
+      (a, b) =>
+        b.date.localeCompare(
+          a.date
+        )
+    );
+
+
+    console.log(
+      'SORTED HISTORY:',
+      records
+    );
+
+
+    // ========================================================
+    // CREATE HISTORY HTML
+    // ========================================================
+
     const rows =
-      snapshot.docs
-        .map(item => {
+      records.map(record => {
 
-          const data =
-            item.data();
-
-
-          const date =
-            item.id;
+        const date =
+          record.date;
 
 
-          const weight =
-            Number(
-              data.weight
-            ) || 0;
+        const data =
+          record.data;
 
 
-          const steps =
-            Number(
-              data.steps
-            ) || 0;
+        const weight =
+          Number(
+            data.weight
+          ) || 0;
 
 
-          const workout =
-            data.workout ||
-            'Rest';
+        const steps =
+          Number(
+            data.steps
+          ) || 0;
 
 
-          return `
+        const workout =
+          data.workout ||
+          'Rest';
 
-            <div class="row">
 
-              <span>
+        const calories =
+          Number(
+            data.cal
+          ) || 0;
 
-                <strong>
-                  ${escapeHtml(date)}
-                </strong>
 
-                <br>
+        const caloriesBurned =
+          Number(
+            data.caloriesBurned
+          ) || 0;
 
-                <small>
 
-                  ${steps.toLocaleString()}
-                  steps
+        // ====================================================
+        // FORMAT DATE
+        // ====================================================
 
-                  · ${escapeHtml(workout)}
+        let formattedDate =
+          date;
 
-                </small>
 
-              </span>
+        if (
+          /^\d{4}-\d{2}-\d{2}$/.test(
+            date
+          )
+        ) {
+
+          const dateObject =
+            new Date(
+              `${date}T00:00:00`
+            );
+
+
+          if (
+            !Number.isNaN(
+              dateObject.getTime()
+            )
+          ) {
+
+            formattedDate =
+              dateObject.toLocaleDateString(
+                undefined,
+                {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }
+              );
+
+          }
+
+        }
+
+
+        // ====================================================
+        // HISTORY ROW
+        // ====================================================
+
+        return `
+
+          <div class="row">
+
+            <span>
 
               <strong>
-
-                ${
-                  weight > 0
-                    ? weight.toFixed(1) + ' kg'
-                    : '--'
-                }
-
+                ${escapeHtml(
+                  formattedDate
+                )}
               </strong>
 
-            </div>
+              <br>
 
-          `;
+              <small>
 
-        });
+                ${steps.toLocaleString()}
+                steps
 
+                · ${escapeHtml(
+                  workout
+                )}
+
+                · ${calories.toLocaleString()}
+                kcal eaten
+
+                · ${caloriesBurned.toLocaleString()}
+                kcal burned
+
+              </small>
+
+            </span>
+
+
+            <strong>
+
+              ${
+                weight > 0
+                  ? weight.toFixed(1) + ' kg'
+                  : '--'
+              }
+
+            </strong>
+
+          </div>
+
+        `;
+
+      });
+
+
+    // ========================================================
+    // DISPLAY
+    // ========================================================
 
     $('history').innerHTML =
 
@@ -2935,6 +3173,11 @@ async function history() {
       ||
 
       '<p>No progress history yet.</p>';
+
+
+    console.log(
+      'HealthData history loaded successfully.'
+    );
 
   }
 
@@ -3235,6 +3478,7 @@ if (canvas) {
 
   let stars = [];
 
+
   let mouse = {
 
     x: null,
@@ -3258,6 +3502,10 @@ if (canvas) {
     190;
 
 
+  // ==========================================================
+  // RESIZE
+  // ==========================================================
+
   function resizeConstellation() {
 
     const dpr =
@@ -3265,32 +3513,30 @@ if (canvas) {
 
 
     canvas.width =
-      window.innerWidth *
-      dpr;
+      window.innerWidth * dpr;
 
 
     canvas.height =
-      window.innerHeight *
-      dpr;
+      window.innerHeight * dpr;
 
 
     canvas.style.width =
-      window.innerWidth +
-      'px';
+      `${window.innerWidth}px`;
 
 
     canvas.style.height =
-      window.innerHeight +
-      'px';
+      `${window.innerHeight}px`;
 
 
     ctx.setTransform(
+
       dpr,
       0,
       0,
       dpr,
       0,
       0
+
     );
 
 
@@ -3298,6 +3544,10 @@ if (canvas) {
 
   }
 
+
+  // ==========================================================
+  // CREATE STARS
+  // ==========================================================
 
   function createStars() {
 
@@ -3359,6 +3609,10 @@ if (canvas) {
   }
 
 
+  // ==========================================================
+  // MOUSE
+  // ==========================================================
+
   window.addEventListener(
     'mousemove',
     event => {
@@ -3387,15 +3641,25 @@ if (canvas) {
   );
 
 
+  // ==========================================================
+  // DRAW
+  // ==========================================================
+
   function drawConstellation() {
 
     ctx.clearRect(
+
       0,
       0,
       window.innerWidth,
       window.innerHeight
+
     );
 
+
+    // ========================================================
+    // STARS
+    // ========================================================
 
     for (const star of stars) {
 
@@ -3411,8 +3675,7 @@ if (canvas) {
       ) {
 
         star.x =
-          window.innerWidth +
-          10;
+          window.innerWidth + 10;
 
       }
 
@@ -3433,8 +3696,7 @@ if (canvas) {
       ) {
 
         star.y =
-          window.innerHeight +
-          10;
+          window.innerHeight + 10;
 
       }
 
@@ -3461,14 +3723,24 @@ if (canvas) {
         ) * 0.15;
 
 
+      // ------------------------------------------------------
+      // GLOW
+      // ------------------------------------------------------
+
       ctx.beginPath();
 
       ctx.arc(
+
         star.x,
+
         star.y,
+
         star.radius * 4,
+
         0,
+
         Math.PI * 2
+
       );
 
 
@@ -3487,14 +3759,24 @@ if (canvas) {
       ctx.fill();
 
 
+      // ------------------------------------------------------
+      // STAR
+      // ------------------------------------------------------
+
       ctx.beginPath();
 
       ctx.arc(
+
         star.x,
+
         star.y,
+
         star.radius,
+
         0,
+
         Math.PI * 2
+
       );
 
 
@@ -3539,12 +3821,10 @@ if (canvas) {
 
 
         const dx =
-          a.x -
-          b.x;
+          a.x - b.x;
 
         const dy =
-          a.y -
-          b.y;
+          a.y - b.y;
 
 
         const distance =
@@ -3684,6 +3964,10 @@ if (canvas) {
 
   }
 
+
+  // ==========================================================
+  // EVENTS
+  // ==========================================================
 
   window.addEventListener(
     'resize',
