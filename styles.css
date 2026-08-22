@@ -340,7 +340,8 @@ nav button.nav-active {
 .dashboard-top {
   display: grid;
 
-  grid-template-columns: 1.5fr 1fr;
+  grid-template-columns:
+    1.5fr 1fr;
 
   gap: 14px;
 }
@@ -408,7 +409,8 @@ nav button.nav-active {
 
   border-radius: inherit;
 
-  transition: width .5s ease;
+  transition:
+    width .5s ease;
 }
 
 .progress-label {
@@ -463,7 +465,9 @@ nav button.nav-active {
 }
 
 
-/* BMI COLORS */
+/* =========================================================
+   BMI COLORS
+========================================================= */
 
 .normal {
   background: rgba(20, 83, 45, .8);
@@ -611,7 +615,7 @@ nav button.nav-active {
   display: grid;
 
   grid-template-columns:
-    repeat(3, 1fr);
+    repeat(4, 1fr);
 
   gap: 14px;
 }
@@ -624,11 +628,15 @@ nav button.nav-active {
   align-items: center;
 
   gap: 13px;
+
+  min-width: 0;
 }
 
 .activity-icon {
   width: 43px;
   height: 43px;
+
+  flex-shrink: 0;
 
   display: flex;
 
@@ -660,6 +668,123 @@ nav button.nav-active {
 
 
 /* =========================================================
+   CALORIES BURNED
+========================================================= */
+
+.burned-card {
+  position: relative;
+
+  overflow: hidden;
+}
+
+.burned-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 100px;
+  height: 100px;
+
+  right: -35px;
+  bottom: -35px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(239, 68, 68, .08);
+
+  pointer-events: none;
+}
+
+.burned-icon {
+  background:
+    rgba(239, 68, 68, .12);
+
+  border:
+    1px solid rgba(248, 113, 113, .15);
+
+  color:
+    #f87171;
+}
+
+.burned-value {
+  display: block;
+
+  font-size: 18px;
+
+  font-weight: 700;
+}
+
+.burned-label {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   BURNED CALORIE BREAKDOWN
+========================================================= */
+
+.burned-breakdown {
+  margin-top: 14px;
+}
+
+.burned-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 12px;
+
+  margin-top: 18px;
+}
+
+.burned-stat {
+  padding: 16px;
+
+  background:
+    rgba(5, 8, 18, .45);
+
+  border:
+    1px solid rgba(51, 65, 85, .50);
+
+  border-radius: 12px;
+}
+
+.burned-stat span {
+  display: block;
+
+  color: #64748b;
+
+  font-size: 11px;
+
+  margin-bottom: 5px;
+}
+
+.burned-stat strong {
+  font-size: 20px;
+}
+
+.burned-stat.total {
+  background:
+    rgba(239, 68, 68, .07);
+
+  border-color:
+    rgba(248, 113, 113, .20);
+}
+
+.burned-stat.total strong {
+  color: #fca5a5;
+}
+
+
+/* =========================================================
    GRID
 ========================================================= */
 
@@ -680,11 +805,13 @@ nav button.nav-active {
 button {
   padding: 10px 14px;
 
-  background: rgba(23, 34, 54, .90);
+  background:
+    rgba(23, 34, 54, .90);
 
   color: #e5e7eb;
 
-  border: 1px solid #334155;
+  border:
+    1px solid #334155;
 
   border-radius: 9px;
 
@@ -699,29 +826,38 @@ button {
 }
 
 button:hover {
-  background: #243451;
+  background:
+    #243451;
 
-  border-color: #475569;
+  border-color:
+    #475569;
 }
 
 button:active {
-  transform: scale(.98);
+  transform:
+    scale(.98);
 }
 
 .primary-btn {
-  background: #2563eb;
+  background:
+    #2563eb;
 
-  border-color: #2563eb;
+  border-color:
+    #2563eb;
 
-  color: white;
+  color:
+    white;
 
-  font-weight: 600;
+  font-weight:
+    600;
 }
 
 .primary-btn:hover {
-  background: #1d4ed8;
+  background:
+    #1d4ed8;
 
-  border-color: #1d4ed8;
+  border-color:
+    #1d4ed8;
 }
 
 .secondary-btn {
@@ -735,11 +871,14 @@ button:active {
 
   margin-bottom: 12px;
 
-  background: rgba(37, 99, 235, .12);
+  background:
+    rgba(37, 99, 235, .12);
 
-  border-color: rgba(59, 130, 246, .35);
+  border-color:
+    rgba(59, 130, 246, .35);
 
-  color: #93c5fd;
+  color:
+    #93c5fd;
 }
 
 .finish-btn {
@@ -747,11 +886,14 @@ button:active {
 
   margin-top: 12px;
 
-  background: rgba(34, 197, 94, .12);
+  background:
+    rgba(34, 197, 94, .12);
 
-  border-color: rgba(34, 197, 94, .30);
+  border-color:
+    rgba(34, 197, 94, .30);
 
-  color: #86efac;
+  color:
+    #86efac;
 }
 
 
@@ -772,7 +914,8 @@ button:active {
 .form-row {
   display: grid;
 
-  grid-template-columns: 150px 1fr;
+  grid-template-columns:
+    150px 1fr;
 
   align-items: center;
 
@@ -780,30 +923,41 @@ button:active {
 }
 
 .form-row label {
-  color: #cbd5e1;
+  color:
+    #cbd5e1;
 
-  font-size: 13px;
+  font-size:
+    13px;
 
-  font-weight: 500;
+  font-weight:
+    500;
 }
 
 .form-row input,
 .form-row select {
-  width: 100%;
+  width:
+    100%;
 
-  padding: 11px 12px;
+  padding:
+    11px 12px;
 
-  background: rgba(5, 8, 18, .75);
+  background:
+    rgba(5, 8, 18, .75);
 
-  color: #fff;
+  color:
+    #fff;
 
-  border: 1px solid #334155;
+  border:
+    1px solid #334155;
 
-  border-radius: 9px;
+  border-radius:
+    9px;
 
-  outline: none;
+  outline:
+    none;
 
-  font: inherit;
+  font:
+    inherit;
 
   transition:
     border-color .2s,
@@ -812,24 +966,31 @@ button:active {
 
 .form-row input:focus,
 .form-row select:focus {
-  border-color: #3b82f6;
+  border-color:
+    #3b82f6;
 
   box-shadow:
-    0 0 0 3px rgba(59, 130, 246, .10);
+    0 0 0 3px
+    rgba(59, 130, 246, .10);
 }
 
 .form-row select {
-  appearance: auto;
+  appearance:
+    auto;
 }
 
 hr {
-  width: 100%;
+  width:
+    100%;
 
-  border: 0;
+  border:
+    0;
 
-  border-top: 1px solid #26344a;
+  border-top:
+    1px solid #26344a;
 
-  margin: 8px 0;
+  margin:
+    8px 0;
 }
 
 
@@ -838,74 +999,100 @@ hr {
 ========================================================= */
 
 .calculated-section {
-  padding: 18px;
+  padding:
+    18px;
 
-  margin: 5px 0 15px;
+  margin:
+    5px 0 15px;
 
-  background: rgba(15, 23, 42, .65);
+  background:
+    rgba(15, 23, 42, .65);
 
-  border: 1px solid #26344a;
+  border:
+    1px solid #26344a;
 
-  border-radius: 14px;
+  border-radius:
+    14px;
 }
 
 .calculated-note {
-  margin: 5px 0 15px;
+  margin:
+    5px 0 15px;
 
-  color: #64748b;
+  color:
+    #64748b;
 
-  font-size: 12px;
+  font-size:
+    12px;
 }
 
 .calculated-grid {
-  display: grid;
+  display:
+    grid;
 
   grid-template-columns:
     repeat(5, 1fr);
 
-  gap: 10px;
+  gap:
+    10px;
 }
 
 .calculated-item {
-  padding: 13px;
+  padding:
+    13px;
 
-  background: rgba(5, 8, 18, .55);
+  background:
+    rgba(5, 8, 18, .55);
 
-  border: 1px solid rgba(51, 65, 85, .5);
+  border:
+    1px solid rgba(51, 65, 85, .5);
 
-  border-radius: 11px;
+  border-radius:
+    11px;
 
-  text-align: center;
+  text-align:
+    center;
 }
 
 .calculated-item span {
-  display: block;
+  display:
+    block;
 
-  color: #94a3b8;
+  color:
+    #94a3b8;
 
-  font-size: 11px;
+  font-size:
+    11px;
 }
 
 .calculated-item strong {
-  display: block;
+  display:
+    block;
 
-  margin: 5px 0;
+  margin:
+    5px 0;
 
-  font-size: 21px;
+  font-size:
+    21px;
 }
 
 .calculated-item small {
-  color: #64748b;
+  color:
+    #64748b;
 
-  font-size: 10px;
+  font-size:
+    10px;
 }
 
 .info-card p {
-  color: #94a3b8;
+  color:
+    #94a3b8;
 
-  line-height: 1.6;
+  line-height:
+    1.6;
 
-  font-size: 13px;
+  font-size:
+    13px;
 }
 
 
@@ -914,21 +1101,27 @@ hr {
 ========================================================= */
 
 .ppl {
-  display: flex;
+  display:
+    flex;
 
-  gap: 8px;
+  gap:
+    8px;
 
-  margin-bottom: 12px;
+  margin-bottom:
+    12px;
 }
 
 .ppl button {
-  flex: 1;
+  flex:
+    1;
 }
 
 .ppl button.ppl-active {
-  background: #2563eb;
+  background:
+    #2563eb;
 
-  border-color: #2563eb;
+  border-color:
+    #2563eb;
 }
 
 
@@ -937,39 +1130,53 @@ hr {
 ========================================================= */
 
 .row {
-  display: flex;
+  display:
+    flex;
 
-  justify-content: space-between;
+  justify-content:
+    space-between;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 15px;
+  gap:
+    15px;
 
-  padding: 13px 4px;
+  padding:
+    13px 4px;
 
-  border-bottom: 1px solid #26344a;
+  border-bottom:
+    1px solid #26344a;
 }
 
 .row:last-child {
-  border-bottom: 0;
+  border-bottom:
+    0;
 }
 
 .row small {
-  color: #64748b;
+  color:
+    #64748b;
 }
 
 .row button {
-  flex-shrink: 0;
+  flex-shrink:
+    0;
 
-  padding: 7px 10px;
+  padding:
+    7px 10px;
 
-  font-size: 12px;
+  font-size:
+    12px;
 
-  background: rgba(127, 29, 29, .25);
+  background:
+    rgba(127, 29, 29, .25);
 
-  border-color: rgba(248, 113, 113, .25);
+  border-color:
+    rgba(248, 113, 113, .25);
 
-  color: #fca5a5;
+  color:
+    #fca5a5;
 }
 
 
@@ -978,15 +1185,20 @@ hr {
 ========================================================= */
 
 video {
-  width: 100%;
+  width:
+    100%;
 
-  max-height: 350px;
+  max-height:
+    350px;
 
-  margin: 10px 0;
+  margin:
+    10px 0;
 
-  border-radius: 12px;
+  border-radius:
+    12px;
 
-  background: #000;
+  background:
+    #000;
 }
 
 
@@ -995,13 +1207,16 @@ video {
 ========================================================= */
 
 #auth {
-  max-width: 440px;
+  max-width:
+    440px;
 
-  padding-top: 60px;
+  padding-top:
+    60px;
 }
 
 .auth-card {
-  padding: 30px;
+  padding:
+    30px;
 
   background:
     linear-gradient(
@@ -1010,28 +1225,41 @@ video {
       rgba(11, 18, 32, .94)
     );
 
-  border: 1px solid rgba(51, 65, 85, .70);
+  border:
+    1px solid rgba(51, 65, 85, .70);
 
-  border-radius: 20px;
+  border-radius:
+    20px;
 
   box-shadow:
-    0 25px 70px rgba(0, 0, 0, .30);
+    0 25px 70px
+    rgba(0, 0, 0, .30);
 
-  backdrop-filter: blur(15px);
+  backdrop-filter:
+    blur(15px);
 }
 
 .auth-logo {
-  width: 55px;
-  height: 55px;
+  width:
+    55px;
 
-  display: flex;
+  height:
+    55px;
 
-  align-items: center;
-  justify-content: center;
+  display:
+    flex;
 
-  margin-bottom: 18px;
+  align-items:
+    center;
 
-  border-radius: 16px;
+  justify-content:
+    center;
+
+  margin-bottom:
+    18px;
+
+  border-radius:
+    16px;
 
   background:
     linear-gradient(
@@ -1040,27 +1268,35 @@ video {
       #7c3aed
     );
 
-  font-weight: 800;
+  font-weight:
+    800;
 }
 
 .auth-card h2 {
-  margin: 0 0 5px;
+  margin:
+    0 0 5px;
 
-  font-size: 26px;
+  font-size:
+    26px;
 }
 
 .auth-subtitle {
-  margin: 0 0 25px;
+  margin:
+    0 0 25px;
 
-  color: #64748b;
+  color:
+    #64748b;
 
-  font-size: 13px;
+  font-size:
+    13px;
 }
 
 .message {
-  color: #fca5a5;
+  color:
+    #fca5a5;
 
-  font-size: 12px;
+  font-size:
+    12px;
 }
 
 
@@ -1068,10 +1304,26 @@ video {
    RESPONSIVE
 ========================================================= */
 
+@media (max-width: 950px) {
+
+  .activity-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .burned-stats {
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
+
+}
+
+
 @media (max-width: 850px) {
 
   .dashboard-top {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
   .calculated-grid {
@@ -1085,23 +1337,27 @@ video {
 @media (max-width: 650px) {
 
   body {
-    padding: 0 12px;
+    padding:
+      0 12px;
   }
 
   header {
-    padding: 16px 0;
+    padding:
+      16px 0;
   }
 
   .dashboard-top,
   .macro-grid,
   .activity-grid,
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
   .macro-card,
   .activity-card {
-    margin-bottom: 0;
+    margin-bottom:
+      0;
   }
 
   .calculated-grid {
@@ -1109,26 +1365,37 @@ video {
       repeat(2, 1fr);
   }
 
-  .form-row {
-    grid-template-columns: 1fr;
+  .burned-stats {
+    grid-template-columns:
+      1fr;
+  }
 
-    gap: 5px;
+  .form-row {
+    grid-template-columns:
+      1fr;
+
+    gap:
+      5px;
   }
 
   .form-row label {
-    font-size: 12px;
+    font-size:
+      12px;
   }
 
   .calorie-number strong {
-    font-size: 38px;
+    font-size:
+      38px;
   }
 
   .bmi-number {
-    font-size: 46px;
+    font-size:
+      46px;
   }
 
   .auth-card {
-    padding: 23px;
+    padding:
+      23px;
   }
 
 }
@@ -1137,7 +1404,8 @@ video {
 @media (max-width: 400px) {
 
   .calculated-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
 }

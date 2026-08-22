@@ -41,7 +41,8 @@ const db = getFirestore(app);
 // HELPERS
 // ============================================================
 
-const $ = id => document.getElementById(id);
+const $ = id =>
+  document.getElementById(id);
 
 
 // ============================================================
@@ -108,7 +109,11 @@ const day = () =>
 
 
 const userRef = () =>
-  doc(db, 'users', user.uid);
+  doc(
+    db,
+    'users',
+    user.uid
+  );
 
 
 const dayRef = () =>
@@ -127,29 +132,155 @@ const dayRef = () =>
 
 async function getDay() {
 
-  const snapshot = await getDoc(dayRef());
+  const snapshot =
+    await getDoc(dayRef());
+
 
   const data =
     snapshot.exists()
       ? snapshot.data()
       : {};
 
+
   return {
 
-    cal: Number(data.cal) || 0,
+    cal:
+      Number(data.cal) || 0,
 
-    p: Number(data.p) || 0,
+    p:
+      Number(data.p) || 0,
 
-    c: Number(data.c) || 0,
+    c:
+      Number(data.c) || 0,
 
-    f: Number(data.f) || 0,
+    f:
+      Number(data.f) || 0,
 
-    steps: Number(data.steps) || 0,
+    steps:
+      Number(data.steps) || 0,
 
     workout:
-      data.workout || 'Rest'
+      data.workout || 'Rest',
+
+    workoutCalories:
+      Number(data.workoutCalories) || 0,
+
+    stepsCalories:
+      Number(data.stepsCalories) || 0,
+
+    caloriesBurned:
+      Number(data.caloriesBurned) || 0
 
   };
+
+}
+
+
+// ============================================================
+// CALORIES BURNED CALCULATIONS
+// ============================================================
+
+function calculateStepCalories(steps) {
+
+  const weight =
+    Number(profile.weight) || 0;
+
+
+  if (
+    !weight ||
+    !steps
+  ) {
+
+    return 0;
+
+  }
+
+
+  /*
+    Approximate walking calories.
+
+    Average walking:
+    ~0.04 kcal per kg per step
+
+    Example:
+
+    73 kg × 10,000 × 0.04
+    = approximately 292 kcal
+  */
+
+  const calories =
+    steps *
+    weight *
+    0.0004;
+
+
+  return Math.round(calories);
+
+}
+
+
+// ============================================================
+// WORKOUT CALORIES
+// ============================================================
+
+function calculateWorkoutCalories(type) {
+
+  const weight =
+    Number(profile.weight) || 73;
+
+
+  /*
+    Estimated calories for a
+    moderate 60-minute resistance
+    training session.
+
+    MET values:
+
+    Push = 5.0
+    Pull = 5.0
+    Legs = 6.0
+
+    kcal =
+    MET × body weight × hours
+  */
+
+  let met = 5;
+
+
+  if (type === 'Legs') {
+
+    met = 6;
+
+  }
+
+
+  const durationHours = 1;
+
+
+  const calories =
+    met *
+    weight *
+    durationHours;
+
+
+  return Math.round(calories);
+
+}
+
+
+// ============================================================
+// TOTAL BURNED
+// ============================================================
+
+function calculateTotalBurned(
+  workoutCalories,
+  stepsCalories
+) {
+
+  return Math.round(
+    Number(workoutCalories || 0) +
+    Number(stepsCalories || 0)
+  );
 
 }
 
@@ -175,7 +306,9 @@ function calculateMetrics() {
     !height ||
     !weight
   ) {
+
     return;
+
   }
 
 
@@ -202,8 +335,11 @@ function calculateMetrics() {
 
 
   // Moderate activity
+
   const calories =
-    Math.round(bmr * 1.55);
+    Math.round(
+      bmr * 1.55
+    );
 
 
   // ----------------------------------------------------------
@@ -211,11 +347,15 @@ function calculateMetrics() {
   // ----------------------------------------------------------
 
   const protein =
-    Math.round(weight * 2);
+    Math.round(
+      weight * 2
+    );
 
 
   const fat =
-    Math.round(weight * 0.8);
+    Math.round(
+      weight * 0.8
+    );
 
 
   const carbCalories =
@@ -235,13 +375,17 @@ function calculateMetrics() {
     );
 
 
-  profile.calGoal = calories;
+  profile.calGoal =
+    calories;
 
-  profile.pGoal = protein;
+  profile.pGoal =
+    protein;
 
-  profile.cGoal = carbs;
+  profile.cGoal =
+    carbs;
 
-  profile.fGoal = fat;
+  profile.fGoal =
+    fat;
 
 
   // ----------------------------------------------------------
@@ -263,33 +407,41 @@ function calculateMetrics() {
 
   if (bmi < 18.5) {
 
-    status = 'Underweight';
+    status =
+      'Underweight';
 
-    color = 'under';
+    color =
+      'under';
 
   }
 
   else if (bmi < 25) {
 
-    status = 'Normal';
+    status =
+      'Normal';
 
-    color = 'normal';
+    color =
+      'normal';
 
   }
 
   else if (bmi < 30) {
 
-    status = 'Overweight';
+    status =
+      'Overweight';
 
-    color = 'over';
+    color =
+      'over';
 
   }
 
   else {
 
-    status = 'Obese';
+    status =
+      'Obese';
 
-    color = 'obese';
+    color =
+      'obese';
 
   }
 
@@ -413,13 +565,21 @@ function calculateMetrics() {
 
 
   return {
+
     bmr,
+
     calories,
+
     protein,
+
     carbs,
+
     fat,
+
     bmi,
+
     status
+
   };
 
 }
@@ -482,7 +642,9 @@ document
 
     button.onclick = () => {
 
-      show(button.dataset.page);
+      show(
+        button.dataset.page
+      );
 
     };
 
@@ -495,7 +657,8 @@ document
 
 $('toggle').onclick = () => {
 
-  signup = !signup;
+  signup =
+    !signup;
 
 
   $('authTitle').textContent =
@@ -510,7 +673,8 @@ $('toggle').onclick = () => {
       : 'Create account';
 
 
-  $('authMsg').textContent = '';
+  $('authMsg').textContent =
+    '';
 
 };
 
@@ -524,7 +688,8 @@ $('authForm').onsubmit =
 
     event.preventDefault();
 
-    $('authMsg').textContent = '';
+    $('authMsg').textContent =
+      '';
 
 
     try {
@@ -582,27 +747,34 @@ onAuthStateChanged(
   auth,
   async currentUser => {
 
-    user = currentUser;
+    user =
+      currentUser;
 
 
     if (!currentUser) {
 
-      $('auth').hidden = false;
+      $('auth').hidden =
+        false;
 
-      $('app').hidden = true;
+      $('app').hidden =
+        true;
 
-      $('logout').hidden = true;
+      $('logout').hidden =
+        true;
 
       return;
 
     }
 
 
-    $('auth').hidden = true;
+    $('auth').hidden =
+      true;
 
-    $('app').hidden = false;
+    $('app').hidden =
+      false;
 
-    $('logout').hidden = false;
+    $('logout').hidden =
+      false;
 
 
     try {
@@ -616,8 +788,11 @@ onAuthStateChanged(
       if (snapshot.exists()) {
 
         profile = {
+
           ...profile,
+
           ...snapshot.data()
+
         };
 
       }
@@ -635,7 +810,6 @@ onAuthStateChanged(
       fill();
 
 
-      // Calculate BMI and macros
       calculateMetrics();
 
 
@@ -715,16 +889,25 @@ function fill() {
     () => {
 
       profile.age =
-        Number($('age').value);
+        Number(
+          $('age').value
+        );
+
 
       profile.sex =
         $('sex').value;
 
+
       profile.height =
-        Number($('height').value);
+        Number(
+          $('height').value
+        );
+
 
       profile.weight =
-        Number($('weight').value);
+        Number(
+          $('weight').value
+        );
 
 
       calculateMetrics();
@@ -746,7 +929,9 @@ $('settingsForm').onsubmit =
 
 
     profile.age =
-      Number($('age').value);
+      Number(
+        $('age').value
+      );
 
 
     profile.sex =
@@ -754,18 +939,23 @@ $('settingsForm').onsubmit =
 
 
     profile.height =
-      Number($('height').value);
+      Number(
+        $('height').value
+      );
 
 
     profile.weight =
-      Number($('weight').value);
+      Number(
+        $('weight').value
+      );
 
 
     profile.stepGoal =
-      Number($('goalSteps').value);
+      Number(
+        $('goalSteps').value
+      );
 
 
-    // Recalculate before saving
     calculateMetrics();
 
 
@@ -801,10 +991,14 @@ async function refresh() {
     await getDay();
 
 
-  // Calories
+  // ----------------------------------------------------------
+  // FOOD CALORIES
+  // ----------------------------------------------------------
 
   $('cal').textContent =
-    Math.round(d.cal);
+    Math.round(
+      d.cal
+    );
 
 
   $('calGoal').textContent =
@@ -813,12 +1007,10 @@ async function refresh() {
 
   const caloriePercent =
     profile.calGoal > 0
-
       ? (
           d.cal /
           profile.calGoal
         ) * 100
-
       : 0;
 
 
@@ -841,26 +1033,38 @@ async function refresh() {
     `${Math.round(remaining)} kcal remaining`;
 
 
-  // Weight
+  // ----------------------------------------------------------
+  // WEIGHT
+  // ----------------------------------------------------------
 
   $('weightDash').textContent =
-    Number(profile.weight).toFixed(1);
+    Number(
+      profile.weight
+    ).toFixed(1);
 
 
-  // Steps
+  // ----------------------------------------------------------
+  // STEPS
+  // ----------------------------------------------------------
 
   $('stepsDash').textContent =
-    Number(d.steps)
-      .toLocaleString();
+    Number(
+      d.steps
+    ).toLocaleString();
 
 
-  // Workout
+  // ----------------------------------------------------------
+  // WORKOUT
+  // ----------------------------------------------------------
 
   $('workoutDash').textContent =
-    d.workout || 'Rest';
+    d.workout ||
+    'Rest';
 
 
-  // Macro values
+  // ----------------------------------------------------------
+  // MACROS
+  // ----------------------------------------------------------
 
   $('macroProtein').textContent =
     Math.round(d.p);
@@ -874,8 +1078,6 @@ async function refresh() {
     Math.round(d.f);
 
 
-  // Goals
-
   $('macroProteinGoal').textContent =
     profile.pGoal;
 
@@ -886,6 +1088,45 @@ async function refresh() {
 
   $('macroFatGoal').textContent =
     profile.fGoal;
+
+
+  // ----------------------------------------------------------
+  // CALORIES BURNED
+  // ----------------------------------------------------------
+
+  const workoutCalories =
+    Number(
+      d.workoutCalories
+    ) || 0;
+
+
+  const stepsCalories =
+    Number(
+      d.stepsCalories
+    ) || 0;
+
+
+  const totalBurned =
+    calculateTotalBurned(
+      workoutCalories,
+      stepsCalories
+    );
+
+
+  $('caloriesBurnedDash').textContent =
+    `${totalBurned.toLocaleString()} kcal`;
+
+
+  $('workoutCaloriesDash').textContent =
+    `${workoutCalories.toLocaleString()} kcal`;
+
+
+  $('stepsCaloriesDash').textContent =
+    `${stepsCalories.toLocaleString()} kcal`;
+
+
+  $('totalCaloriesBurnedDash').textContent =
+    `${totalBurned.toLocaleString()} kcal`;
 
 }
 
@@ -909,16 +1150,24 @@ $('foodForm').onsubmit =
         $('serving').value,
 
       cal:
-        Number($('fcal').value),
+        Number(
+          $('fcal').value
+        ),
 
       p:
-        Number($('fp').value),
+        Number(
+          $('fp').value
+        ),
 
       c:
-        Number($('fc').value),
+        Number(
+          $('fc').value
+        ),
 
       f:
-        Number($('ff').value)
+        Number(
+          $('ff').value
+        )
 
     };
 
@@ -977,7 +1226,8 @@ $('foodForm').onsubmit =
 
 async function food() {
 
-  if (!user) return;
+  if (!user)
+    return;
 
 
   const snapshot =
@@ -1044,7 +1294,8 @@ async function food() {
       }
     ).join('')
 
-    || '<p>No food logged today.</p>';
+    ||
+    '<p>No food logged today.</p>';
 
 
   document
@@ -1067,7 +1318,9 @@ async function food() {
 
 
           const snapshot =
-            await getDoc(reference);
+            await getDoc(
+              reference
+            );
 
 
           if (!snapshot.exists())
@@ -1082,13 +1335,17 @@ async function food() {
             await getDay();
 
 
-          d.cal -= Number(f.cal) || 0;
+          d.cal -=
+            Number(f.cal) || 0;
 
-          d.p -= Number(f.p) || 0;
+          d.p -=
+            Number(f.p) || 0;
 
-          d.c -= Number(f.c) || 0;
+          d.c -=
+            Number(f.c) || 0;
 
-          d.f -= Number(f.f) || 0;
+          d.f -=
+            Number(f.f) || 0;
 
 
           await setDoc(
@@ -1124,15 +1381,30 @@ function escapeHtml(value) {
 
   return String(value)
 
-    .replaceAll('&', '&amp;')
+    .replaceAll(
+      '&',
+      '&amp;'
+    )
 
-    .replaceAll('<', '&lt;')
+    .replaceAll(
+      '<',
+      '&lt;'
+    )
 
-    .replaceAll('>', '&gt;')
+    .replaceAll(
+      '>',
+      '&gt;'
+    )
 
-    .replaceAll('"', '&quot;')
+    .replaceAll(
+      '"',
+      '&quot;'
+    )
 
-    .replaceAll("'", '&#039;');
+    .replaceAll(
+      "'",
+      '&#039;'
+    );
 
 }
 
@@ -1190,19 +1462,26 @@ $('exForm').onsubmit =
 
       {
 
-        type: ppl,
+        type:
+          ppl,
 
         name:
           $('ename').value,
 
         sets:
-          Number($('sets').value),
+          Number(
+            $('sets').value
+          ),
 
         reps:
-          Number($('reps').value),
+          Number(
+            $('reps').value
+          ),
 
         weight:
-          Number($('ew').value)
+          Number(
+            $('ew').value
+          )
 
       }
 
@@ -1212,11 +1491,14 @@ $('exForm').onsubmit =
     event.target.reset();
 
 
-    $('sets').value = 3;
+    $('sets').value =
+      3;
 
-    $('reps').value = 10;
+    $('reps').value =
+      10;
 
-    $('ew').value = 0;
+    $('ew').value =
+      0;
 
 
     await exercises();
@@ -1231,12 +1513,38 @@ $('exForm').onsubmit =
 $('finish').onclick =
   async () => {
 
+    const workoutCalories =
+      calculateWorkoutCalories(
+        ppl
+      );
+
+
+    const d =
+      await getDay();
+
+
+    const totalBurned =
+      calculateTotalBurned(
+        workoutCalories,
+        d.stepsCalories
+      );
+
+
     await setDoc(
 
       dayRef(),
 
       {
-        workout: ppl
+
+        workout:
+          ppl,
+
+        workoutCalories:
+          workoutCalories,
+
+        caloriesBurned:
+          totalBurned
+
       },
 
       {
@@ -1250,7 +1558,7 @@ $('finish').onclick =
 
 
     alert(
-      `${ppl} workout completed!`
+      `${ppl} workout completed!\n\nEstimated calories burned: ${workoutCalories} kcal`
     );
 
   };
@@ -1262,7 +1570,8 @@ $('finish').onclick =
 
 async function exercises() {
 
-  if (!user) return;
+  if (!user)
+    return;
 
 
   const snapshot =
@@ -1321,7 +1630,8 @@ async function exercises() {
       }
     ).join('')
 
-    || '<p>No exercises logged today.</p>';
+    ||
+    '<p>No exercises logged today.</p>';
 
 
   document
@@ -1387,6 +1697,49 @@ $('weightForm').onsubmit =
     );
 
 
+    /*
+      Recalculate today's
+      walking calories because
+      they depend on body weight.
+    */
+
+    const d =
+      await getDay();
+
+
+    const stepsCalories =
+      calculateStepCalories(
+        d.steps
+      );
+
+
+    const totalBurned =
+      calculateTotalBurned(
+        d.workoutCalories,
+        stepsCalories
+      );
+
+
+    await setDoc(
+
+      dayRef(),
+
+      {
+
+        stepsCalories,
+
+        caloriesBurned:
+          totalBurned
+
+      },
+
+      {
+        merge: true
+      }
+
+    );
+
+
     await addDoc(
 
       collection(
@@ -1398,9 +1751,11 @@ $('weightForm').onsubmit =
 
       {
 
-        date: day(),
+        date:
+          day(),
 
-        weight: newWeight
+        weight:
+          newWeight
 
       }
 
@@ -1412,7 +1767,8 @@ $('weightForm').onsubmit =
     history();
 
 
-    $('weightInput').value = '';
+    $('weightInput').value =
+      '';
 
   };
 
@@ -1427,16 +1783,41 @@ $('stepsForm').onsubmit =
     event.preventDefault();
 
 
+    const steps =
+      Number(
+        $('stepsInput').value
+      );
+
+
+    const stepsCalories =
+      calculateStepCalories(
+        steps
+      );
+
+
+    const d =
+      await getDay();
+
+
+    const totalBurned =
+      calculateTotalBurned(
+        d.workoutCalories,
+        stepsCalories
+      );
+
+
     await setDoc(
 
       dayRef(),
 
       {
 
-        steps:
-          Number(
-            $('stepsInput').value
-          )
+        steps,
+
+        stepsCalories,
+
+        caloriesBurned:
+          totalBurned
 
       },
 
@@ -1449,6 +1830,10 @@ $('stepsForm').onsubmit =
 
     await refresh();
 
+
+    $('stepsInput').value =
+      '';
+
   };
 
 
@@ -1458,7 +1843,8 @@ $('stepsForm').onsubmit =
 
 async function history() {
 
-  if (!user) return;
+  if (!user)
+    return;
 
 
   const snapshot =
@@ -1501,7 +1887,9 @@ async function history() {
             </span>
 
             <strong>
-              ${Number(data.weight).toFixed(1)}
+              ${Number(
+                data.weight
+              ).toFixed(1)}
               kg
             </strong>
 
@@ -1512,7 +1900,8 @@ async function history() {
       }
     ).join('')
 
-    || '<p>No weight history yet.</p>';
+    ||
+    '<p>No weight history yet.</p>';
 
 }
 
@@ -1524,7 +1913,9 @@ async function history() {
 $('scan').onclick =
   async () => {
 
-    if (!('BarcodeDetector' in window)) {
+    if (
+      !('BarcodeDetector' in window)
+    ) {
 
       alert(
         'Barcode scanning is not supported by this browser.'
@@ -1541,13 +1932,16 @@ $('scan').onclick =
         await navigator.mediaDevices.getUserMedia({
 
           video: {
-            facingMode: 'environment'
+            facingMode:
+              'environment'
           }
 
         });
 
 
-      $('video').hidden = false;
+      $('video').hidden =
+        false;
+
 
       $('video').srcObject =
         stream;
@@ -1598,10 +1992,12 @@ $('scan').onclick =
                 );
 
 
-              stream = null;
+              stream =
+                null;
 
 
-              $('video').hidden = true;
+              $('video').hidden =
+                true;
 
 
               const response =
@@ -1616,7 +2012,9 @@ $('scan').onclick =
                 await response.json();
 
 
-              if (json.status === 1) {
+              if (
+                json.status === 1
+              ) {
 
                 const product =
                   json.product;
@@ -1693,7 +2091,9 @@ $('scan').onclick =
 
             else {
 
-              requestAnimationFrame(loop);
+              requestAnimationFrame(
+                loop
+              );
 
             }
 
@@ -1706,7 +2106,9 @@ $('scan').onclick =
               error
             );
 
-            requestAnimationFrame(loop);
+            requestAnimationFrame(
+              loop
+            );
 
           }
 
@@ -1737,13 +2139,17 @@ const canvas =
     'constellation'
   );
 
+
 const ctx =
-  canvas.getContext('2d');
+  canvas.getContext(
+    '2d'
+  );
 
 
 let stars = [];
 
 let animationFrame;
+
 
 let mouse = {
 
@@ -1756,11 +2162,16 @@ let mouse = {
 };
 
 
-const STAR_COUNT = 110;
+const STAR_COUNT =
+  110;
 
-const CONNECTION_DISTANCE = 130;
 
-const MOUSE_CONNECTION_DISTANCE = 190;
+const CONNECTION_DISTANCE =
+  130;
+
+
+const MOUSE_CONNECTION_DISTANCE =
+  190;
 
 
 // ============================================================
@@ -1774,19 +2185,23 @@ function resizeConstellation() {
 
 
   canvas.width =
-    window.innerWidth * dpr;
+    window.innerWidth *
+    dpr;
 
 
   canvas.height =
-    window.innerHeight * dpr;
+    window.innerHeight *
+    dpr;
 
 
   canvas.style.width =
-    window.innerWidth + 'px';
+    window.innerWidth +
+    'px';
 
 
   canvas.style.height =
-    window.innerHeight + 'px';
+    window.innerHeight +
+    'px';
 
 
   ctx.setTransform(
@@ -1830,25 +2245,36 @@ function createStars() {
         window.innerHeight,
 
       vx:
-        (Math.random() - .5)
-        * .15,
+        (
+          Math.random() -
+          .5
+        ) * .15,
 
       vy:
-        (Math.random() - .5)
-        * .15,
+        (
+          Math.random() -
+          .5
+        ) * .15,
 
       radius:
-        Math.random() * 1.4 + .4,
+        Math.random() *
+        1.4 +
+        .4,
 
       opacity:
-        Math.random() * .6 + .25,
+        Math.random() *
+        .6 +
+        .25,
 
       twinkle:
         Math.random() *
-        Math.PI * 2,
+        Math.PI *
+        2,
 
       twinkleSpeed:
-        Math.random() * .02 + .005
+        Math.random() *
+        .02 +
+        .005
 
     });
 
@@ -1904,34 +2330,37 @@ function drawConstellation() {
 
 
   // ----------------------------------------------------------
-  // Move stars
+  // MOVE STARS
   // ----------------------------------------------------------
 
   for (const star of stars) {
 
-    star.x += star.vx;
+    star.x +=
+      star.vx;
 
-    star.y += star.vy;
+    star.y +=
+      star.vy;
 
-
-    // Wrap around
 
     if (
       star.x < -10
     ) {
 
       star.x =
-        window.innerWidth + 10;
+        window.innerWidth +
+        10;
 
     }
 
 
     if (
       star.x >
-      window.innerWidth + 10
+      window.innerWidth +
+      10
     ) {
 
-      star.x = -10;
+      star.x =
+        -10;
 
     }
 
@@ -1941,17 +2370,20 @@ function drawConstellation() {
     ) {
 
       star.y =
-        window.innerHeight + 10;
+        window.innerHeight +
+        10;
 
     }
 
 
     if (
       star.y >
-      window.innerHeight + 10
+      window.innerHeight +
+      10
     ) {
 
-      star.y = -10;
+      star.y =
+        -10;
 
     }
 
@@ -1968,7 +2400,7 @@ function drawConstellation() {
 
 
     // --------------------------------------------------------
-    // Glow
+    // GLOW
     // --------------------------------------------------------
 
     ctx.beginPath();
@@ -1998,7 +2430,7 @@ function drawConstellation() {
 
 
     // --------------------------------------------------------
-    // Star
+    // STAR
     // --------------------------------------------------------
 
     ctx.beginPath();
@@ -2030,7 +2462,7 @@ function drawConstellation() {
 
 
   // ----------------------------------------------------------
-  // Connect stars to each other
+  // CONNECT STARS
   // ----------------------------------------------------------
 
   for (
@@ -2053,10 +2485,12 @@ function drawConstellation() {
 
 
       const dx =
-        a.x - b.x;
+        a.x -
+        b.x;
 
       const dy =
-        a.y - b.y;
+        a.y -
+        b.y;
 
 
       const distance =
@@ -2115,7 +2549,7 @@ function drawConstellation() {
 
 
   // ----------------------------------------------------------
-  // Mouse constellation
+  // MOUSE CONSTELLATION
   // ----------------------------------------------------------
 
   if (mouse.active) {
@@ -2123,10 +2557,12 @@ function drawConstellation() {
     for (const star of stars) {
 
       const dx =
-        star.x - mouse.x;
+        star.x -
+        mouse.x;
 
       const dy =
-        star.y - mouse.y;
+        star.y -
+        mouse.y;
 
 
       const distance =
@@ -2177,8 +2613,6 @@ function drawConstellation() {
 
         ctx.stroke();
 
-
-        // Slight mouse glow
 
         ctx.beginPath();
 
