@@ -1110,8 +1110,6 @@ async function refresh() {
   $('totalCaloriesBurnedDash').textContent =
     `${totalBurned.toLocaleString()} kcal`;
 
-}
-
 
 // ============================================================
 // FOOD FORM
