@@ -1085,233 +1085,137 @@ if ($('settingsForm')) {
 
 async function refresh() {
 
-  if (!user) {
-    return;
-  }
+  if (!user) return;
 
   try {
 
     calculateMetrics();
 
-
-    const d =
-      await getDay();
-
+    const d = await getDay();
 
     // --------------------------------------------------------
-    // CALORIES
+    // CALORIES EATEN
     // --------------------------------------------------------
 
-    const calories =
-      Number(d.cal) || 0;
+    const calories = Number(d.cal) || 0;
+    const calorieGoal = Number(profile.calGoal) || 0;
 
-    const calorieGoal =
-      Number(profile.calGoal) || 0;
+    if ($('cal'))
+      $('cal').textContent = calories.toLocaleString();
 
-
-    if ($('cal')) {
-      $('cal').textContent =
-        calories.toLocaleString();
-    }
-
-    if ($('calGoal')) {
-      $('calGoal').textContent =
-        calorieGoal.toLocaleString();
-    }
-
+    if ($('calGoal'))
+      $('calGoal').textContent = calorieGoal.toLocaleString();
 
     if ($('calBar')) {
-
       const percent =
         calorieGoal > 0
-          ? calories / calorieGoal * 100
+          ? (calories / calorieGoal) * 100
           : 0;
 
-      $('calBar').style.width =
-        Math.min(100, percent) + '%';
-
+      $('calBar').style.width = Math.min(100, percent) + '%';
     }
-
 
     if ($('calRemaining')) {
-
       $('calRemaining').textContent =
-        `${Math.max(
-          0,
-          calorieGoal - calories
-        ).toLocaleString()} kcal remaining`;
-
+        `${Math.max(0, calorieGoal - calories).toLocaleString()} kcal remaining`;
     }
-
 
     // --------------------------------------------------------
     // STEPS
     // --------------------------------------------------------
 
-    const steps =
-      Number(d.steps) || 0;
+    const steps = Number(d.steps) || 0;
 
-
-    if ($('stepsDash')) {
-
-      $('stepsDash').textContent =
-        steps.toLocaleString();
-
-    }
-
+    if ($('stepsDash'))
+      $('stepsDash').textContent = steps.toLocaleString();
 
     // --------------------------------------------------------
-    // STEP CALORIES
+    // STEP CALORIES (ESTIMATE)
     // --------------------------------------------------------
 
-    let stepsCalories =
-      Number(d.stepsCalories) || 0;
+    let stepsCalories = Number(d.stepsCalories) || 0;
 
+    if (steps > 0 && stepsCalories <= 0) {
 
-    if (
-      steps > 0 &&
-      stepsCalories <= 0
-    ) {
+      stepsCalories = calculateStepCalories(steps);
 
-      stepsCalories =
-        calculateStepCalories(
-          steps
-        );
-
-      await setDoc(
-        dayRef(),
-        {
-          stepsCalories
-        },
-        {
-          merge: true
-        }
-      );
+      await setDoc(dayRef(), {
+        stepsCalories
+      }, { merge: true });
 
     }
-
 
     // --------------------------------------------------------
     // WORKOUT
     // --------------------------------------------------------
 
-    const workout =
-      d.workout || 'Rest';
+    const workout = d.workout || 'Rest';
+    const workoutCalories = Number(d.workoutCalories) || 0;
 
-    const workoutCalories =
-      Number(d.workoutCalories) || 0;
-
-
-    if ($('workoutDash')) {
-
-      $('workoutDash').textContent =
-        workout;
-
-    }
-
+    if ($('workoutDash'))
+      $('workoutDash').textContent = workout;
 
     // --------------------------------------------------------
-    // TOTAL BURNED
+    // CALORIES BURNED
+    // Priority:
+    // 1. Health Connect activeCalories
+    // 2. Estimated workout + steps
     // --------------------------------------------------------
 
-    const totalBurned =
-      calculateTotalBurned(
+    let burnedCalories = Number(d.activeCalories) || 0;
+
+    if (burnedCalories <= 0) {
+      burnedCalories = calculateTotalBurned(
         workoutCalories,
         stepsCalories
       );
-
-
-    if ($('caloriesBurnedDash')) {
-
-      $('caloriesBurnedDash').textContent =
-        `${totalBurned.toLocaleString()} kcal`;
-
     }
 
+    if ($('caloriesBurnedDash'))
+      $('caloriesBurnedDash').textContent =
+        `${burnedCalories.toLocaleString()} kcal`;
 
-    if ($('workoutCaloriesDash')) {
-
+    if ($('workoutCaloriesDash'))
       $('workoutCaloriesDash').textContent =
         `${workoutCalories.toLocaleString()} kcal`;
 
-    }
-
-
-    if ($('stepsCaloriesDash')) {
-
+    if ($('stepsCaloriesDash'))
       $('stepsCaloriesDash').textContent =
         `${stepsCalories.toLocaleString()} kcal`;
 
-    }
-
-
-    if ($('totalCaloriesBurnedDash')) {
-
+    if ($('totalCaloriesBurnedDash'))
       $('totalCaloriesBurnedDash').textContent =
-        `${totalBurned.toLocaleString()} kcal`;
-
-    }
-
+        `${burnedCalories.toLocaleString()} kcal`;
 
     // --------------------------------------------------------
     // WEIGHT
     // --------------------------------------------------------
 
-    const weight =
-      Number(
-        d.weight ||
-        profile.weight ||
-        0
-      );
+    const weight = Number(
+      d.weight || profile.weight || 0
+    );
 
-
-    if ($('weightDash')) {
-
-      $('weightDash').textContent =
-        weight.toFixed(1);
-
-    }
-
+    if ($('weightDash'))
+      $('weightDash').textContent = weight.toFixed(1);
 
     // --------------------------------------------------------
     // MACROS
     // --------------------------------------------------------
 
-    if ($('macroProtein')) {
+    if ($('macroProtein'))
+      $('macroProtein').textContent = Math.round(Number(d.p) || 0);
 
-      $('macroProtein').textContent =
-        Math.round(
-          Number(d.p) || 0
-        );
+    if ($('macroCarbs'))
+      $('macroCarbs').textContent = Math.round(Number(d.c) || 0);
 
-    }
-
-    if ($('macroCarbs')) {
-
-      $('macroCarbs').textContent =
-        Math.round(
-          Number(d.c) || 0
-        );
-
-    }
-
-    if ($('macroFat')) {
-
-      $('macroFat').textContent =
-        Math.round(
-          Number(d.f) || 0
-        );
-
-    }
+    if ($('macroFat'))
+      $('macroFat').textContent = Math.round(Number(d.f) || 0);
 
   }
 
-  catch (error) {
+  catch (err) {
 
-    console.error(
-      'Dashboard refresh error:',
-      error
-    );
+    console.error('Dashboard refresh error:', err);
 
   }
 
