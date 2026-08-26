@@ -1784,3 +1784,141 @@ select:focus-visible {
 [hidden] {
   display: none !important;
 }
+
+/* ============================================================
+   HISTORY DAY NAVIGATION
+   ============================================================ */
+
+.historical-navigation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 4px 0;
+}
+
+
+.history-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  width: fit-content;
+
+  padding: 8px 12px;
+
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+
+  background: rgba(255,255,255,0.035);
+
+  color: rgba(255,255,255,0.72);
+
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+
+.history-nav-btn:first-child {
+  justify-self: start;
+}
+
+
+.history-nav-btn:last-child {
+  justify-self: end;
+}
+
+
+.history-nav-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+
+  border-color:
+    rgba(110,168,254,0.35);
+
+  color: #ffffff;
+
+  transform: translateY(-1px);
+}
+
+
+.history-nav-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+
+.history-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+
+.history-nav-arrow {
+  font-size: 22px;
+  line-height: 12px;
+  font-weight: 300;
+}
+
+
+.history-position {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+
+  min-width: 150px;
+
+  text-align: center;
+}
+
+
+.history-position strong {
+  color: rgba(255,255,255,0.90);
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+.history-position small {
+  color: rgba(255,255,255,0.40);
+
+  font-size: 11px;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+  .historical-navigation {
+    gap: 8px;
+  }
+
+
+  .history-nav-btn {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+
+
+  .history-position {
+    min-width: 110px;
+  }
+
+
+  .history-position strong {
+    font-size: 13px;
+  }
+
+}
