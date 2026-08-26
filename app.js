@@ -3330,11 +3330,9 @@ function renderHistoryRecords(records) {
   const container =
     $('dashboardHistory');
 
-
   if (!container) {
     return;
   }
-
 
   // ----------------------------------------------------------
   // NO RECORDS
@@ -3346,18 +3344,12 @@ function renderHistoryRecords(records) {
 
     container.innerHTML = `
       <div class="historical-day">
-
-        <p>
-          No history available yet.
-        </p>
-
+        <p>No history available yet.</p>
       </div>
     `;
 
     return;
-
   }
-
 
   // ----------------------------------------------------------
   // KEEP INDEX VALID
@@ -3368,18 +3360,11 @@ function renderHistoryRecords(records) {
   }
 
   if (historyRecordIndex >= records.length) {
-    historyRecordIndex =
-      records.length - 1;
+    historyRecordIndex = records.length - 1;
   }
-
-
-  // ----------------------------------------------------------
-  // CURRENT RECORD
-  // ----------------------------------------------------------
 
   const record =
     records[historyRecordIndex];
-
 
   // ----------------------------------------------------------
   // RECORD VALUES
@@ -3412,7 +3397,6 @@ function renderHistoryRecords(records) {
   const stepsCalories =
     Number(record.stepsCalories) || 0;
 
-
   // ----------------------------------------------------------
   // TOTAL BURNED
   // ----------------------------------------------------------
@@ -3420,23 +3404,16 @@ function renderHistoryRecords(records) {
   let totalBurned =
     Number(record.activeCalories) || 0;
 
-
   if (totalBurned <= 0) {
-
     totalBurned =
       Number(record.caloriesBurned) || 0;
-
   }
 
-
   if (totalBurned <= 0) {
-
     totalBurned =
       workoutCalories +
       stepsCalories;
-
   }
-
 
   // ----------------------------------------------------------
   // BMI
@@ -3454,42 +3431,27 @@ function renderHistoryRecords(records) {
 
       : 0;
 
-
   let bmiStatus = '';
-
 
   if (bmi > 0) {
 
     if (bmi < 18.5) {
-
-      bmiStatus =
-        'Underweight';
-
+      bmiStatus = 'Underweight';
     }
 
     else if (bmi < 25) {
-
-      bmiStatus =
-        'Normal';
-
+      bmiStatus = 'Normal';
     }
 
     else if (bmi < 30) {
-
-      bmiStatus =
-        'Overweight';
-
+      bmiStatus = 'Overweight';
     }
 
     else {
-
-      bmiStatus =
-        'Obese';
-
+      bmiStatus = 'Obese';
     }
 
   }
-
 
   // ----------------------------------------------------------
   // NAVIGATION STATE
@@ -3502,43 +3464,58 @@ function renderHistoryRecords(records) {
     historyRecordIndex ===
     records.length - 1;
 
-
   // ----------------------------------------------------------
   // RENDER
   // ----------------------------------------------------------
 
   container.innerHTML = `
 
+    <!-- DAILY NAVIGATION -->
+
     <div class="historical-navigation">
 
       <button
         type="button"
         id="historyPrevious"
+        class="history-nav-arrow-btn"
         ${isFirst ? 'disabled' : ''}
+        aria-label="Previous day"
+        title="Previous day"
       >
-        ← Previous
+        ‹
       </button>
 
 
-      <span class="history-page-number">
+      <div class="history-page-info">
 
-        ${historyRecordIndex + 1}
-        /
-        ${records.length}
+        <span class="history-page-date">
+          ${escapeHtml(
+            formatDate(record.date)
+          )}
+        </span>
 
-      </span>
+        <span class="history-page-count">
+          ${historyRecordIndex + 1} of ${records.length}
+        </span>
+
+      </div>
 
 
       <button
         type="button"
         id="historyNext"
+        class="history-nav-arrow-btn"
         ${isLast ? 'disabled' : ''}
+        aria-label="Next day"
+        title="Next day"
       >
-        Next →
+        ›
       </button>
 
     </div>
 
+
+    <!-- DAILY RECORD -->
 
     <div class="historical-day">
 
@@ -3559,9 +3536,7 @@ function renderHistoryRecords(records) {
         </div>
 
         <span class="historical-date">
-          ${escapeHtml(
-            record.date
-          )}
+          ${escapeHtml(record.date)}
         </span>
 
       </div>
@@ -3643,13 +3618,11 @@ function renderHistoryRecords(records) {
           </span>
 
           <strong>
-
             ${
               weight > 0
                 ? weight.toFixed(1) + ' kg'
                 : '--'
             }
-
           </strong>
 
         </div>
@@ -3664,19 +3637,15 @@ function renderHistoryRecords(records) {
           </span>
 
           <strong>
-
             ${
               bmi > 0
                 ? bmi.toFixed(1)
                 : '--'
             }
-
           </strong>
 
           <small>
-            ${escapeHtml(
-              bmiStatus
-            )}
+            ${escapeHtml(bmiStatus)}
           </small>
 
         </div>
@@ -3706,9 +3675,7 @@ function renderHistoryRecords(records) {
           </span>
 
           <strong>
-            ${escapeHtml(
-              workout
-            )}
+            ${escapeHtml(workout)}
           </strong>
 
         </div>
@@ -3777,7 +3744,6 @@ function renderHistoryRecords(records) {
   const previous =
     $('historyPrevious');
 
-
   if (previous) {
 
     previous.onclick =
@@ -3805,7 +3771,6 @@ function renderHistoryRecords(records) {
   const next =
     $('historyNext');
 
-
   if (next) {
 
     next.onclick =
@@ -3814,14 +3779,12 @@ function renderHistoryRecords(records) {
         const currentRecords =
           getFilteredHistory();
 
-
         if (
           historyRecordIndex >=
           currentRecords.length - 1
         ) {
           return;
         }
-
 
         historyRecordIndex++;
 
