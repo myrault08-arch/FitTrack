@@ -3327,12 +3327,12 @@ let historyRecordIndex = 0;
 
 function renderHistoryRecords(records) {
 
-  const container =
-    $('dashboardHistory');
+  const container = $('dashboardHistory');
 
   if (!container) {
     return;
   }
+
 
   // ----------------------------------------------------------
   // NO RECORDS
@@ -3344,12 +3344,17 @@ function renderHistoryRecords(records) {
 
     container.innerHTML = `
       <div class="historical-day">
-        <p>No history available yet.</p>
+
+        <p>
+          No history available yet.
+        </p>
+
       </div>
     `;
 
     return;
   }
+
 
   // ----------------------------------------------------------
   // KEEP INDEX VALID
@@ -3363,8 +3368,9 @@ function renderHistoryRecords(records) {
     historyRecordIndex = records.length - 1;
   }
 
-  const record =
-    records[historyRecordIndex];
+
+  const record = records[historyRecordIndex];
+
 
   // ----------------------------------------------------------
   // RECORD VALUES
@@ -3397,6 +3403,7 @@ function renderHistoryRecords(records) {
   const stepsCalories =
     Number(record.stepsCalories) || 0;
 
+
   // ----------------------------------------------------------
   // TOTAL BURNED
   // ----------------------------------------------------------
@@ -3415,6 +3422,7 @@ function renderHistoryRecords(records) {
       stepsCalories;
   }
 
+
   // ----------------------------------------------------------
   // BMI
   // ----------------------------------------------------------
@@ -3430,6 +3438,7 @@ function renderHistoryRecords(records) {
         )
 
       : 0;
+
 
   let bmiStatus = '';
 
@@ -3450,8 +3459,8 @@ function renderHistoryRecords(records) {
     else {
       bmiStatus = 'Obese';
     }
-
   }
+
 
   // ----------------------------------------------------------
   // NAVIGATION STATE
@@ -3461,8 +3470,8 @@ function renderHistoryRecords(records) {
     historyRecordIndex === 0;
 
   const isLast =
-    historyRecordIndex ===
-    records.length - 1;
+    historyRecordIndex === records.length - 1;
+
 
   // ----------------------------------------------------------
   // RENDER
@@ -3470,52 +3479,66 @@ function renderHistoryRecords(records) {
 
   container.innerHTML = `
 
-    <!-- DAILY NAVIGATION -->
-
     <div class="historical-navigation">
+
+      <!-- PREVIOUS -->
 
       <button
         type="button"
         id="historyPrevious"
-        class="history-nav-arrow-btn"
+        class="history-nav-btn"
         ${isFirst ? 'disabled' : ''}
-        aria-label="Previous day"
-        title="Previous day"
       >
-        ‹
+
+        <span class="history-nav-arrow">
+          ←
+        </span>
+
+        <span>
+          Previous
+        </span>
+
       </button>
 
 
-      <div class="history-page-info">
+      <!-- POSITION -->
 
-        <span class="history-page-date">
-          ${escapeHtml(
-            formatDate(record.date)
-          )}
-        </span>
+      <div class="history-position">
 
-        <span class="history-page-count">
-          ${historyRecordIndex + 1} of ${records.length}
-        </span>
+        <strong>
+          ${historyRecordIndex + 1}
+          / 
+          ${records.length}
+        </strong>
+
+        <small>
+          Daily History
+        </small>
 
       </div>
 
 
+      <!-- NEXT -->
+
       <button
         type="button"
         id="historyNext"
-        class="history-nav-arrow-btn"
+        class="history-nav-btn"
         ${isLast ? 'disabled' : ''}
-        aria-label="Next day"
-        title="Next day"
       >
-        ›
+
+        <span>
+          Next
+        </span>
+
+        <span class="history-nav-arrow">
+          →
+        </span>
+
       </button>
 
     </div>
 
-
-    <!-- DAILY RECORD -->
 
     <div class="historical-day">
 
@@ -3536,7 +3559,11 @@ function renderHistoryRecords(records) {
         </div>
 
         <span class="historical-date">
-          ${escapeHtml(record.date)}
+
+          ${escapeHtml(
+            record.date
+          )}
+
         </span>
 
       </div>
@@ -3618,11 +3645,13 @@ function renderHistoryRecords(records) {
           </span>
 
           <strong>
+
             ${
               weight > 0
                 ? weight.toFixed(1) + ' kg'
                 : '--'
             }
+
           </strong>
 
         </div>
@@ -3637,11 +3666,13 @@ function renderHistoryRecords(records) {
           </span>
 
           <strong>
+
             ${
               bmi > 0
                 ? bmi.toFixed(1)
                 : '--'
             }
+
           </strong>
 
           <small>
@@ -3715,8 +3746,10 @@ function renderHistoryRecords(records) {
 
         <!-- TOTAL BURNED -->
 
-        <div
-          class="historical-stat historical-total">
+        <div class="
+          historical-stat
+          historical-total
+        ">
 
           <span>
             🔥 Total Burned
@@ -3746,21 +3779,19 @@ function renderHistoryRecords(records) {
 
   if (previous) {
 
-    previous.onclick =
-      () => {
+    previous.onclick = () => {
 
-        if (historyRecordIndex <= 0) {
-          return;
-        }
+      if (historyRecordIndex <= 0) {
+        return;
+      }
 
-        historyRecordIndex--;
+      historyRecordIndex--;
 
-        renderHistoryRecords(
-          getFilteredHistory()
-        );
+      renderHistoryRecords(
+        getFilteredHistory()
+      );
 
-      };
-
+    };
   }
 
 
@@ -3773,27 +3804,25 @@ function renderHistoryRecords(records) {
 
   if (next) {
 
-    next.onclick =
-      () => {
+    next.onclick = () => {
 
-        const currentRecords =
-          getFilteredHistory();
+      const currentRecords =
+        getFilteredHistory();
 
-        if (
-          historyRecordIndex >=
-          currentRecords.length - 1
-        ) {
-          return;
-        }
+      if (
+        historyRecordIndex >=
+        currentRecords.length - 1
+      ) {
+        return;
+      }
 
-        historyRecordIndex++;
+      historyRecordIndex++;
 
-        renderHistoryRecords(
-          currentRecords
-        );
+      renderHistoryRecords(
+        currentRecords
+      );
 
-      };
-
+    };
   }
 
 }
