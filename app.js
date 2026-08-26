@@ -3330,6 +3330,7 @@ function renderHistoryRecords(records) {
   const container =
     $('dashboardHistory');
 
+
   if (!container) {
     return;
   }
@@ -3354,6 +3355,7 @@ function renderHistoryRecords(records) {
     `;
 
     return;
+
   }
 
 
@@ -3418,12 +3420,14 @@ function renderHistoryRecords(records) {
   let totalBurned =
     Number(record.activeCalories) || 0;
 
+
   if (totalBurned <= 0) {
 
     totalBurned =
       Number(record.caloriesBurned) || 0;
 
   }
+
 
   if (totalBurned <= 0) {
 
@@ -3452,6 +3456,7 @@ function renderHistoryRecords(records) {
 
 
   let bmiStatus = '';
+
 
   if (bmi > 0) {
 
@@ -3500,295 +3505,278 @@ function renderHistoryRecords(records) {
 
   // ----------------------------------------------------------
   // RENDER
-  //
-  // IMPORTANT:
-  // The navigation structure below is kept exactly in the
-  // same style/structure as your current working version.
   // ----------------------------------------------------------
 
   container.innerHTML = `
 
-<div class="historical-navigation">
+    <div class="historical-navigation">
 
-  <button
-    type="button"
-    id="historyPrevious"
-    class="history-nav-btn"
-    ${isFirst ? 'disabled' : ''}
-    aria-label="Previous day"
-  >
-    <span class="history-nav-arrow">‹</span>
-    <span>Previous</span>
-  </button>
+      <button
+        type="button"
+        id="historyPrevious"
+        ${isFirst ? 'disabled' : ''}
+      >
+        ← Previous
+      </button>
 
 
-  <div class="history-position">
+      <span class="history-page-number">
 
-    <strong>
-      ${escapeHtml(
-        formatDate(record.date)
-      )}
-    </strong>
+        ${historyRecordIndex + 1}
+        /
+        ${records.length}
 
-    <small>
-      ${historyRecordIndex + 1} of ${records.length}
-    </small>
-
-  </div>
-
-
-  <button
-    type="button"
-    id="historyNext"
-    class="history-nav-btn"
-    ${isLast ? 'disabled' : ''}
-    aria-label="Next day"
-  >
-    <span>Next</span>
-    <span class="history-nav-arrow">›</span>
-  </button>
-
-</div>
-
-
-<!-- ========================================================
-     DAILY RECORD
-     ======================================================== -->
-
-<div class="historical-day">
-
-
-  <!-- CALORIES -->
-
-  <div class="history-stat-card">
-
-    <div class="history-stat-label">
-      Calories
-    </div>
-
-    <div class="history-stat-value">
-
-      ${calories.toLocaleString()}
-
-      <span>
-        kcal
       </span>
 
+
+      <button
+        type="button"
+        id="historyNext"
+        ${isLast ? 'disabled' : ''}
+      >
+        Next →
+      </button>
+
     </div>
 
-  </div>
 
+    <div class="historical-day">
 
-  <!-- MACROS -->
+      <div class="historical-day-header">
 
-  <div class="history-stat-card">
+        <div>
 
-    <div class="history-stat-label">
-      Macronutrients
-    </div>
+          <p class="eyebrow">
+            DAILY RECORD
+          </p>
 
-    <div class="history-macros">
+          <h3>
+            ${escapeHtml(
+              formatDate(record.date)
+            )}
+          </h3>
 
-      <div>
+        </div>
 
-        <strong>
-          ${protein}g
-        </strong>
-
-        <small>
-          Protein
-        </small>
+        <span class="historical-date">
+          ${escapeHtml(
+            record.date
+          )}
+        </span>
 
       </div>
 
 
-      <div>
+      <div class="historical-stats">
 
-        <strong>
-          ${carbs}g
-        </strong>
 
-        <small>
-          Carbs
-        </small>
+        <!-- CALORIES -->
+
+        <div class="historical-stat">
+
+          <span>
+            🔥 Calories
+          </span>
+
+          <strong>
+            ${calories.toLocaleString()}
+            kcal
+          </strong>
+
+        </div>
+
+
+        <!-- PROTEIN -->
+
+        <div class="historical-stat">
+
+          <span>
+            🥩 Protein
+          </span>
+
+          <strong>
+            ${Math.round(protein)}
+            g
+          </strong>
+
+        </div>
+
+
+        <!-- CARBS -->
+
+        <div class="historical-stat">
+
+          <span>
+            🍚 Carbs
+          </span>
+
+          <strong>
+            ${Math.round(carbs)}
+            g
+          </strong>
+
+        </div>
+
+
+        <!-- FAT -->
+
+        <div class="historical-stat">
+
+          <span>
+            🥑 Fat
+          </span>
+
+          <strong>
+            ${Math.round(fat)}
+            g
+          </strong>
+
+        </div>
+
+
+        <!-- WEIGHT -->
+
+        <div class="historical-stat">
+
+          <span>
+            ⚖️ Weight
+          </span>
+
+          <strong>
+
+            ${
+              weight > 0
+                ? weight.toFixed(1) + ' kg'
+                : '--'
+            }
+
+          </strong>
+
+        </div>
+
+
+        <!-- BMI -->
+
+        <div class="historical-stat">
+
+          <span>
+            📊 BMI
+          </span>
+
+          <strong>
+
+            ${
+              bmi > 0
+                ? bmi.toFixed(1)
+                : '--'
+            }
+
+          </strong>
+
+          <small>
+            ${escapeHtml(
+              bmiStatus
+            )}
+          </small>
+
+        </div>
+
+
+        <!-- STEPS -->
+
+        <div class="historical-stat">
+
+          <span>
+            🚶 Steps
+          </span>
+
+          <strong>
+            ${steps.toLocaleString()}
+          </strong>
+
+        </div>
+
+
+        <!-- WORKOUT -->
+
+        <div class="historical-stat">
+
+          <span>
+            🏋️ Workout
+          </span>
+
+          <strong>
+            ${escapeHtml(
+              workout
+            )}
+          </strong>
+
+        </div>
+
+
+        <!-- WORKOUT CALORIES -->
+
+        <div class="historical-stat">
+
+          <span>
+            🔥 Workout Burn
+          </span>
+
+          <strong>
+            ${workoutCalories.toLocaleString()}
+            kcal
+          </strong>
+
+        </div>
+
+
+        <!-- WALKING CALORIES -->
+
+        <div class="historical-stat">
+
+          <span>
+            🚶 Walking Burn
+          </span>
+
+          <strong>
+            ${stepsCalories.toLocaleString()}
+            kcal
+          </strong>
+
+        </div>
+
+
+        <!-- TOTAL BURNED -->
+
+        <div
+          class="historical-stat historical-total">
+
+          <span>
+            🔥 Total Burned
+          </span>
+
+          <strong>
+            ${totalBurned.toLocaleString()}
+            kcal
+          </strong>
+
+        </div>
+
 
       </div>
 
-
-      <div>
-
-        <strong>
-          ${fat}g
-        </strong>
-
-        <small>
-          Fat
-        </small>
-
-      </div>
-
     </div>
 
-  </div>
+  `;
 
 
-  <!-- ACTIVITY -->
-
-  <div class="history-stat-card">
-
-    <div class="history-stat-label">
-      Activity
-    </div>
-
-
-    <div class="history-detail-row">
-
-      <span>
-        Steps
-      </span>
-
-      <strong>
-        ${steps.toLocaleString()}
-      </strong>
-
-    </div>
-
-
-    <div class="history-detail-row">
-
-      <span>
-        Workout
-      </span>
-
-      <strong>
-        ${escapeHtml(workout)}
-      </strong>
-
-    </div>
-
-  </div>
-
-
-  <!-- CALORIES BURNED -->
-
-  <div class="history-stat-card">
-
-    <div class="history-stat-label">
-      Calories Burned
-    </div>
-
-
-    <div class="history-detail-row">
-
-      <span>
-        Workout
-      </span>
-
-      <strong>
-        ${workoutCalories.toLocaleString()}
-        kcal
-      </strong>
-
-    </div>
-
-
-    <div class="history-detail-row">
-
-      <span>
-        Steps
-      </span>
-
-      <strong>
-        ${stepsCalories.toLocaleString()}
-        kcal
-      </strong>
-
-    </div>
-
-
-    <div
-      class="history-detail-row history-total-row"
-    >
-
-      <span>
-        Total
-      </span>
-
-      <strong>
-        ${totalBurned.toLocaleString()}
-        kcal
-      </strong>
-
-    </div>
-
-  </div>
-
-
-  <!-- WEIGHT -->
-
-  <div class="history-stat-card">
-
-    <div class="history-stat-label">
-      Weight
-    </div>
-
-
-    <div class="history-stat-value">
-
-      ${
-        weight > 0
-
-          ? `
-            ${weight.toFixed(1)}
-            <span>kg</span>
-          `
-
-          : '--'
-      }
-
-    </div>
-
-
-    ${
-      bmi > 0
-
-        ? `
-
-          <div class="history-bmi">
-
-            <span>
-              BMI
-            </span>
-
-            <strong>
-              ${bmi.toFixed(1)}
-            </strong>
-
-            <small>
-              ${escapeHtml(bmiStatus)}
-            </small>
-
-          </div>
-
-        `
-
-        : ''
-    }
-
-  </div>
-
-
-</div>
-
-`;
-
-
-  // ==========================================================
-  // PREVIOUS BUTTON
-  // ==========================================================
+  // ----------------------------------------------------------
+  // PREVIOUS
+  // ----------------------------------------------------------
 
   const previous =
     $('historyPrevious');
+
 
   if (previous) {
 
@@ -3810,12 +3798,13 @@ function renderHistoryRecords(records) {
   }
 
 
-  // ==========================================================
-  // NEXT BUTTON
-  // ==========================================================
+  // ----------------------------------------------------------
+  // NEXT
+  // ----------------------------------------------------------
 
   const next =
     $('historyNext');
+
 
   if (next) {
 
@@ -3825,12 +3814,14 @@ function renderHistoryRecords(records) {
         const currentRecords =
           getFilteredHistory();
 
+
         if (
           historyRecordIndex >=
           currentRecords.length - 1
         ) {
           return;
         }
+
 
         historyRecordIndex++;
 
