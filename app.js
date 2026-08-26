@@ -3518,266 +3518,47 @@ function renderHistoryRecords(records) {
 
   container.innerHTML = `
 
-    <div class="historical-navigation">
-
-      <button
-        type="button"
-        id="historyPrevious"
-        ${isFirst ? 'disabled' : ''}
-      >
-        ← Previous
-      </button>
-
-
-      <span class="history-page-number">
-
-        ${historyRecordIndex + 1}
-        /
-        ${records.length}
-
-      </span>
-
-
-      <button
-        type="button"
-        id="historyNext"
-        ${isLast ? 'disabled' : ''}
-      >
-        Next →
-      </button>
-
-    </div>
-
-
-    <div class="historical-day">
-
-      <div class="historical-day-header">
-
-        <div>
-
-          <p class="eyebrow">
-            DAILY RECORD
-          </p>
-
-          <h3>
-            ${escapeHtml(
-              formatDate(
-                record.date
-              )
-            )}
-          </h3>
-
-        </div>
-
-        <span class="historical-date">
-          ${escapeHtml(
-            record.date
-          )}
-        </span>
-
-      </div>
-
-
-      <div class="historical-stats">
-
-
-        <!-- CALORIES -->
-
-        <div class="historical-stat">
-
-          <span>
-            🔥 Calories
-          </span>
-
-          <strong>
-            ${calories.toLocaleString()}
-            kcal
-          </strong>
-
-        </div>
-
-
-        <!-- PROTEIN -->
-
-        <div class="historical-stat">
-
-          <span>
-            🥩 Protein
-          </span>
-
-          <strong>
-            ${Math.round(protein)}
-            g
-          </strong>
-
-        </div>
-
-
-        <!-- CARBS -->
-
-        <div class="historical-stat">
-
-          <span>
-            🍚 Carbs
-          </span>
-
-          <strong>
-            ${Math.round(carbs)}
-            g
-          </strong>
-
-        </div>
-
-
-        <!-- FAT -->
-
-        <div class="historical-stat">
-
-          <span>
-            🥑 Fat
-          </span>
-
-          <strong>
-            ${Math.round(fat)}
-            g
-          </strong>
-
-        </div>
-
-
-        <!-- WEIGHT -->
-
-        <div class="historical-stat">
-
-          <span>
-            ⚖️ Weight
-          </span>
-
-          <strong>
-
-            ${
-              weight > 0
-                ? weight.toFixed(1) +
-                  ' kg'
-                : '--'
-            }
-
-          </strong>
-
-        </div>
-
-
-        <!-- BMI -->
-
-        <div class="historical-stat">
-
-          <span>
-            📊 BMI
-          </span>
-
-          <strong>
-
-            ${
-              bmi > 0
-                ? bmi.toFixed(1)
-                : '--'
-            }
-
-          </strong>
-
-          <small>
-            ${escapeHtml(
-              bmiStatus
-            )}
-          </small>
-
-        </div>
-
-
-        <!-- STEPS -->
-
-        <div class="historical-stat">
-
-          <span>
-            🚶 Steps
-          </span>
-
-          <strong>
-            ${steps.toLocaleString()}
-          </strong>
-
-        </div>
-
-
-        <!-- WORKOUT -->
-
-        <div class="historical-stat">
-
-          <span>
-            🏋️ Workout
-          </span>
-
-          <strong>
-            ${escapeHtml(
-              workout
-            )}
-          </strong>
-
-        </div>
-
-
-        <!-- WORKOUT CALORIES -->
-
-        <div class="historical-stat">
-
-          <span>
-            🔥 Workout Burn
-          </span>
-
-          <strong>
-            ${workoutCalories.toLocaleString()}
-            kcal
-          </strong>
-
-        </div>
-
-
-        <!-- WALKING CALORIES -->
-
-        <div class="historical-stat">
-
-          <span>
-            🚶 Walking Burn
-          </span>
-
-          <strong>
-            ${stepsCalories.toLocaleString()}
-            kcal
-          </strong>
-
-        </div>
-
-
-        <!-- TOTAL BURNED -->
-
-        <div
-          class="historical-stat historical-total">
-
-          <span>
-            🔥 Total Burned
-          </span>
-
-          <strong>
-            ${totalBurned.toLocaleString()}
-            kcal
-          </strong>
-
-        </div>
-
-
-      </div>
-
-    </div>
+<div class="historical-navigation">
+
+  <button
+    type="button"
+    id="historyPrevious"
+    class="history-nav-btn"
+    ${isFirst ? 'disabled' : ''}
+    aria-label="Previous day"
+  >
+    <span class="history-nav-arrow">‹</span>
+    <span>Previous</span>
+  </button>
+
+
+  <div class="history-position">
+
+    <strong>
+      ${escapeHtml(
+        formatDate(record.date)
+      )}
+    </strong>
+
+    <small>
+      ${historyRecordIndex + 1} of ${records.length}
+    </small>
+
+  </div>
+
+
+  <button
+    type="button"
+    id="historyNext"
+    class="history-nav-btn"
+    ${isLast ? 'disabled' : ''}
+    aria-label="Next day"
+  >
+    <span>Next</span>
+    <span class="history-nav-arrow">›</span>
+  </button>
+
+</div>
 
   `;
 
