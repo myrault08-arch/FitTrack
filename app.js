@@ -2019,55 +2019,123 @@ if ($('stepsForm')) {
 
 
 // ============================================================
-// LOAD ALL HEALTH HISTORY (FIXED)
+// HISTORY
+// ============================================================
+//
+// Firestore structure:
+//
+// users/{uid}/healthData/{YYYY-MM-DD}
+//
+// Each daily document contains:
+//
+// cal
+// p
+// c
+// f
+// steps
+// workout
+// workoutCalories
+// stepsCalories
+// caloriesBurned
+// activeCalories
+// weight
+//
+// Food entries are stored under:
+//
+// users/{uid}/healthData/{YYYY-MM-DD}/foods
+//
+// The daily nutrition totals above are updated when food is added.
+// ============================================================
+
+let healthHistory = [];
+let historyRange = 7;
+
+
+// ============================================================
+// LOAD ALL HEALTH HISTORY
 // ============================================================
 
 async function loadHealthHistory() {
 
-  if (!user) return [];
+  if (!user) {
+    return [];
+  }
 
   try {
 
-    const snapshot = await getDocs(healthDataCollection());
+    const snapshot =
+      await getDocs(
+        healthDataCollection()
+      );
 
     const records = [];
 
-    snapshot.forEach(docSnap => {
+    snapshot.forEach(dayDoc => {
 
-      const data = docSnap.data();
+      const data =
+        dayDoc.data();
 
       records.push({
 
-        date: docSnap.id,
+        date:
+          dayDoc.id,
 
-        cal: Number(data.cal) || 0,
-        p: Number(data.p) || 0,
-        c: Number(data.c) || 0,
-        f: Number(data.f) || 0,
+        cal:
+          Number(data.cal) || 0,
 
-        steps: Number(data.steps) || 0,
+        p:
+          Number(data.p) || 0,
 
-        workout: data.workout || 'Rest',
+        c:
+          Number(data.c) || 0,
 
-        workoutCalories: Number(data.workoutCalories) || 0,
-        stepsCalories: Number(data.stepsCalories) || 0,
-        caloriesBurned: Number(data.caloriesBurned) || 0,
-        activeCalories: Number(data.activeCalories) || 0,
+        f:
+          Number(data.f) || 0,
 
-        weight: Number(data.weight) || 0
+        steps:
+          Number(data.steps) || 0,
+
+        workout:
+          data.workout || 'Rest',
+
+        workoutCalories:
+          Number(data.workoutCalories) || 0,
+
+        stepsCalories:
+          Number(data.stepsCalories) || 0,
+
+        caloriesBurned:
+          Number(data.caloriesBurned) || 0,
+
+        activeCalories:
+          Number(data.activeCalories) || 0,
+
+        weight:
+          Number(data.weight) || 0
 
       });
 
     });
 
-    // Sort newest to oldest
-    records.sort((a, b) => b.date.localeCompare(a.date));
+
+    // Newest first
+    records.sort(
+      (a, b) =>
+        b.date.localeCompare(a.date)
+    );
+
 
     return records;
 
-  } catch (error) {
+  }
 
-    console.error('Health history error:', error);
+  catch (error) {
+
+    console.error(
+      'Health history error:',
+      error
+    );
+
     return [];
 
   }
@@ -2076,7 +2144,7 @@ async function loadHealthHistory() {
 
 
 // ============================================================
-// HISTORY RANGE
+// FILTER HISTORY
 // ============================================================
 
 function getFilteredHistory() {
@@ -2091,12 +2159,10 @@ function getFilteredHistory() {
   }
 
 
-  const count =
-    Number(historyRange);
-
-
-  return healthHistory
-    .slice(0, count);
+  return healthHistory.slice(
+    0,
+    Number(historyRange)
+  );
 
 }
 
@@ -2107,25 +2173,42 @@ function getFilteredHistory() {
 
 async function loadHistory() {
 
-  if (!user) return;
+  if (!user) {
+    return;
+  }
 
   try {
 
-    healthHistory = await loadHealthHistory();
+    healthHistory =
+      await loadHealthHistory();
 
-    const filtered = getFilteredHistory();
 
-    updateMetricSummary(filtered);
-    drawWeightChart(filtered);
-    drawCaloriesChart(filtered);
-    drawStepsChart(filtered);
-    drawMacroChart(filtered);
-    drawBurnedChart(filtered);
-    renderHistoricalDashboard(filtered);
+    const records =
+      getFilteredHistory();
 
-  } catch (error) {
 
-    console.error('Progress history error:', error);
+    updateHistorySummary(records);
+
+    drawHistoryCaloriesChart(records);
+
+    drawHistoryStepsChart(records);
+
+    drawHistoryBurnedChart(records);
+
+    drawHistoryWeightChart(records);
+
+    drawHistoryMacroChart(records);
+
+    renderHistoryRecords(records);
+
+  }
+
+  catch (error) {
+
+    console.error(
+      'History loading error:',
+      error
+    );
 
   }
 
@@ -2133,108 +2216,173 @@ async function loadHistory() {
 
 
 // ============================================================
-// RANGE BUTTONS
+// HISTORY RANGE BUTTONS
+// ============================================================
+//
+// Your HTML currently uses:
+//
+// #history7
+// #history30
+// #history90
+//
 // ============================================================
 
-document
-  .querySelectorAll('[data-history-range]')
-  .forEach(button => {
+function setupHistoryButtons() {
 
-    button.onclick = async () => {
+  const buttons = {
 
-      const value =
-        button.dataset.historyRange;
+    7:
+      $('history7'),
+
+    30:
+      $('history30'),
+
+    90:
+      $('history90')
+
+  };
 
 
-      historyRange =
-        value === 'all'
-          ? 'all'
-          : Number(value);
+  Object.entries(buttons)
+    .forEach(
+      ([range, button]) => {
+
+        if (!button) {
+          return;
+        }
 
 
-      document
-        .querySelectorAll(
-          '[data-history-range]'
+        button.onclick =
+          async () => {
+
+            historyRange =
+              Number(range);
+
+
+            Object.values(buttons)
+              .forEach(
+                item => {
+
+                  if (!item) {
+                    return;
+                  }
+
+                  item.classList.toggle(
+                    'history-range-active',
+                    item === button
+                  );
+
+                  item.classList.toggle(
+                    'active',
+                    item === button
+                  );
+
+                }
+              );
+
+
+            await loadHistory();
+
+          };
+
+      }
+    );
+
+}
+
+
+setupHistoryButtons();
+
+
+// ============================================================
+// HISTORY SUMMARY
+// ============================================================
+
+function updateHistorySummary(records) {
+
+  // ----------------------------------------------------------
+  // AVERAGE CALORIES
+  // ----------------------------------------------------------
+
+  const totalCalories =
+    records.reduce(
+      (sum, record) =>
+        sum +
+        Number(record.cal || 0),
+      0
+    );
+
+
+  const averageCalories =
+    records.length
+      ? Math.round(
+          totalCalories /
+          records.length
         )
-        .forEach(item => {
-
-          item.classList.toggle(
-            'active',
-            item === button
-          );
-
-        });
+      : 0;
 
 
-      await loadHistory();
+  if ($('historyAvgCalories')) {
 
-    };
+    $('historyAvgCalories').textContent =
+      averageCalories.toLocaleString();
 
-  });
+  }
 
 
-// ============================================================
-// METRIC SUMMARY
-// ============================================================
+  // ----------------------------------------------------------
+  // AVERAGE STEPS
+  // ----------------------------------------------------------
 
-function updateMetricSummary(records) {
+  const totalSteps =
+    records.reduce(
+      (sum, record) =>
+        sum +
+        Number(record.steps || 0),
+      0
+    );
+
+
+  const averageSteps =
+    records.length
+      ? Math.round(
+          totalSteps /
+          records.length
+        )
+      : 0;
+
+
+  if ($('historyAvgSteps')) {
+
+    $('historyAvgSteps').textContent =
+      averageSteps.toLocaleString();
+
+  }
+
+
+  // ----------------------------------------------------------
+  // CURRENT WEIGHT
+  // ----------------------------------------------------------
 
   const weightRecords =
-    records
-      .filter(
-        item =>
-          Number(item.weight) > 0
-      );
+    records.filter(
+      record =>
+        Number(record.weight) > 0
+    );
 
 
   if (weightRecords.length) {
 
-    const newest =
-      weightRecords[0];
-
-    const oldest =
-      weightRecords[
-        weightRecords.length - 1
-      ];
+    const latestWeight =
+      Number(
+        weightRecords[0].weight
+      );
 
 
-    const current =
-      Number(newest.weight);
+    if ($('historyCurrentWeight')) {
 
-
-    const starting =
-      Number(oldest.weight);
-
-
-    const change =
-      current - starting;
-
-
-    if ($('metricCurrentWeight')) {
-
-      $('metricCurrentWeight').textContent =
-        `${current.toFixed(1)} kg`;
-
-    }
-
-
-    if ($('metricStartingWeight')) {
-
-      $('metricStartingWeight').textContent =
-        `${starting.toFixed(1)} kg`;
-
-    }
-
-
-    if ($('metricWeightChange')) {
-
-      const sign =
-        change > 0
-          ? '+'
-          : '';
-
-      $('metricWeightChange').textContent =
-        `${sign}${change.toFixed(1)} kg`;
+      $('historyCurrentWeight').textContent =
+        latestWeight.toFixed(1);
 
     }
 
@@ -2242,56 +2390,11 @@ function updateMetricSummary(records) {
 
   else {
 
-    if ($('metricCurrentWeight')) {
-      $('metricCurrentWeight').textContent =
-        '-- kg';
-    }
+    if ($('historyCurrentWeight')) {
 
-    if ($('metricStartingWeight')) {
-      $('metricStartingWeight').textContent =
-        '-- kg';
-    }
-
-    if ($('metricWeightChange')) {
-      $('metricWeightChange').textContent =
-        '-- kg';
-    }
-
-  }
-
-
-  if (records.length) {
-
-    const totalSteps =
-      records.reduce(
-        (sum, item) =>
-          sum +
-          Number(item.steps || 0),
-        0
-      );
-
-
-    const average =
-      Math.round(
-        totalSteps /
-        records.length
-      );
-
-
-    if ($('metricAverageSteps')) {
-
-      $('metricAverageSteps').textContent =
-        average.toLocaleString();
-
-    }
-
-  }
-
-  else {
-
-    if ($('metricAverageSteps')) {
-      $('metricAverageSteps').textContent =
+      $('historyCurrentWeight').textContent =
         '--';
+
     }
 
   }
@@ -2300,10 +2403,10 @@ function updateMetricSummary(records) {
 
 
 // ============================================================
-// CANVAS CHART HELPER
+// HISTORY CHART HELPER
 // ============================================================
 
-function prepareChart(canvas) {
+function prepareHistoryChart(canvas) {
 
   if (!canvas) {
     return null;
@@ -2371,15 +2474,14 @@ function prepareChart(canvas) {
 
 
 // ============================================================
-// DRAW GENERIC LINE CHART
+// GENERIC HISTORY LINE CHART
 // ============================================================
 
-function drawLineChart(
+function drawHistoryLineChart(
   canvas,
-  emptyElement,
   records,
   valueGetter,
-  options = {}
+  labelFormatter
 ) {
 
   if (!canvas) {
@@ -2387,26 +2489,10 @@ function drawLineChart(
   }
 
 
-  const valid =
-    records
-      .filter(
-        item =>
-          Number(
-            valueGetter(item)
-          ) >= 0
-      )
-      .reverse();
-
-
-  if (!valid.length) {
+  if (!records.length) {
 
     canvas.style.display =
       'none';
-
-    if (emptyElement) {
-      emptyElement.hidden =
-        false;
-    }
 
     return;
 
@@ -2417,14 +2503,8 @@ function drawLineChart(
     'block';
 
 
-  if (emptyElement) {
-    emptyElement.hidden =
-      true;
-  }
-
-
   const chart =
-    prepareChart(canvas);
+    prepareHistoryChart(canvas);
 
 
   if (!chart) {
@@ -2439,41 +2519,29 @@ function drawLineChart(
   } = chart;
 
 
+  const data =
+    [...records]
+      .reverse()
+      .map(record => ({
+
+        record,
+
+        value:
+          Number(
+            valueGetter(record)
+          ) || 0
+
+      }));
+
+
   const padding = {
+
     top: 30,
     right: 30,
     bottom: 55,
-    left: 55
+    left: 65
+
   };
-
-
-  const values =
-    valid.map(
-      valueGetter
-    ).map(Number);
-
-
-  let min =
-    Math.min(...values);
-
-  let max =
-    Math.max(...values);
-
-
-  if (min === max) {
-
-    min -= 1;
-    max += 1;
-
-  }
-
-
-  const range =
-    max - min;
-
-
-  min -= range * 0.1;
-  max += range * 0.1;
 
 
   const graphWidth =
@@ -2486,6 +2554,50 @@ function drawLineChart(
     height -
     padding.top -
     padding.bottom;
+
+
+  let min =
+    Math.min(
+      ...data.map(item => item.value)
+    );
+
+
+  let max =
+    Math.max(
+      ...data.map(item => item.value)
+    );
+
+
+  if (min === max) {
+
+    if (min === 0) {
+
+      max = 10;
+
+    }
+
+    else {
+
+      const extra =
+        Math.max(
+          1,
+          Math.abs(min) * 0.1
+        );
+
+      min -= extra;
+      max += extra;
+
+    }
+
+  }
+
+
+  const range =
+    max - min;
+
+
+  min -= range * 0.1;
+  max += range * 0.1;
 
 
   // ----------------------------------------------------------
@@ -2519,7 +2631,9 @@ function drawLineChart(
 
     const value =
       max -
-      (max - min) *
+      (
+        max - min
+      ) *
       ratio;
 
 
@@ -2550,8 +2664,8 @@ function drawLineChart(
 
 
     ctx.fillText(
-      options.formatValue
-        ? options.formatValue(value)
+      labelFormatter
+        ? labelFormatter(value)
         : Math.round(value),
       padding.left - 10,
       y
@@ -2565,11 +2679,11 @@ function drawLineChart(
   // ----------------------------------------------------------
 
   const points =
-    valid.map(
+    data.map(
       (item, index) => {
 
         const x =
-          valid.length === 1
+          data.length === 1
 
             ? padding.left +
               graphWidth / 2
@@ -2577,15 +2691,11 @@ function drawLineChart(
             : padding.left +
               (
                 index /
-                (valid.length - 1)
+                (
+                  data.length - 1
+                )
               ) *
               graphWidth;
-
-
-        const value =
-          Number(
-            valueGetter(item)
-          );
 
 
         const y =
@@ -2593,7 +2703,7 @@ function drawLineChart(
           (
             1 -
             (
-              value - min
+              item.value - min
             ) /
             (
               max - min
@@ -2603,10 +2713,15 @@ function drawLineChart(
 
 
         return {
+
           x,
           y,
-          value,
-          item
+          value:
+            item.value,
+
+          record:
+            item.record
+
         };
 
       }
@@ -2620,6 +2735,7 @@ function drawLineChart(
   if (points.length > 1) {
 
     ctx.beginPath();
+
 
     points.forEach(
       (point, index) => {
@@ -2647,7 +2763,6 @@ function drawLineChart(
 
 
     ctx.strokeStyle =
-      options.lineColor ||
       '#6ea8fe';
 
     ctx.lineWidth =
@@ -2683,7 +2798,6 @@ function drawLineChart(
 
 
       ctx.fillStyle =
-        options.pointColor ||
         '#ffffff';
 
       ctx.fill();
@@ -2701,7 +2815,6 @@ function drawLineChart(
 
 
       ctx.fillStyle =
-        options.lineColor ||
         '#6ea8fe';
 
       ctx.fill();
@@ -2711,7 +2824,7 @@ function drawLineChart(
 
 
   // ----------------------------------------------------------
-  // X LABELS
+  // DATE LABELS
   // ----------------------------------------------------------
 
   ctx.fillStyle =
@@ -2738,18 +2851,23 @@ function drawLineChart(
 
       if (
         index % labelStep !== 0 &&
-        index !== points.length - 1
+        index !==
+          points.length - 1
       ) {
+
         return;
+
       }
 
 
       ctx.fillText(
         shortDate(
-          point.item.date
+          point.record.date
         ),
         point.x,
-        height - padding.bottom + 15
+        height -
+          padding.bottom +
+          15
       );
 
     }
@@ -2759,47 +2877,24 @@ function drawLineChart(
 
 
 // ============================================================
-// SHORT DATE
+// CALORIES HISTORY CHART
 // ============================================================
 
-function shortDate(dateString) {
+function drawHistoryCaloriesChart(records) {
 
-  const parts =
-    dateString.split('-');
+  drawHistoryLineChart(
 
-  if (parts.length !== 3) {
-    return dateString;
-  }
-
-  return `${parts[1]}/${parts[2]}`;
-
-}
-
-
-// ============================================================
-// WEIGHT CHART
-// ============================================================
-
-function drawWeightChart(records) {
-
-  drawLineChart(
-
-    $('weightChart'),
-
-    $('weightChartEmpty'),
+    $('caloriesHistoryChart'),
 
     records,
 
-    item =>
-      Number(item.weight) || 0,
+    record =>
+      Number(record.cal) || 0,
 
-    {
-      lineColor: '#7dd3fc',
-      pointColor: '#ffffff',
-      formatValue:
-        value =>
-          `${value.toFixed(1)}`
-    }
+    value =>
+      Math.round(
+        value
+      ).toLocaleString()
 
   );
 
@@ -2807,29 +2902,24 @@ function drawWeightChart(records) {
 
 
 // ============================================================
-// CALORIES CHART
+// STEPS HISTORY CHART
 // ============================================================
 
-function drawCaloriesChart(records) {
+function drawHistoryStepsChart(records) {
 
-  drawLineChart(
+  drawHistoryLineChart(
 
-    $('caloriesChart'),
-
-    $('caloriesChartEmpty'),
+    $('stepsHistoryChart'),
 
     records,
 
-    item =>
-      Number(item.cal) || 0,
+    record =>
+      Number(record.steps) || 0,
 
-    {
-      lineColor: '#f59e0b',
-      pointColor: '#ffffff',
-      formatValue:
-        value =>
-          Math.round(value).toLocaleString()
-    }
+    value =>
+      Math.round(
+        value
+      ).toLocaleString()
 
   );
 
@@ -2837,29 +2927,58 @@ function drawCaloriesChart(records) {
 
 
 // ============================================================
-// STEPS CHART
+// BURNED CALORIES HISTORY CHART
 // ============================================================
 
-function drawStepsChart(records) {
+function drawHistoryBurnedChart(records) {
 
-  drawLineChart(
+  drawHistoryLineChart(
 
-    $('stepsChart'),
-
-    $('stepsChartEmpty'),
+    $('burnedHistoryChart'),
 
     records,
 
-    item =>
-      Number(item.steps) || 0,
+    record => {
 
-    {
-      lineColor: '#34d399',
-      pointColor: '#ffffff',
-      formatValue:
-        value =>
-          Math.round(value).toLocaleString()
-    }
+      const active =
+        Number(
+          record.activeCalories
+        ) || 0;
+
+
+      if (active > 0) {
+        return active;
+      }
+
+
+      const stored =
+        Number(
+          record.caloriesBurned
+        ) || 0;
+
+
+      if (stored > 0) {
+        return stored;
+      }
+
+
+      return (
+        Number(
+          record.workoutCalories
+        ) || 0
+      ) +
+      (
+        Number(
+          record.stepsCalories
+        ) || 0
+      );
+
+    },
+
+    value =>
+      Math.round(
+        value
+      ).toLocaleString()
 
   );
 
@@ -2867,19 +2986,43 @@ function drawStepsChart(records) {
 
 
 // ============================================================
-// MACRO CHART
-//
-// Protein / Carbs / Fat
+// WEIGHT HISTORY CHART
 // ============================================================
 
-function drawMacroChart(records) {
+function drawHistoryWeightChart(records) {
+
+  const valid =
+    records.filter(
+      record =>
+        Number(record.weight) > 0
+    );
+
+
+  drawHistoryLineChart(
+
+    $('weightHistoryChart'),
+
+    valid,
+
+    record =>
+      Number(record.weight) || 0,
+
+    value =>
+      value.toFixed(1)
+
+  );
+
+}
+
+
+// ============================================================
+// MACRO HISTORY CHART
+// ============================================================
+
+function drawHistoryMacroChart(records) {
 
   const canvas =
-    $('macroChart');
-
-
-  const empty =
-    $('macroChartEmpty');
+    $('macroHistoryChart');
 
 
   if (!canvas) {
@@ -2887,25 +3030,10 @@ function drawMacroChart(records) {
   }
 
 
-  const valid =
-    records
-      .filter(
-        item =>
-          Number(item.p) > 0 ||
-          Number(item.c) > 0 ||
-          Number(item.f) > 0
-      )
-      .reverse();
-
-
-  if (!valid.length) {
+  if (!records.length) {
 
     canvas.style.display =
       'none';
-
-    if (empty) {
-      empty.hidden = false;
-    }
 
     return;
 
@@ -2915,13 +3043,9 @@ function drawMacroChart(records) {
   canvas.style.display =
     'block';
 
-  if (empty) {
-    empty.hidden = true;
-  }
-
 
   const chart =
-    prepareChart(canvas);
+    prepareHistoryChart(canvas);
 
 
   if (!chart) {
@@ -2936,11 +3060,17 @@ function drawMacroChart(records) {
   } = chart;
 
 
+  const data =
+    [...records].reverse();
+
+
   const padding = {
+
     top: 45,
     right: 30,
     bottom: 55,
     left: 55
+
   };
 
 
@@ -2957,11 +3087,15 @@ function drawMacroChart(records) {
 
 
   const allValues =
-    valid.flatMap(
-      item => [
-        Number(item.p) || 0,
-        Number(item.c) || 0,
-        Number(item.f) || 0
+    data.flatMap(
+      record => [
+
+        Number(record.p) || 0,
+
+        Number(record.c) || 0,
+
+        Number(record.f) || 0
+
       ]
     );
 
@@ -2976,7 +3110,9 @@ function drawMacroChart(records) {
   max *= 1.15;
 
 
-  // Grid
+  // ----------------------------------------------------------
+  // GRID
+  // ----------------------------------------------------------
 
   ctx.font =
     '12px sans-serif';
@@ -3024,6 +3160,9 @@ function drawMacroChart(records) {
     ctx.strokeStyle =
       'rgba(255,255,255,0.10)';
 
+    ctx.lineWidth =
+      1;
+
     ctx.stroke();
 
 
@@ -3045,19 +3184,19 @@ function drawMacroChart(records) {
     {
       key: 'p',
       label: 'Protein',
-      lineColor: '#60a5fa'
+      color: '#60a5fa'
     },
 
     {
       key: 'c',
       label: 'Carbs',
-      lineColor: '#fbbf24'
+      color: '#fbbf24'
     },
 
     {
       key: 'f',
       label: 'Fat',
-      lineColor: '#f472b6'
+      color: '#f472b6'
     }
 
   ];
@@ -3067,17 +3206,19 @@ function drawMacroChart(records) {
     dataset => {
 
       const points =
-        valid.map(
-          (item, index) => {
+        data.map(
+          (record, index) => {
 
             const value =
               Number(
-                item[dataset.key]
+                record[
+                  dataset.key
+                ]
               ) || 0;
 
 
             const x =
-              valid.length === 1
+              data.length === 1
 
                 ? padding.left +
                   graphWidth / 2
@@ -3085,7 +3226,9 @@ function drawMacroChart(records) {
                 : padding.left +
                   (
                     index /
-                    (valid.length - 1)
+                    (
+                      data.length - 1
+                    )
                   ) *
                   graphWidth;
 
@@ -3102,7 +3245,8 @@ function drawMacroChart(records) {
             return {
               x,
               y,
-              value
+              value,
+              record
             };
 
           }
@@ -3112,6 +3256,7 @@ function drawMacroChart(records) {
       if (points.length > 1) {
 
         ctx.beginPath();
+
 
         points.forEach(
           (point, index) => {
@@ -3139,10 +3284,16 @@ function drawMacroChart(records) {
 
 
         ctx.strokeStyle =
-          dataset.lineColor;
+          dataset.color;
 
         ctx.lineWidth =
           2.5;
+
+        ctx.lineJoin =
+          'round';
+
+        ctx.lineCap =
+          'round';
 
         ctx.stroke();
 
@@ -3164,7 +3315,7 @@ function drawMacroChart(records) {
 
 
           ctx.fillStyle =
-            dataset.lineColor;
+            dataset.color;
 
           ctx.fill();
 
@@ -3175,7 +3326,9 @@ function drawMacroChart(records) {
   );
 
 
-  // X labels
+  // ----------------------------------------------------------
+  // DATE LABELS
+  // ----------------------------------------------------------
 
   ctx.fillStyle =
     'rgba(255,255,255,0.65)';
@@ -3191,24 +3344,26 @@ function drawMacroChart(records) {
     Math.max(
       1,
       Math.ceil(
-        valid.length / 7
+        data.length / 7
       )
     );
 
 
-  valid.forEach(
-    (item, index) => {
+  data.forEach(
+    (record, index) => {
 
       if (
         index % labelStep !== 0 &&
-        index !== valid.length - 1
+        index !== data.length - 1
       ) {
+
         return;
+
       }
 
 
       const x =
-        valid.length === 1
+        data.length === 1
 
           ? padding.left +
             graphWidth / 2
@@ -3216,22 +3371,30 @@ function drawMacroChart(records) {
           : padding.left +
             (
               index /
-              (valid.length - 1)
+              (
+                data.length - 1
+              )
             ) *
             graphWidth;
 
 
       ctx.fillText(
-        shortDate(item.date),
+        shortDate(
+          record.date
+        ),
         x,
-        height - padding.bottom + 15
+        height -
+          padding.bottom +
+          15
       );
 
     }
   );
 
 
-  // Legend
+  // ----------------------------------------------------------
+  // LEGEND
+  // ----------------------------------------------------------
 
   let legendX =
     padding.left;
@@ -3241,7 +3404,7 @@ function drawMacroChart(records) {
     dataset => {
 
       ctx.fillStyle =
-        dataset.lineColor;
+        dataset.color;
 
 
       ctx.fillRect(
@@ -3266,8 +3429,7 @@ function drawMacroChart(records) {
       );
 
 
-      legendX +=
-        90;
+      legendX += 90;
 
     }
   );
@@ -3276,47 +3438,13 @@ function drawMacroChart(records) {
 
 
 // ============================================================
-// BURNED CALORIES CHART
+// RENDER DAILY HISTORY
 // ============================================================
 
-function drawBurnedChart(records) {
-
-  drawLineChart(
-
-    $('burnedChart'),
-
-    $('burnedChartEmpty'),
-
-    records,
-
-    item =>
-      Number(item.caloriesBurned) ||
-      (
-        Number(item.workoutCalories) +
-        Number(item.stepsCalories)
-      ),
-
-    {
-      lineColor: '#fb7185',
-      pointColor: '#ffffff',
-      formatValue:
-        value =>
-          Math.round(value).toLocaleString()
-    }
-
-  );
-
-}
-
-
-// ============================================================
-// HISTORICAL DASHBOARD
-// ============================================================
-
-function renderHistoricalDashboard(records) {
+function renderHistoryRecords(records) {
 
   const container =
-    $('historicalDashboard');
+    $('dashboardHistory');
 
 
   if (!container) {
@@ -3327,8 +3455,8 @@ function renderHistoricalDashboard(records) {
   if (!records.length) {
 
     container.innerHTML = `
-      <p class="chart-empty">
-        No historical records available yet.
+      <p>
+        No history available yet.
       </p>
     `;
 
@@ -3340,35 +3468,6 @@ function renderHistoricalDashboard(records) {
   container.innerHTML =
     records.map(
       record => {
-
-        const weight =
-          Number(record.weight) ||
-          Number(profile.weight) ||
-          0;
-
-
-        const bmi =
-          weight > 0 &&
-          Number(profile.height) > 0
-
-            ? weight /
-              Math.pow(
-                Number(profile.height) / 100,
-                2
-              )
-
-            : 0;
-
-
-        const bmiStatus =
-          bmi < 18.5
-            ? 'Underweight'
-            : bmi < 25
-              ? 'Normal'
-              : bmi < 30
-                ? 'Overweight'
-                : 'Obese';
-
 
         const calories =
           Number(record.cal) || 0;
@@ -3385,21 +3484,83 @@ function renderHistoricalDashboard(records) {
         const steps =
           Number(record.steps) || 0;
 
+        const weight =
+          Number(record.weight) || 0;
+
         const workout =
           record.workout || 'Rest';
 
         const workoutCalories =
-          Number(record.workoutCalories) || 0;
+          Number(
+            record.workoutCalories
+          ) || 0;
 
         const stepsCalories =
-          Number(record.stepsCalories) || 0;
+          Number(
+            record.stepsCalories
+          ) || 0;
 
-        const totalBurned =
-          Number(record.caloriesBurned) ||
-          calculateTotalBurned(
-            workoutCalories,
-            stepsCalories
-          );
+
+        let totalBurned =
+          Number(
+            record.activeCalories
+          ) || 0;
+
+
+        if (totalBurned <= 0) {
+
+          totalBurned =
+            Number(
+              record.caloriesBurned
+            ) || 0;
+
+        }
+
+
+        if (totalBurned <= 0) {
+
+          totalBurned =
+            workoutCalories +
+            stepsCalories;
+
+        }
+
+
+        const bmi =
+          weight > 0 &&
+          Number(profile.height) > 0
+
+            ? weight /
+              Math.pow(
+                Number(profile.height) / 100,
+                2
+              )
+
+            : 0;
+
+
+        let bmiStatus = '';
+
+
+        if (bmi > 0) {
+
+          if (bmi < 18.5) {
+            bmiStatus = 'Underweight';
+          }
+
+          else if (bmi < 25) {
+            bmiStatus = 'Normal';
+          }
+
+          else if (bmi < 30) {
+            bmiStatus = 'Overweight';
+          }
+
+          else {
+            bmiStatus = 'Obese';
+          }
+
+        }
 
 
         return `
@@ -3416,14 +3577,18 @@ function renderHistoricalDashboard(records) {
 
                 <h3>
                   ${escapeHtml(
-                    formatDate(record.date)
+                    formatDate(
+                      record.date
+                    )
                   )}
                 </h3>
 
               </div>
 
               <span class="historical-date">
-                ${escapeHtml(record.date)}
+                ${escapeHtml(
+                  record.date
+                )}
               </span>
 
             </div>
@@ -3431,6 +3596,8 @@ function renderHistoricalDashboard(records) {
 
             <div class="historical-stats">
 
+
+              <!-- CALORIES -->
 
               <div class="historical-stat">
 
@@ -3445,6 +3612,8 @@ function renderHistoricalDashboard(records) {
               </div>
 
 
+              <!-- PROTEIN -->
+
               <div class="historical-stat">
 
                 <span>
@@ -3452,11 +3621,15 @@ function renderHistoricalDashboard(records) {
                 </span>
 
                 <strong>
-                  ${Math.round(protein)} g
+                  ${Math.round(
+                    protein
+                  )} g
                 </strong>
 
               </div>
 
+
+              <!-- CARBS -->
 
               <div class="historical-stat">
 
@@ -3465,11 +3638,15 @@ function renderHistoricalDashboard(records) {
                 </span>
 
                 <strong>
-                  ${Math.round(carbs)} g
+                  ${Math.round(
+                    carbs
+                  )} g
                 </strong>
 
               </div>
 
+
+              <!-- FAT -->
 
               <div class="historical-stat">
 
@@ -3478,11 +3655,15 @@ function renderHistoricalDashboard(records) {
                 </span>
 
                 <strong>
-                  ${Math.round(fat)} g
+                  ${Math.round(
+                    fat
+                  )} g
                 </strong>
 
               </div>
 
+
+              <!-- WEIGHT -->
 
               <div class="historical-stat">
 
@@ -3493,13 +3674,16 @@ function renderHistoricalDashboard(records) {
                 <strong>
                   ${
                     weight > 0
-                      ? weight.toFixed(1) + ' kg'
+                      ? weight.toFixed(1) +
+                        ' kg'
                       : '--'
                   }
                 </strong>
 
               </div>
 
+
+              <!-- BMI -->
 
               <div class="historical-stat">
 
@@ -3516,15 +3700,15 @@ function renderHistoricalDashboard(records) {
                 </strong>
 
                 <small>
-                  ${
-                    bmi > 0
-                      ? bmiStatus
-                      : ''
-                  }
+                  ${escapeHtml(
+                    bmiStatus
+                  )}
                 </small>
 
               </div>
 
+
+              <!-- STEPS -->
 
               <div class="historical-stat">
 
@@ -3539,6 +3723,8 @@ function renderHistoricalDashboard(records) {
               </div>
 
 
+              <!-- WORKOUT -->
+
               <div class="historical-stat">
 
                 <span>
@@ -3546,11 +3732,15 @@ function renderHistoricalDashboard(records) {
                 </span>
 
                 <strong>
-                  ${escapeHtml(workout)}
+                  ${escapeHtml(
+                    workout
+                  )}
                 </strong>
 
               </div>
 
+
+              <!-- WORKOUT CALORIES -->
 
               <div class="historical-stat">
 
@@ -3559,11 +3749,14 @@ function renderHistoricalDashboard(records) {
                 </span>
 
                 <strong>
-                  ${workoutCalories.toLocaleString()} kcal
+                  ${workoutCalories.toLocaleString()}
+                  kcal
                 </strong>
 
               </div>
 
+
+              <!-- WALKING CALORIES -->
 
               <div class="historical-stat">
 
@@ -3572,20 +3765,25 @@ function renderHistoricalDashboard(records) {
                 </span>
 
                 <strong>
-                  ${stepsCalories.toLocaleString()} kcal
+                  ${stepsCalories.toLocaleString()}
+                  kcal
                 </strong>
 
               </div>
 
 
-              <div class="historical-stat historical-total">
+              <!-- TOTAL BURNED -->
+
+              <div
+                class="historical-stat historical-total">
 
                 <span>
                   🔥 Total Burned
                 </span>
 
                 <strong>
-                  ${totalBurned.toLocaleString()} kcal
+                  ${totalBurned.toLocaleString()}
+                  kcal
                 </strong>
 
               </div>
@@ -3599,6 +3797,67 @@ function renderHistoricalDashboard(records) {
 
       }
     ).join('');
+
+}
+
+
+// ============================================================
+// SHORT DATE
+// ============================================================
+
+function shortDate(dateString) {
+
+  if (!dateString) {
+    return '';
+  }
+
+
+  const parts =
+    dateString.split('-');
+
+
+  if (parts.length !== 3) {
+    return dateString;
+  }
+
+
+  return `${parts[1]}/${parts[2]}`;
+
+}
+
+
+// ============================================================
+// ESCAPE HTML
+// ============================================================
+
+function escapeHtml(value) {
+
+  return String(value)
+
+    .replaceAll(
+      '&',
+      '&amp;'
+    )
+
+    .replaceAll(
+      '<',
+      '&lt;'
+    )
+
+    .replaceAll(
+      '>',
+      '&gt;'
+    )
+
+    .replaceAll(
+      '"',
+      '&quot;'
+    )
+
+    .replaceAll(
+      "'",
+      '&#039;'
+    );
 
 }
 
