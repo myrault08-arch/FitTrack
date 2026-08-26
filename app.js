@@ -2019,101 +2019,55 @@ if ($('stepsForm')) {
 
 
 // ============================================================
-// LOAD ALL HEALTH HISTORY
-//
-// IMPORTANT:
-//
-// NO orderBy('__name__')
-//
-// This avoids the Firestore composite-index error.
-//
-// Data:
-//
-// users/{uid}/healthData/{YYYY-MM-DD}
+// LOAD ALL HEALTH HISTORY (FIXED)
 // ============================================================
 
 async function loadHealthHistory() {
 
-  if (!user) {
-    return [];
-  }
-
+  if (!user) return [];
 
   try {
 
-    const snapshot =
-      await getDocs(
-        healthDataCollection()
-      );
+    const snapshot = await getDocs(healthDataCollection());
 
+    const records = [];
 
-    const records =
-      snapshot.docs.map(item => {
+    snapshot.forEach(docSnap => {
 
-        const data =
-          item.data();
+      const data = docSnap.data();
 
+      records.push({
 
-        return {
+        date: docSnap.id,
 
-          date:
-            item.id,
+        cal: Number(data.cal) || 0,
+        p: Number(data.p) || 0,
+        c: Number(data.c) || 0,
+        f: Number(data.f) || 0,
 
-          cal:
-            Number(data.cal) || 0,
+        steps: Number(data.steps) || 0,
 
-          p:
-            Number(data.p) || 0,
+        workout: data.workout || 'Rest',
 
-          c:
-            Number(data.c) || 0,
+        workoutCalories: Number(data.workoutCalories) || 0,
+        stepsCalories: Number(data.stepsCalories) || 0,
+        caloriesBurned: Number(data.caloriesBurned) || 0,
+        activeCalories: Number(data.activeCalories) || 0,
 
-          f:
-            Number(data.f) || 0,
-
-          steps:
-            Number(data.steps) || 0,
-
-          workout:
-            data.workout || 'Rest',
-
-          workoutCalories:
-            Number(data.workoutCalories) || 0,
-
-          stepsCalories:
-            Number(data.stepsCalories) || 0,
-
-          caloriesBurned:
-            Number(data.caloriesBurned) || 0,
-
-          activeCalories:
-            Number(data.activeCalories) || 0,
-
-          weight:
-            Number(data.weight) || 0
-
-        };
+        weight: Number(data.weight) || 0
 
       });
 
+    });
 
-    records.sort(
-      (a, b) =>
-        b.date.localeCompare(a.date)
-    );
-
+    // Sort newest to oldest
+    records.sort((a, b) => b.date.localeCompare(a.date));
 
     return records;
 
-  }
+  } catch (error) {
 
-  catch (error) {
-
-    console.error(
-      'HealthData history error:',
-      error
-    );
-
+    console.error('Health history error:', error);
     return [];
 
   }
@@ -2148,69 +2102,30 @@ function getFilteredHistory() {
 
 
 // ============================================================
-// PROGRESS LOAD
+// LOAD HISTORY
 // ============================================================
 
 async function loadHistory() {
 
-  if (!user) {
-    return;
-  }
-
+  if (!user) return;
 
   try {
 
-    healthHistory =
-      await loadHealthHistory();
+    healthHistory = await loadHealthHistory();
 
+    const filtered = getFilteredHistory();
 
-    const filtered =
-      getFilteredHistory();
+    updateMetricSummary(filtered);
+    drawWeightChart(filtered);
+    drawCaloriesChart(filtered);
+    drawStepsChart(filtered);
+    drawMacroChart(filtered);
+    drawBurnedChart(filtered);
+    renderHistoricalDashboard(filtered);
 
+  } catch (error) {
 
-    updateMetricSummary(
-      filtered
-    );
-
-
-    drawWeightChart(
-      filtered
-    );
-
-
-    drawCaloriesChart(
-      filtered
-    );
-
-
-    drawStepsChart(
-      filtered
-    );
-
-
-    drawMacroChart(
-      filtered
-    );
-
-
-    drawBurnedChart(
-      filtered
-    );
-
-
-    renderHistoricalDashboard(
-      filtered
-    );
-
-
-  }
-
-  catch (error) {
-
-    console.error(
-      'Progress history error:',
-      error
-    );
+    console.error('Progress history error:', error);
 
   }
 
