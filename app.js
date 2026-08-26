@@ -2182,6 +2182,7 @@ async function loadHistory() {
 
     const records =
       getFilteredHistory();
+    historyRecordIndex = 0;
 
     updateHistorySummary(
       records
@@ -3314,7 +3315,14 @@ function drawHistoryMacroChart(records) {
 
 
 // ============================================================
-// RENDER DAILY HISTORY
+// DAILY RECORD NAVIGATION
+// ============================================================
+
+let historyRecordIndex = 0;
+
+
+// ============================================================
+// RENDER DAILY HISTORY - ONE DAY AT A TIME
 // ============================================================
 
 function renderHistoryRecords(records) {
@@ -3322,315 +3330,527 @@ function renderHistoryRecords(records) {
   const container =
     $('dashboardHistory');
 
+
   if (!container) {
     return;
   }
 
+
+  // ----------------------------------------------------------
+  // NO RECORDS
+  // ----------------------------------------------------------
+
   if (!records.length) {
 
+    historyRecordIndex = 0;
+
     container.innerHTML = `
-      <p>
-        No history available yet.
-      </p>
+      <div class="historical-day">
+
+        <p>
+          No history available yet.
+        </p>
+
+      </div>
     `;
 
     return;
 
   }
 
-  container.innerHTML =
-    records.map(
-      record => {
 
-        const calories =
-          Number(record.cal) || 0;
+  // ----------------------------------------------------------
+  // KEEP INDEX VALID
+  // ----------------------------------------------------------
 
-        const protein =
-          Number(record.p) || 0;
+  if (
+    historyRecordIndex < 0
+  ) {
+    historyRecordIndex = 0;
+  }
 
-        const carbs =
-          Number(record.c) || 0;
 
-        const fat =
-          Number(record.f) || 0;
+  if (
+    historyRecordIndex >= records.length
+  ) {
+    historyRecordIndex =
+      records.length - 1;
+  }
 
-        const steps =
-          Number(record.steps) || 0;
 
-        const weight =
-          Number(record.weight) || 0;
+  const record =
+    records[historyRecordIndex];
 
-        const workout =
-          record.workout || 'Rest';
 
-        const workoutCalories =
-          Number(
-            record.workoutCalories
-          ) || 0;
+  // ----------------------------------------------------------
+  // RECORD VALUES
+  // ----------------------------------------------------------
 
-        const stepsCalories =
-          Number(
-            record.stepsCalories
-          ) || 0;
+  const calories =
+    Number(record.cal) || 0;
 
-        let totalBurned =
-          Number(
-            record.activeCalories
-          ) || 0;
+  const protein =
+    Number(record.p) || 0;
 
-        if (totalBurned <= 0) {
+  const carbs =
+    Number(record.c) || 0;
 
-          totalBurned =
-            Number(
-              record.caloriesBurned
-            ) || 0;
+  const fat =
+    Number(record.f) || 0;
 
-        }
+  const steps =
+    Number(record.steps) || 0;
 
-        if (totalBurned <= 0) {
+  const weight =
+    Number(record.weight) || 0;
 
-          totalBurned =
-            workoutCalories +
-            stepsCalories;
+  const workout =
+    record.workout || 'Rest';
 
-        }
+  const workoutCalories =
+    Number(
+      record.workoutCalories
+    ) || 0;
 
-        const bmi =
-          weight > 0 &&
-          Number(profile.height) > 0
+  const stepsCalories =
+    Number(
+      record.stepsCalories
+    ) || 0;
 
-            ? weight /
-              Math.pow(
-                Number(profile.height) / 100,
-                2
+
+  // ----------------------------------------------------------
+  // TOTAL BURNED
+  // ----------------------------------------------------------
+
+  let totalBurned =
+    Number(
+      record.activeCalories
+    ) || 0;
+
+
+  if (totalBurned <= 0) {
+
+    totalBurned =
+      Number(
+        record.caloriesBurned
+      ) || 0;
+
+  }
+
+
+  if (totalBurned <= 0) {
+
+    totalBurned =
+      workoutCalories +
+      stepsCalories;
+
+  }
+
+
+  // ----------------------------------------------------------
+  // BMI
+  // ----------------------------------------------------------
+
+  const bmi =
+    weight > 0 &&
+    Number(profile.height) > 0
+
+      ? weight /
+        Math.pow(
+          Number(profile.height) / 100,
+          2
+        )
+
+      : 0;
+
+
+  let bmiStatus = '';
+
+
+  if (bmi > 0) {
+
+    if (bmi < 18.5) {
+
+      bmiStatus =
+        'Underweight';
+
+    }
+
+    else if (bmi < 25) {
+
+      bmiStatus =
+        'Normal';
+
+    }
+
+    else if (bmi < 30) {
+
+      bmiStatus =
+        'Overweight';
+
+    }
+
+    else {
+
+      bmiStatus =
+        'Obese';
+
+    }
+
+  }
+
+
+  // ----------------------------------------------------------
+  // NAVIGATION STATE
+  // ----------------------------------------------------------
+
+  const isFirst =
+    historyRecordIndex === 0;
+
+  const isLast =
+    historyRecordIndex ===
+    records.length - 1;
+
+
+  // ----------------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------------
+
+  container.innerHTML = `
+
+    <div class="historical-navigation">
+
+      <button
+        type="button"
+        id="historyPrevious"
+        ${isFirst ? 'disabled' : ''}
+      >
+        ← Previous
+      </button>
+
+
+      <span class="history-page-number">
+
+        ${historyRecordIndex + 1}
+        /
+        ${records.length}
+
+      </span>
+
+
+      <button
+        type="button"
+        id="historyNext"
+        ${isLast ? 'disabled' : ''}
+      >
+        Next →
+      </button>
+
+    </div>
+
+
+    <div class="historical-day">
+
+      <div class="historical-day-header">
+
+        <div>
+
+          <p class="eyebrow">
+            DAILY RECORD
+          </p>
+
+          <h3>
+            ${escapeHtml(
+              formatDate(
+                record.date
               )
+            )}
+          </h3>
 
-            : 0;
+        </div>
 
-        let bmiStatus = '';
+        <span class="historical-date">
+          ${escapeHtml(
+            record.date
+          )}
+        </span>
 
-        if (bmi > 0) {
+      </div>
 
-          if (bmi < 18.5) {
-            bmiStatus = 'Underweight';
-          }
 
-          else if (bmi < 25) {
-            bmiStatus = 'Normal';
-          }
+      <div class="historical-stats">
 
-          else if (bmi < 30) {
-            bmiStatus = 'Overweight';
-          }
 
-          else {
-            bmiStatus = 'Obese';
-          }
+        <!-- CALORIES -->
 
+        <div class="historical-stat">
+
+          <span>
+            🔥 Calories
+          </span>
+
+          <strong>
+            ${calories.toLocaleString()}
+            kcal
+          </strong>
+
+        </div>
+
+
+        <!-- PROTEIN -->
+
+        <div class="historical-stat">
+
+          <span>
+            🥩 Protein
+          </span>
+
+          <strong>
+            ${Math.round(protein)}
+            g
+          </strong>
+
+        </div>
+
+
+        <!-- CARBS -->
+
+        <div class="historical-stat">
+
+          <span>
+            🍚 Carbs
+          </span>
+
+          <strong>
+            ${Math.round(carbs)}
+            g
+          </strong>
+
+        </div>
+
+
+        <!-- FAT -->
+
+        <div class="historical-stat">
+
+          <span>
+            🥑 Fat
+          </span>
+
+          <strong>
+            ${Math.round(fat)}
+            g
+          </strong>
+
+        </div>
+
+
+        <!-- WEIGHT -->
+
+        <div class="historical-stat">
+
+          <span>
+            ⚖️ Weight
+          </span>
+
+          <strong>
+
+            ${
+              weight > 0
+                ? weight.toFixed(1) +
+                  ' kg'
+                : '--'
+            }
+
+          </strong>
+
+        </div>
+
+
+        <!-- BMI -->
+
+        <div class="historical-stat">
+
+          <span>
+            📊 BMI
+          </span>
+
+          <strong>
+
+            ${
+              bmi > 0
+                ? bmi.toFixed(1)
+                : '--'
+            }
+
+          </strong>
+
+          <small>
+            ${escapeHtml(
+              bmiStatus
+            )}
+          </small>
+
+        </div>
+
+
+        <!-- STEPS -->
+
+        <div class="historical-stat">
+
+          <span>
+            🚶 Steps
+          </span>
+
+          <strong>
+            ${steps.toLocaleString()}
+          </strong>
+
+        </div>
+
+
+        <!-- WORKOUT -->
+
+        <div class="historical-stat">
+
+          <span>
+            🏋️ Workout
+          </span>
+
+          <strong>
+            ${escapeHtml(
+              workout
+            )}
+          </strong>
+
+        </div>
+
+
+        <!-- WORKOUT CALORIES -->
+
+        <div class="historical-stat">
+
+          <span>
+            🔥 Workout Burn
+          </span>
+
+          <strong>
+            ${workoutCalories.toLocaleString()}
+            kcal
+          </strong>
+
+        </div>
+
+
+        <!-- WALKING CALORIES -->
+
+        <div class="historical-stat">
+
+          <span>
+            🚶 Walking Burn
+          </span>
+
+          <strong>
+            ${stepsCalories.toLocaleString()}
+            kcal
+          </strong>
+
+        </div>
+
+
+        <!-- TOTAL BURNED -->
+
+        <div
+          class="historical-stat historical-total">
+
+          <span>
+            🔥 Total Burned
+          </span>
+
+          <strong>
+            ${totalBurned.toLocaleString()}
+            kcal
+          </strong>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  // ----------------------------------------------------------
+  // PREVIOUS
+  // ----------------------------------------------------------
+
+  const previous =
+    $('historyPrevious');
+
+
+  if (previous) {
+
+    previous.onclick =
+      () => {
+
+        if (
+          historyRecordIndex <= 0
+        ) {
+          return;
         }
 
-        return `
 
-          <div class="historical-day">
+        historyRecordIndex--;
 
-            <div class="historical-day-header">
 
-              <div>
+        renderHistoryRecords(
+          getFilteredHistory()
+        );
 
-                <p class="eyebrow">
-                  DAILY RECORD
-                </p>
+      };
 
-                <h3>
-                  ${escapeHtml(
-                    formatDate(
-                      record.date
-                    )
-                  )}
-                </h3>
+  }
 
-              </div>
 
-              <span class="historical-date">
-                ${escapeHtml(
-                  record.date
-                )}
-              </span>
+  // ----------------------------------------------------------
+  // NEXT
+  // ----------------------------------------------------------
 
-            </div>
+  const next =
+    $('historyNext');
 
-            <div class="historical-stats">
 
-              <div class="historical-stat">
+  if (next) {
 
-                <span>
-                  🔥 Calories
-                </span>
+    next.onclick =
+      () => {
 
-                <strong>
-                  ${calories.toLocaleString()} kcal
-                </strong>
+        const currentRecords =
+          getFilteredHistory();
 
-              </div>
 
-              <div class="historical-stat">
+        if (
+          historyRecordIndex >=
+          currentRecords.length - 1
+        ) {
+          return;
+        }
 
-                <span>
-                  🥩 Protein
-                </span>
 
-                <strong>
-                  ${Math.round(
-                    protein
-                  )} g
-                </strong>
+        historyRecordIndex++;
 
-              </div>
 
-              <div class="historical-stat">
+        renderHistoryRecords(
+          currentRecords
+        );
 
-                <span>
-                  🍚 Carbs
-                </span>
+      };
 
-                <strong>
-                  ${Math.round(
-                    carbs
-                  )} g
-                </strong>
-
-              </div>
-
-              <div class="historical-stat">
-
-                <span>
-                  🥑 Fat
-                </span>
-
-                <strong>
-                  ${Math.round(
-                    fat
-                  )} g
-                </strong>
-
-              </div>
-
-              <div class="historical-stat">
-
-                <span>
-                  ⚖️ Weight
-                </span>
-
-                <strong>
-                  ${
-                    weight > 0
-                      ? weight.toFixed(1) +
-                        ' kg'
-                      : '--'
-                  }
-                </strong>
-
-              </div>
-
-              <div class="historical-stat">
-
-                <span>
-                  📊 BMI
-                </span>
-
-                <strong>
-                  ${
-                    bmi > 0
-                      ? bmi.toFixed(1)
-                      : '--'
-                  }
-                </strong>
-
-                <small>
-                  ${escapeHtml(
-                    bmiStatus
-                  )}
-                </small>
-
-              </div>
-
-              <div class="historical-stat">
-
-                <span>
-                  🚶 Steps
-                </span>
-
-                <strong>
-                  ${steps.toLocaleString()}
-                </strong>
-
-              </div>
-
-              <div class="historical-stat">
-
-                <span>
-                  🏋️ Workout
-                </span>
-
-                <strong>
-                  ${escapeHtml(
-                    workout
-                  )}
-                </strong>
-
-              </div>
-
-              <div class="historical-stat">
-
-                <span>
-                  🔥 Workout Burn
-                </span>
-
-                <strong>
-                  ${workoutCalories.toLocaleString()}
-                  kcal
-                </strong>
-
-              </div>
-
-              <div class="historical-stat">
-
-                <span>
-                  🚶 Walking Burn
-                </span>
-
-                <strong>
-                  ${stepsCalories.toLocaleString()}
-                  kcal
-                </strong>
-
-              </div>
-
-              <div
-                class="historical-stat historical-total">
-
-                <span>
-                  🔥 Total Burned
-                </span>
-
-                <strong>
-                  ${totalBurned.toLocaleString()}
-                  kcal
-                </strong>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        `;
-
-      }
-    ).join('');
+  }
 
 }
-
 
 // ============================================================
 // ESCAPE HTML
