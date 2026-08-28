@@ -2175,3 +2175,79 @@ select:focus-visible {
 [hidden] {
   display: none !important;
 }
+/* =========================================================
+   AI FOOD SCANNER BUTTON
+========================================================= */
+
+#aiScanFood {
+  width: 100%;
+  padding: 15px 20px;
+  margin-top: 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    #6d5dfc,
+    #8b5cf6
+  );
+
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  box-shadow:
+    0 8px 24px rgba(109, 93, 252, 0.25);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+/* Hover */
+
+#aiScanFood:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 30px rgba(109, 93, 252, 0.35);
+
+  filter: brightness(1.08);
+}
+
+/* Click */
+
+#aiScanFood:active {
+  transform: translateY(0);
+
+  box-shadow:
+    0 5px 15px rgba(109, 93, 252, 0.25);
+}
+
+/* Keyboard focus */
+
+#aiScanFood:focus-visible {
+  outline: 2px solid rgba(139, 92, 246, 0.8);
+  outline-offset: 3px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+  #aiScanFood {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+
+}
