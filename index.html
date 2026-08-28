@@ -1004,6 +1004,55 @@
       class="page"
       hidden>
 
+      <!-- =========================================================
+     AI FOOD SCANNER
+      ========================================================= -->
+
+<div class="ai-scanner">
+
+    <h3>🤖 AI Food Scanner</h3>
+
+    <p>
+        Take a photo or choose a food image and let AI estimate
+        the calories and macros.
+    </p>
+
+    <input
+        type="file"
+        id="aiFoodImage"
+        accept="image/*"
+        capture="environment"
+        hidden
+    >
+
+ <button
+    type="button"
+    id="aiScanFood"
+    onclick="event.preventDefault();">
+    📷 Scan Food with AI
+</button>
+
+    <div id="aiFoodPreview" hidden>
+
+        <img
+            id="aiFoodPreviewImage"
+            alt="Food preview"
+        >
+
+    </div>
+
+    <p
+        id="aiFoodStatus"
+        hidden>
+    </p>
+
+    <div
+        id="aiFoodResults"
+        hidden>
+    </div>
+
+</div>
+
       <div class="page-header">
 
         <div>
