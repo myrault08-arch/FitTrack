@@ -46,6 +46,13 @@ const db = getFirestore(app);
 const $ = id => document.getElementById(id);
 
 
+const aiScanFood = $('aiScanFood');
+const aiFoodImage = $('aiFoodImage');
+const aiFoodPreview = $('aiFoodPreview');
+const aiFoodPreviewImage = $('aiFoodPreviewImage');
+const aiFoodStatus = $('aiFoodStatus');
+const aiFoodResults = $('aiFoodResults');
+
 // ============================================================
 // STATE
 // ============================================================
@@ -2377,26 +2384,59 @@ function updateHistorySummary(records) {
 // ============================================================
 
 function prepareHistoryChart(canvas) {
-    if (!canvas) return null;
 
-    const container = canvas.parentElement;
+  if (!canvas) {
+    return null;
+  }
 
-    const width = Math.max(container.clientWidth, 1);
-    const height = Math.max(container.clientHeight, 220);
+  const rect =
+    canvas.getBoundingClientRect();
 
-    const dpr = window.devicePixelRatio || 1;
+  const width =
+    Math.max(
+      rect.width,
+      300
+    );
 
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
+  const height =
+    Math.max(
+      rect.height,
+      280
+    );
 
-    canvas.style.width = width + "px";
-    canvas.style.height = height + "px";
+  const dpr =
+    window.devicePixelRatio || 1;
 
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
+  canvas.width =
+    width * dpr;
 
-    return { ctx, width, height };
+  canvas.height =
+    height * dpr;
+
+  const ctx =
+    canvas.getContext('2d');
+
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
+
+  ctx.clearRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+  return {
+    ctx,
+    width,
+    height
+  };
 }
 
 
@@ -4036,6 +4076,639 @@ if ($('scan')) {
       }
 
     };
+
+}
+// ============================================================
+// ADD AI FOOD TO FOOD LOG
+// ============================================================
+
+async function addAIFoodToLog(item) {
+
+  if (!user) {
+    throw new Error('Please sign in first.');
+  }
+
+  const food = {
+
+    name:
+      String(item.food || 'AI Food'),
+
+    serving:
+      String(item.serving || '1 serving'),
+
+    cal:
+      Number(item.calories) || 0,
+
+    p:
+      Number(item.protein) || 0,
+
+    c:
+      Number(item.carbs) || 0,
+
+    f:
+      Number(item.fat) || 0,
+
+    source:
+      'ai',
+
+    createdAt:
+      new Date()
+
+  };
+
+
+  // ----------------------------------------------------------
+  // SAVE FOOD
+  // ----------------------------------------------------------
+
+  await addDoc(
+    foodCollection(),
+    food
+  );
+
+
+  // ----------------------------------------------------------
+  // UPDATE DAILY TOTALS
+  // ----------------------------------------------------------
+
+  const d =
+    await getDay();
+
+  await setDoc(
+    dayRef(),
+    {
+
+      cal:
+        (Number(d.cal) || 0) +
+        food.cal,
+
+      p:
+        (Number(d.p) || 0) +
+        food.p,
+
+      c:
+        (Number(d.c) || 0) +
+        food.c,
+
+      f:
+        (Number(d.f) || 0) +
+        food.f
+
+    },
+    {
+      merge: true
+    }
+  );
+
+}
+// ------------------------------------------------------------
+// AI FOOD SCANNER
+// ------------------------------------------------------------
+
+if (aiScanFood && aiFoodImage) {
+
+    // --------------------------------------------------------
+    // SCAN BUTTON
+    // --------------------------------------------------------
+
+    aiScanFood.addEventListener('click', function (event) {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        console.log('AI scanner button clicked');
+
+        aiFoodImage.click();
+
+    });
+
+
+    // --------------------------------------------------------
+    // IMAGE SELECTED
+    // --------------------------------------------------------
+
+    aiFoodImage.addEventListener(
+        'change',
+        async function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const file = event.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            console.log('Selected image:', file.name);
+            console.log('Image type:', file.type);
+            console.log('Image size:', file.size);
+
+
+            // ------------------------------------------------
+            // PREVIEW
+            // ------------------------------------------------
+
+            if (aiFoodPreviewImage) {
+
+                aiFoodPreviewImage.src =
+                    URL.createObjectURL(file);
+
+            }
+
+            if (aiFoodPreview) {
+
+                aiFoodPreview.hidden = false;
+
+            }
+
+
+            // ------------------------------------------------
+            // STATUS
+            // ------------------------------------------------
+
+            if (aiFoodStatus) {
+
+                aiFoodStatus.hidden = false;
+
+                aiFoodStatus.textContent =
+                    'Analyzing food image...';
+
+            }
+
+
+            if (aiFoodResults) {
+
+                aiFoodResults.hidden = true;
+
+                aiFoodResults.innerHTML = '';
+
+            }
+
+
+            try {
+
+                // ------------------------------------------------
+                // CREATE FORM DATA
+                // ------------------------------------------------
+
+                const formData =
+                    new FormData();
+
+                formData.append(
+                    'image',
+                    file
+                );
+
+
+                console.log(
+                    'Sending food image to AI server...'
+                );
+
+                console.log(
+                    'AI server URL:',
+                    'http://localhost:3000/scan-food'
+                );
+
+
+                // ------------------------------------------------
+                // SEND TO NODE SERVER
+                // ------------------------------------------------
+
+                const response =
+                    await fetch(
+                        'http://localhost:3000/scan-food',
+                        {
+                            method: 'POST',
+                            body: formData
+                        }
+                    );
+
+
+                console.log(
+                    'AI server HTTP status:',
+                    response.status
+                );
+
+
+                // ------------------------------------------------
+                // READ RESPONSE
+                // ------------------------------------------------
+
+                const responseText =
+                    await response.text();
+
+
+                console.log(
+                    'RAW AI SERVER RESPONSE:',
+                    responseText
+                );
+
+
+                // ------------------------------------------------
+                // PARSE JSON
+                // ------------------------------------------------
+
+                let data;
+
+                try {
+
+                    data =
+                        JSON.parse(
+                            responseText
+                        );
+
+                }
+
+                catch (parseError) {
+
+                    console.error(
+                        'JSON parsing failed:',
+                        parseError
+                    );
+
+                    throw new Error(
+                        'The AI server returned invalid JSON.'
+                    );
+
+                }
+
+
+                // ------------------------------------------------
+                // CHECK RESPONSE
+                // ------------------------------------------------
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        `AI server returned HTTP ${response.status}`
+                    );
+
+                }
+
+
+                if (!data.success) {
+
+                    throw new Error(
+                        data.error ||
+                        'Food analysis failed.'
+                    );
+
+                }
+
+
+                // ------------------------------------------------
+                // SUCCESS
+                // ------------------------------------------------
+
+                console.log(
+                    'AI scanner result:',
+                    data
+                );
+                
+                // ------------------------------------------------
+                // DISPLAY RESULTS
+                // ------------------------------------------------
+
+                if (aiFoodStatus) {
+
+                    aiFoodStatus.hidden = false;
+
+                    aiFoodStatus.textContent =
+                        '✅ Food analyzed successfully!';
+
+                }
+
+
+                if (aiFoodResults) {
+
+    aiFoodResults.hidden = false;
+
+    let html = '';
+
+    // --------------------------------------------
+    // ITEMS
+    // --------------------------------------------
+
+    if (
+        Array.isArray(data.items) &&
+        data.items.length > 0
+    ) {
+
+        html += `
+            <div class="ai-food-items">
+        `;
+
+        data.items.forEach(
+            item => {
+
+                html += `
+
+                    <div class="ai-food-item">
+
+                        <h4>
+                            ${escapeHtml(
+                                item.food
+                            )}
+                        </h4>
+
+                        <p>
+                            Serving:
+                            ${escapeHtml(
+                                item.serving
+                            )}
+                        </p>
+
+                        <div class="ai-food-macros">
+
+                            <span>
+                                🔥
+                                ${item.calories} kcal
+                            </span>
+
+                            <span>
+                                🥩
+                                ${item.protein}g protein
+                            </span>
+
+                            <span>
+                                🍚
+                                ${item.carbs}g carbs
+                            </span>
+
+                            <span>
+                                🥑
+                                ${item.fat}g fat
+                            </span>
+
+                        </div>
+
+                        <small>
+                            Confidence:
+                            ${item.confidence}
+                        </small>
+
+                    </div>
+
+                `;
+
+            }
+        );
+
+        html += `
+            </div>
+        `;
+
+
+        // --------------------------------------------
+        // ADD TO FOOD LOG BUTTON
+        // --------------------------------------------
+
+        html += `
+            <button
+                type="button"
+                id="addAIToFoodLog"
+                class="ai-add-food-btn">
+
+                ＋ Add All to Food Log
+
+            </button>
+        `;
+
+    }
+
+
+    // --------------------------------------------
+    // TOTAL
+    // --------------------------------------------
+
+    if (data.total) {
+
+        html += `
+
+            <div class="ai-food-total">
+
+                <h4>
+                    Total Nutrition
+                </h4>
+
+                <p>
+                    🔥
+                    <strong>
+                        ${data.total.calories}
+                    </strong>
+                    kcal
+                </p>
+
+                <p>
+                    🥩
+                    Protein:
+                    <strong>
+                        ${data.total.protein}g
+                    </strong>
+                </p>
+
+                <p>
+                    🍚
+                    Carbs:
+                    <strong>
+                        ${data.total.carbs}g
+                    </strong>
+                </p>
+
+                <p>
+                    🥑
+                    Fat:
+                    <strong>
+                        ${data.total.fat}g
+                    </strong>
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // --------------------------------------------
+    // NOTES
+    // --------------------------------------------
+
+    if (data.notes) {
+
+        html += `
+
+            <p class="ai-food-notes">
+                ${escapeHtml(
+                    data.notes
+                )}
+            </p>
+
+        `;
+
+    }
+
+
+    // --------------------------------------------
+    // PUT HTML ON PAGE
+    // --------------------------------------------
+
+    aiFoodResults.innerHTML =
+        html;
+
+
+    // --------------------------------------------
+    // ADD AI FOOD BUTTON
+    // --------------------------------------------
+
+    const addAIButton =
+        $('addAIToFoodLog');
+
+    if (addAIButton) {
+
+        addAIButton.onclick =
+            async () => {
+
+                try {
+
+                    addAIButton.disabled =
+                        true;
+
+                    addAIButton.textContent =
+                        'Saving...';
+
+
+                    for (
+                        const item of data.items
+                    ) {
+
+                        await addAIFoodToLog(
+                            item
+                        );
+
+                    }
+
+
+                    await refresh();
+
+                    await food();
+
+
+                    if (aiFoodStatus) {
+
+                        aiFoodStatus.hidden =
+                            false;
+
+                        aiFoodStatus.textContent =
+                            '✅ AI food added to your Food Log!';
+
+                    }
+
+
+                    addAIButton.textContent =
+                        '✅ Added to Food Log';
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        'AI food save error:',
+                        error
+                    );
+
+                    addAIButton.disabled =
+                        false;
+
+                    addAIButton.textContent =
+                        '＋ Add All to Food Log';
+
+
+                    if (aiFoodStatus) {
+
+                        aiFoodStatus.textContent =
+                            '❌ Could not save AI food: ' +
+                            error.message;
+
+                    }
+
+                }
+
+            };
+
+    }
+
+
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    'AI food scanner error:',
+                    error
+                );
+
+
+                if (aiFoodStatus) {
+
+                    aiFoodStatus.hidden = false;
+
+                    aiFoodStatus.textContent =
+                        '❌ ' +
+                        (
+                            error.message ||
+                            'Failed to analyze food.'
+                        );
+
+                }
+
+            }
+
+            finally {
+
+                // Allow selecting the same image again
+
+                aiFoodImage.value = '';
+
+            }
+
+        }
+    );
+
+}
+
+// ============================================================
+// HTML ESCAPE
+// ============================================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            '&amp;'
+        )
+        .replace(
+            /</g,
+            '&lt;'
+        )
+        .replace(
+            />/g,
+            '&gt;'
+        )
+        .replace(
+            /"/g,
+            '&quot;'
+        )
+        .replace(
+            /'/g,
+            '&#039;'
+        );
 
 }
 
