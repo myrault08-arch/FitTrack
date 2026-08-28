@@ -4267,7 +4267,7 @@ if (aiScanFood && aiFoodImage) {
 
                 console.log(
                     'AI server URL:',
-                    'http://localhost:3000/scan-food'
+                    'https://fittrack-e22z.onrender.com/scan-food'
                 );
 
 
@@ -4277,7 +4277,7 @@ if (aiScanFood && aiFoodImage) {
 
                 const response =
                     await fetch(
-                        'http://localhost:3000/scan-food',
+                        'https://fittrack-e22z.onrender.com/scan-food',
                         {
                             method: 'POST',
                             body: formData
