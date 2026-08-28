@@ -2377,59 +2377,26 @@ function updateHistorySummary(records) {
 // ============================================================
 
 function prepareHistoryChart(canvas) {
+    if (!canvas) return null;
 
-  if (!canvas) {
-    return null;
-  }
+    const container = canvas.parentElement;
 
-  const rect =
-    canvas.getBoundingClientRect();
+    const width = Math.max(container.clientWidth, 1);
+    const height = Math.max(container.clientHeight, 220);
 
-  const width =
-    Math.max(
-      rect.width,
-      300
-    );
+    const dpr = window.devicePixelRatio || 1;
 
-  const height =
-    Math.max(
-      rect.height,
-      280
-    );
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
 
-  const dpr =
-    window.devicePixelRatio || 1;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
 
-  canvas.width =
-    width * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
 
-  canvas.height =
-    height * dpr;
-
-  const ctx =
-    canvas.getContext('2d');
-
-  ctx.setTransform(
-    dpr,
-    0,
-    0,
-    dpr,
-    0,
-    0
-  );
-
-  ctx.clearRect(
-    0,
-    0,
-    width,
-    height
-  );
-
-  return {
-    ctx,
-    width,
-    height
-  };
+    return { ctx, width, height };
 }
 
 
