@@ -81,7 +81,13 @@ let profile = {
   cGoal: 341,
   fGoal: 58,
 
-  stepGoal: 10000
+  stepGoal: 10000,
+
+  useCustomTargets: false,
+  customCal: 2546,
+  customP: 146,
+  customC: 341,
+  customF: 58
 };
 
 
@@ -466,40 +472,65 @@ function calculateMetrics() {
           5
         );
 
-  const calories =
-    Math.round(
-      bmr * 1.55
-    );
+  const autoCalories =
+    Math.round(bmr * 1.55);
 
-  const protein =
-    Math.round(
-      weight * 2
-    );
+  const autoProtein =
+    Math.round(weight * 2);
 
-  const fat =
-    Math.round(
-      weight * 0.8
-    );
+  const autoFat =
+    Math.round(weight * 0.8);
 
-  const carbCalories =
-    calories -
-    (
-      protein * 4 +
-      fat * 9
-    );
-
-  const carbs =
+  const autoCarbs =
     Math.max(
       0,
       Math.round(
-        carbCalories / 4
+        (
+          autoCalories -
+          (autoProtein * 4 + autoFat * 9)
+        ) / 4
       )
     );
+
+  // Custom targets override the automatic ones when enabled.
+  // Blank / 0 custom fields fall back to the automatic value.
+  const useCustom =
+    profile.useCustomTargets === true;
+
+  const calories =
+    useCustom
+      ? (Number(profile.customCal) || autoCalories)
+      : autoCalories;
+
+  const protein =
+    useCustom
+      ? (Number(profile.customP) || autoProtein)
+      : autoProtein;
+
+  const carbs =
+    useCustom
+      ? (Number(profile.customC) || autoCarbs)
+      : autoCarbs;
+
+  const fat =
+    useCustom
+      ? (Number(profile.customF) || autoFat)
+      : autoFat;
 
   profile.calGoal = calories;
   profile.pGoal = protein;
   profile.cGoal = carbs;
   profile.fGoal = fat;
+
+  // Show whether the macros add up to the calorie target
+  if ($('customMacroCheck')) {
+    const macroKcal =
+      protein * 4 + carbs * 4 + fat * 9;
+
+    $('customMacroCheck').textContent =
+      `Macros add up to ${macroKcal.toLocaleString()} kcal ` +
+      `(target ${calories.toLocaleString()} kcal)`;
+  }
 
   const bmi =
     weight /
@@ -891,7 +922,49 @@ if ($('logout')) {
 // FILL SETTINGS
 // ============================================================
 
+function readCustomTargets() {
+
+  if (!$('useCustomTargets')) {
+    return;
+  }
+
+  profile.useCustomTargets =
+    $('useCustomTargets').checked;
+
+  profile.customCal =
+    Number($('customCal').value) || 0;
+
+  profile.customP =
+    Number($('customP').value) || 0;
+
+  profile.customC =
+    Number($('customC').value) || 0;
+
+  profile.customF =
+    Number($('customF').value) || 0;
+
+  if ($('customTargetFields')) {
+    $('customTargetFields').hidden =
+      !profile.useCustomTargets;
+  }
+}
+
+
 function fill() {
+
+  if ($('useCustomTargets')) {
+    $('useCustomTargets').checked =
+      !!profile.useCustomTargets;
+
+    $('customCal').value = profile.customCal;
+    $('customP').value = profile.customP;
+    $('customC').value = profile.customC;
+    $('customF').value = profile.customF;
+
+    $('customTargetFields').hidden =
+      !profile.useCustomTargets;
+  }
+
 
   if ($('age')) {
     $('age').value =
@@ -929,7 +1002,12 @@ function fill() {
   'age',
   'sex',
   'height',
-  'weight'
+  'weight',
+  'useCustomTargets',
+  'customCal',
+  'customP',
+  'customC',
+  'customF'
 ]
 .forEach(id => {
 
@@ -952,6 +1030,8 @@ function fill() {
 
       profile.weight =
         Number($('weight').value);
+
+      readCustomTargets();
 
       calculateMetrics();
 
@@ -989,6 +1069,8 @@ if ($('settingsForm')) {
         profile.stepGoal =
           Number($('goalSteps').value) ||
           10000;
+
+        readCustomTargets();
 
         calculateMetrics();
 
