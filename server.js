@@ -69,6 +69,133 @@ const ai =
 
 
 // ============================================================
+// GEMINI RETRY / FALLBACK
+//
+// Google returns 503 "high demand" during traffic spikes.
+// Retry with backoff, then fall back to other models.
+// ============================================================
+
+// RETRY HELPERS START
+const MODELS = [
+    process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+    ...(
+        process.env.GEMINI_FALLBACK_MODELS ||
+        'gemini-2.5-flash,gemini-2.5-flash-lite'
+    )
+        .split(',')
+        .map(m => m.trim())
+        .filter(Boolean)
+];
+
+const ATTEMPTS_PER_MODEL = 3;
+const RETRY_BASE_MS = 1500;
+
+const sleep =
+    ms => new Promise(resolve => setTimeout(resolve, ms));
+
+function errorText(error) {
+    return String(
+        (error && error.message) || error || ''
+    );
+}
+
+function isOverloaded(error) {
+
+    const status =
+        Number(error && (error.status || error.code));
+
+    const text = errorText(error);
+
+    return (
+        [429, 500, 502, 503, 504].includes(status) ||
+        /"code"\s*:\s*(429|500|502|503|504)/.test(text) ||
+        /UNAVAILABLE|RESOURCE_EXHAUSTED|high demand|overloaded/i
+            .test(text)
+    );
+}
+
+function isModelMissing(error) {
+
+    const status =
+        Number(error && (error.status || error.code));
+
+    const text = errorText(error);
+
+    return (
+        status === 404 ||
+        /"code"\s*:\s*404/.test(text) ||
+        /NOT_FOUND/.test(text)
+    );
+}
+
+async function generateWithFallback(contents) {
+
+    let lastError;
+
+    for (const model of MODELS) {
+
+        for (
+            let attempt = 1;
+            attempt <= ATTEMPTS_PER_MODEL;
+            attempt++
+        ) {
+
+            try {
+
+                console.log(
+                    `Gemini request: ${model} ` +
+                    `(attempt ${attempt}/${ATTEMPTS_PER_MODEL})`
+                );
+
+                return await ai.models.generateContent({
+                    model,
+                    contents
+                });
+
+            }
+
+            catch (error) {
+
+                lastError = error;
+
+                // Bad / retired model name: try the next model
+                if (isModelMissing(error)) {
+
+                    console.warn(
+                        `Model "${model}" not available, skipping.`
+                    );
+
+                    break;
+                }
+
+                // Real errors (bad image, bad key...) fail immediately
+                if (!isOverloaded(error)) {
+                    throw error;
+                }
+
+                console.warn(
+                    `${model} busy (attempt ${attempt}): ` +
+                    errorText(error).slice(0, 120)
+                );
+
+                if (attempt < ATTEMPTS_PER_MODEL) {
+
+                    await sleep(
+                        RETRY_BASE_MS * 2 ** (attempt - 1) +
+                        Math.random() * 500
+                    );
+
+                }
+            }
+        }
+    }
+
+    throw lastError;
+}
+// RETRY HELPERS END
+
+
+// ============================================================
 // IMAGE UPLOAD
 // ============================================================
 
@@ -251,34 +378,27 @@ If no recognizable food is visible, return:
             // --------------------------------------------------
 
             const response =
-                await ai.models.generateContent({
+                await generateWithFallback([
 
-                    model:
-                        'gemini-3.6-flash',
+                    {
+                        inlineData: {
 
-                    contents: [
+                            mimeType:
+                                req.file.mimetype,
 
-                        {
-                            inlineData: {
+                            data:
+                                base64Image
 
-                                mimeType:
-                                    req.file.mimetype,
-
-                                data:
-                                    base64Image
-
-                            }
-
-                        },
-
-                        {
-                            text:
-                                prompt
                         }
 
-                    ]
+                    },
 
-                });
+                    {
+                        text:
+                            prompt
+                    }
+
+                ]);
 
 
             // --------------------------------------------------
@@ -501,13 +621,22 @@ If no recognizable food is visible, return:
             );
 
 
-            res.status(500).json({
+            const busy = isOverloaded(error);
+
+            res.status(busy ? 503 : 500).json({
 
                 success: false,
 
+                retryable: busy,
+
                 error:
-                    error.message ||
-                    'Failed to analyze food image.'
+                    busy
+                        ? 'The AI service is busy right now. ' +
+                          'Please try again in a minute.'
+                        : (
+                            error.message ||
+                            'Failed to analyze food image.'
+                          )
 
             });
 
